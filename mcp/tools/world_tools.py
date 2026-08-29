@@ -28,9 +28,30 @@ try:
 except ImportError:
     MEMORY_SYSTEM_AVAILABLE = False
 
+# Phase 8.1 kill-switch. When off (MEM20_FLAG_WORLDMODEL_20 in 0/false/no/off),
+# the world-model / self-model / affective / procedural MCP tools are NOT registered,
+# so 8.1 is not surfaceable. Default ON (8.1 is officially active).
+WORLDMODEL_ENABLED = (
+    os.environ.get("MEM20_FLAG_WORLDMODEL_20", "1").strip().lower()
+    not in ("0", "false", "no", "off", "")
+)
+
 
 class WorldToolsMixin:
     def register_world_tools(self):
+        self.worldmodel_enabled = WORLDMODEL_ENABLED
+        if not WORLDMODEL_ENABLED:
+            # Kill-switch: 8.1 MCP surface is disabled. Expose a single status
+            # tool so callers get a clear, non-error response.
+            _status_name = "world_model_status"
+            self.tools[_status_name] = mt.Tool(
+                name=_status_name,
+                title="World Model Status",
+                description="Phase 8.1 (world model / self model / affective / "
+                            "procedural) MCP tools are disabled via MEM20_FLAG_WORLDMODEL_20.",
+                inputSchema={"type": "object", "properties": {}, "required": []},
+            )
+            return
         self.tools["procedural_add_skill"] = mt.Tool(
             name="procedural_add_skill",
             title="Add Procedural Skill",
@@ -48,6 +69,7 @@ class WorldToolsMixin:
                 "required": ["name", "description", "steps"],
             },
         )
+
         self.tools["procedural_get_skill"] = mt.Tool(
             name="procedural_get_skill",
             title="Get Procedural Skill",
@@ -643,3 +665,12 @@ class WorldToolsMixin:
             return output
         except Exception as e:
             return f"Error getting affective state: {str(e)}"
+
+    async def _world_model_status(self, args: Dict[str, Any]) -> str:
+        """Handler for the status tool (returned when 8.1 is disabled)."""
+        return json.dumps({
+            "enabled": getattr(self, "worldmodel_enabled", WORLDMODEL_ENABLED),
+            "phase": "8.1",
+            "note": "World model / self model / affective / procedural tools. "
+                    "Disabled when MEM20_FLAG_WORLDMODEL_20 is 0/false/no/off.",
+        }, ensure_ascii=False)

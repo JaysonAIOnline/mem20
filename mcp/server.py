@@ -151,6 +151,8 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
         elif tool_name == "memory_auto_consolidate":
             return await self._memory_auto_consolidate(arguments)
         # Procedural Memory tools
+        elif tool_name == "world_model_status":
+            return await self._world_model_status(arguments)
         elif tool_name == "procedural_add_skill":
             return await self._procedural_add_skill(arguments)
         elif tool_name == "procedural_get_skill":
