@@ -1,0 +1,18 @@
+# OPTIONAL integrations — these are EXTERNAL APPLICATIONS, not Python packages.
+# The mem20 MCP server degrades gracefully (informative message) when they are absent.
+#
+# Blender:
+#   Install Blender (https://www.blender.org/) and ensure `blender` is on PATH,
+#   or set MEM20_BLENDER_EXECUTABLE to its executable path.
+#   Tools: blender_create_object, blender_add_material, blender_set_camera,
+#          blender_render, blender_export_glb, blender_run_bpy, blender_clear_scene
+#
+# Unity:
+#   Install the Unity Editor and set MEM20_UNITY_EXECUTABLE (or put `Unity` on PATH).
+#   Tools: unity_build_project, unity_run_test (require the executable);
+#          unity_create_script / unity_generate_asmdef / unity_validate_project
+#          only read/write project files and work without the executable.
+#
+# No pip packages are required for these integrations — listed here for discovery only.
+# Implement a new optional integration by copying tools/integration_tools.py::
+# register_integration_template() into tools/<name>_tools.py (see README "Adding a tool").

@@ -1,0 +1,14 @@
+[Unit]
+Description=MCP Server for mem20
+After=network.target
+
+[Service]
+User=__MEM20_USER__
+WorkingDirectory=__MEM20_WORKDIR__/mcp
+ExecStart=__MEM20_VENV_PYTHON__ __MEM20_WORKDIR__/mcp/mcp_server.py
+Restart=always
+Environment=MEM20_STORE_PATH=__MEM20_STORE_PATH__
+Environment=MEM20_HEALTH_PORT=8080
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20"
+version = "2.1.0rc2"
+description = "mem20 — trusted, auditable memory + world-model layer for agents (MCP server)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["agent", "memory", "mcp", "world-model", "cognitive"]
+dependencies = [
+    "mcp>=2.1.1",
+    "pydantic>=2.13.4",
+    "anyio>=4.14.2",
+    "numpy>=1.24",
+    "faiss-cpu>=1.7.4",
+    "sentence-transformers>=2.2.0",
+]
+
+[project.optional-dependencies]
+# Dev: run the test suite on a clean clone.
+dev = ["pytest>=7"]
+# Optional integrations are EXTERNAL APPLICATIONS, not pip packages.
+# Blender / Unity must be installed on the host (see requirements-optional.txt).
+integrations = []
+
+[project.scripts]
+mem20-mcp = "mcp.mcp_server:main"
+
+[tool.setuptools]
+packages = ["memory_engine"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

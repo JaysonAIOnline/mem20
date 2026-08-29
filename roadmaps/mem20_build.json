@@ -1,0 +1,37 @@
+{
+  "name": "mem20_build",
+  "description": "Build mem20 from scratch",
+  "phases": [
+    {
+      "name": "mcp",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "memory",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "cognitive",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "roadmap",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "hermes_integration",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "production",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1787804510.8459408"
+}

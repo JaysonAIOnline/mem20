@@ -1,0 +1,47 @@
+{
+  "name": "oreo_language",
+  "description": "Build OREO visual-first NL-first programming language",
+  "phases": [
+    {
+      "name": "research",
+      "status": "completed",
+      "notes": "Neo4j, Graph-Native Programming, Machine-Level Computing, ECC, Information Theory researched"
+    },
+    {
+      "name": "spec",
+      "status": "in_progress",
+      "notes": "OREO_LANGUAGE_SPEC.md created; GIR, type system, NL syntax, visual editor defined"
+    },
+    {
+      "name": "parser",
+      "status": "planned",
+      "notes": "NL semantic parser + text serialization parser"
+    },
+    {
+      "name": "runtime",
+      "status": "planned",
+      "notes": "Graph interpreter, effect system, memory model, concurrency"
+    },
+    {
+      "name": "visual_editor",
+      "status": "planned",
+      "notes": "Canvas, nodes, edges, live execution visualization"
+    },
+    {
+      "name": "ai_integration",
+      "status": "planned",
+      "notes": "AI code generation \u2192 GIR, contract verification (Z3), explanation engine"
+    },
+    {
+      "name": "test_harness",
+      "status": "planned",
+      "notes": "Property-based testing, fuzzing, model checking"
+    },
+    {
+      "name": "docs",
+      "status": "planned",
+      "notes": "Tutorials, API reference, language guide"
+    }
+  ],
+  "created": "1787804714.2874022"
+}
