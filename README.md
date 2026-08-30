@@ -176,6 +176,71 @@ Point an MCP host at the server (stdio).
 
 ---
 
+## Installation
+
+mem20 is distributed through four channels. All of them run the **same** server
+(`mcp/mcp_server.py`): an MCP stdio JSON-RPC server plus an HTTP health endpoint
+on `:8080` (`/health`, `/ready`, `/metrics`). Pick whichever fits your environment.
+
+### 1. pip (Python)
+
+```bash
+pip install .                 # builds the wheel, installs the `mem20-mcp` command
+mem20-mcp                     # starts the MCP server + :8080 health endpoint
+# or run the repo directly (always supported, never changes):
+#   python mcp/mcp_server.py
+```
+
+`mem20-mcp` is a thin launcher (`launcher.py`) that locates the bundled `mcp/`
+directory and runs it as a script — so `from mcp.server import Server` (the SDK)
+is never shadowed. Override the port with `MEM20_HEALTH_PORT`.
+
+### 2. Docker
+
+```bash
+docker build -t mem20 .
+docker run -p 8080:8080 -e MEM20_HEALTH_PORT=8080 -v mem20-store:/data mem20
+# or with compose (persists the store in a named volume):
+docker compose up -d
+curl http://localhost:8080/health
+```
+
+The image runs `python mcp/mcp_server.py` as the canonical entrypoint (health on `:8080`).
+
+### 3. npm (web dashboard)
+
+The `dashboard/` app (Vite + React) shows live server status and the memory
+store. It talks to the **optional** HTTP bridge (`bridge/server.py`), which
+proxies `/health`, `/ready`, `/metrics` and adds `/api/memory`, `/api/recall`.
+
+```bash
+# optional bridge (completely separate from the MCP server):
+pip install fastapi uvicorn httpx
+python bridge/server.py                 # :8000
+
+# dashboard:
+cd dashboard
+npm install
+npm run build                           # → dashboard/dist/ (static)
+npx serve dashboard/dist                # or any static server
+# dev mode with hot reload:
+npm run dev                             # http://localhost:5173
+```
+
+### 4. apt (.deb)
+
+```bash
+make deb                                # → packaging/deb/mem20_*.deb
+sudo dpkg -i packaging/deb/mem20_*.deb  # installs venv + systemd unit + health probe
+sudo systemctl status mem20             # enabled + started by postinst
+mem20-health                            # probe /health
+```
+
+See `packaging/README.md` for how each channel is built and why `mcp/` is kept
+out of the Python import path (shadowing the `mcp` SDK would break the server).
+
+---
+
 ## Dependencies
 
 Install core deps from `requirements.txt` (pinned). `requirements-optional.txt` documents the

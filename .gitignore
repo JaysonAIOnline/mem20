@@ -47,3 +47,11 @@ entries/
 # Temp
 /tmp/
 eng20/
+
+# Node / dashboard build
+node_modules/
+# Release artifacts
+*.deb
+*.zip
+# pip build temp
+.pip_tmp/
