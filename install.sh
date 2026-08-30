@@ -50,4 +50,17 @@ else
   echo "    MEM20_STORE_PATH=${STORE_PATH} ${VENV}/bin/python ${DIR}/mcp/mcp_server.py"
 fi
 
+# --- optional install telemetry (opt-out: MEM20_NO_TELEMETRY=1) ---
+MEM20_INSTALL_DIR="${DIR}" "${VENV}/bin/python" - <<'PY' || true
+import sys, os
+sys.path.insert(0, os.path.join(os.environ.get("MEM20_INSTALL_DIR", "."), "mcp"))
+try:
+    import install_tracker
+    install_tracker.report("git-install.sh", event="install")
+except Exception:
+    pass
+PY
+
 echo "==> Done. Health: curl http://localhost:8080/health"
+echo "==> Note: anonymous install metrics are recorded locally"
+echo "         (opt out with MEM20_NO_TELEMETRY=1; send to a collector via MEM20_INSTALL_WEBHOOK)."

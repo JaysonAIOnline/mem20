@@ -1,0 +1,17 @@
+# Build artifacts / caches that should never be copied into the image.
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info
+.pytest_cache
+venv/
+.venv/
+node_modules/
+dashboard/dist/
+mem20_runtime/mcp/
+build/
+dist/
+*.deb
+.DS_Store
