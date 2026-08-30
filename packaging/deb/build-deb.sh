@@ -116,6 +116,20 @@ if [ "$1" = "configure" ] && command -v systemctl >/dev/null 2>&1; then
   systemctl daemon-reload
   systemctl enable --now mem20.service || true
 fi
+# --- install telemetry (opt-out: MEM20_NO_TELEMETRY=1) ---
+VENVPY=/opt/mem20/venv/bin/python
+"$VENVPY" - <<'PY' || true
+import importlib.util, os
+try:
+    import mem20_runtime
+    p = os.path.join(os.path.dirname(mem20_runtime.__file__), "mcp", "install_tracker.py")
+    spec = importlib.util.spec_from_file_location("install_tracker", p)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.report("deb", event="install")
+except Exception:
+    pass
+PY
 exit 0
 EOF
 

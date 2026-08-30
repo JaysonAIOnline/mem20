@@ -31,11 +31,15 @@ integrations = []
 # it as a script (equivalent to `python mcp/mcp_server.py`). This avoids
 # importing the local `mcp/` dir as a package, which would shadow the `mcp` SDK.
 mem20-mcp = "launcher:main"
+# Query aggregated install metrics from the local event log, or run the
+# collector dashboard server (MEM20_COLLECTOR_PORT=9090).
+mem20-metrics = "metrics_collector:main"
 
 [tool.setuptools]
 packages = ["memory_engine", "mem20_runtime"]
 # The repo-root `memory.py` shim lets `import memory` resolve to memory_engine.
-py-modules = ["memory"]
+# `metrics_collector.py` is the standalone install-metrics collector server.
+py-modules = ["memory", "metrics_collector"]
 # Ship the MCP server files as package data (NOT as an importable `mcp` package).
 [tool.setuptools.package-data]
 mem20_runtime = [
