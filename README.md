@@ -3,6 +3,8 @@
 A persistent **memory + cognition substrate** for AI agents, exposed to clients over the
 [Model Context Protocol (MCP)](https://modelcontextprotocol.io) as a JSON-RPC 2.0 service on stdio.
 
+**Project website:** [mem20.jaysonai.online](https://mem20.jaysonai.online)
+
 mem20 separates **grounded** memory (derived from real observations/events) from **simulated**
 memory (hypothetical or model-generated), enforces that separation at the storage layer, and
 couples forecasting ("world-model") predictions to observed outcomes so that promotions out of the
