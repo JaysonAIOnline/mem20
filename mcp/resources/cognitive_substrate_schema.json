@@ -1,0 +1,128 @@
+{
+  "PRIMARY_COGNITIVE_FOUNDATIONS": {
+    "1_premise_validation": {
+      "unstated_assumptions": ["Ruthlessly dissect the user input for flaws, hidden variables, or sub-optimal strategies"],
+      "premise_veracity_evaluation": "Explicitly confirm or push back against the baseline premise before starting work"
+    },
+    "2_state_estimation": {
+      "current_environment_variables": {
+        "active_goal": "Root operational target",
+        "known_constraints": ["Time, context window limits, technical boundaries"],
+        "system_state_hash": "Deterministic variable tracker to prevent contextual drift"
+      }
+    },
+    "3_adversarial_falsification": {
+      "initial_thesis_propose": "The baseline solution code or text architecture",
+      "malicious_compliance_attack": ["Actively find vulnerabilities, edge-case failures, or security leaks in the thesis"],
+      "hardened_synthesis": "The final execution block fortified against the discovered vulnerabilities"
+    },
+    "4_depth_first_branching": {
+      "pathways_generated": [
+        { "path_id": "A", "confidence_score": 0, "complexity_risk": "High/Med/Low" },
+        { "path_id": "B", "confidence_score": 0, "complexity_risk": "High/Med/Low" }
+      ],
+      "selected_execution_vector": "ID of the highest-scoring structural pattern chosen for rollout"
+    },
+    "5_epistemic_humility_map": {
+      "established_facts": ["Direct inputs or proven tool outputs"],
+      "working_inferences": ["Logical deductions"],
+      "speculative_assumptions": ["High-risk gaps that require validation before final code block approval"]
+    },
+    "6_opportunity_cost_calculation": {
+      "heavy_architectural_footprint": "The compute, token weight, or maintenance cost of the complex path",
+      "minimalist_alternative_pathway": "The 80/20 lean design that accomplishes the objective with minimal weight"
+    },
+    "7_inversion_principle_analysis": {
+      "simulated_catastrophic_failure": "Post-mortem incident report written under the assumption the script entirely crashed",
+      "defensive_preemptive_mitigations": ["Error traps, assertions, or fallbacks added to guarantee this crash is impossible"]
+    },
+    "8_semantic_compression_translation": {
+      "feynman_analogy_test": "Explain the underlying logic framework using pure mechanical or biological terms (no tech jargon)",
+      "structural_purity_verification": "If the analogy breaks down, refactor code components until structural modularity is achieved"
+    }
+  },
+  "METACOGNITION_AND_PROCESSING": {
+    "9_explanatory_depth_map": {
+      "surface_intent": "Core objective stated by user",
+      "underlying_cs_primitives": ["Low-level systems, data structures, or algorithms required"]
+    },
+    "10_cognitive_dissonance_audit": {
+      "conflicting_constraints": ["List any hidden friction, prompt contradictions, or resource limits"],
+      "resolution_protocol": "Explicit strategy to resolve the conflict before proceeding"
+    },
+    "11_dialectical_inquiry": {
+      "socratic_self_critique": ["Question 1", "Question 2", "Question 3"],
+      "rebuttal_and_adaptation": "How the design morphs to neutralize this critique"
+    },
+    "12_premature_convergence_brake": {
+      "instinctive_first_choice_discarded": "The absolute most obvious pathway from training data",
+      "orthogonal_alternatives": ["Alternative A", "Alternative B", "Alternative C"]
+    },
+    "13_semantic_drift_sentinel": {
+      "root_goal_alignment": "Verification back to original message 0",
+      "drift_percentage": 0
+    }
+  },
+  "DEFENSIVE_ENGINEERING": {
+    "14_idempotency_side_effect_audit": {
+      "blast_radius": ["What mutable states, files, database records, or network configs are touched"],
+      "safe_to_re_run_proof": "Mathematical or structural guarantee that N-executions equal 1-execution"
+    },
+    "15_graceful_degradation_planning": {
+      "primary_failure_triggers": ["What causes a crash or tool failure here"],
+      "low_power_fallback": "The exact script behavior when the primary asset drops"
+    },
+    "16_boundary_stress_testing": {
+      "null_zero_max_inputs": "Expected system behavior under extreme parameter bounds"
+    },
+    "17_zero_trust_security_review": {
+      "assumed_malicious_exploit": "How an attacker would exploit this logic flow",
+      "mitigation_shield": "Specific validation regex, data sanitization, or wrapper added to stop it"
+    },
+    "18_state_invariant_enforcement": {
+      "immutable_rule": "The absolute truth that cannot change (e.g. system state variable cannot corrupt)",
+      "validation_step": "The deterministic conditional assertion that verifies this rule post-execution"
+    }
+  },
+  "RESOURCE_MANAGEMENT": {
+    "19_complexity_cost_analysis": {
+      "big_o_notation": "Time: O(?), Space: O(?)",
+      "scalability_bottleneck": "Where performance degrades exponentially if dataset size changes"
+    },
+    "20_lazy_evaluation_modeling": {
+      "deferred_computations": ["What resource loading can be delayed until explicitly triggered"]
+    },
+    "21_dependency_minimization_routing": {
+      "external_requirements": ["Libraries/tools needed"],
+      "vanilla_fallback_efficiency": "Can this be written in pure standard-library primitives?"
+    },
+    "22_execution_bottleneck_prediction": {
+      "highest_latency_line": "The line of code or tool call that will take the longest",
+      "optimization_refactor": "How that specific line was hardened for speed"
+    },
+    "23_context_window_budgeting": {
+      "input_token_weight": "High / Medium / Low",
+      "compression_strategy": "How to distill long logs/strings down into tight semantic nodes"
+    }
+  },
+  "HUMAN_UTILITY": {
+    "24_cognitive_load_minimization": {
+      "ten_second_review_summary": "Bolded, ultra-punchy overview for human approval"
+    },
+    "25_progressive_disclosure_formatting": {
+      "executive_summary": "Top layer text",
+      "hidden_implementation_details": "Granular code blocks wrapped in clean sub-structures"
+    },
+    "26_idiomatic_purity_enforcement": {
+      "target_style_guide": "PEP8, strict TS, idiomatic Rust, etc.",
+      "anti_patterns_evaded": ["Banned habits or generic AI filler patterns to strip out"]
+    },
+    "27_premise_correction_loop": {
+      "user_instruction_flaws": ["Any logic gaps in the prompt provided by the human"],
+      "proposed_course_correction": "Better approach offered back to human"
+    },
+    "28_intent_alignment_verification": {
+      "final_checklist": ["Confirming itemized goals are fully resolved in output state"]
+    }
+  }
+}

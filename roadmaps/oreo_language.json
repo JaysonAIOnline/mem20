@@ -14,23 +14,23 @@
     },
     {
       "name": "parser",
-      "status": "planned",
-      "notes": "NL semantic parser + text serialization parser"
+      "status": "in_progress",
+      "notes": "GraphLang merged as parser/architecture/ (NL->intent->Cypher/Neo4j). NL router wired in parser/nl_parser. GIR semantic_parser blocked by pre-existing parser/gir/types.py dataclass bug."
     },
     {
       "name": "runtime",
-      "status": "planned",
-      "notes": "Graph interpreter, effect system, memory model, concurrency"
+      "status": "in_progress",
+      "notes": "Architecture relationship runtime merged (RelationshipEngine handshake: pages refused until CONNECTS_TO line; FunctionRuntime; emit runnable app). Full graph interpreter still pending."
     },
     {
       "name": "visual_editor",
-      "status": "planned",
-      "notes": "Canvas, nodes, edges, live execution visualization"
+      "status": "in_progress",
+      "notes": "Architecture talk+draw web editor merged (parser/architecture/visual.py, ears+voice, model view). Computational GIR editor blocked by GIR import bug."
     },
     {
       "name": "ai_integration",
-      "status": "planned",
-      "notes": "AI code generation \u2192 GIR, contract verification (Z3), explanation engine"
+      "status": "in_progress",
+      "notes": "HybridParser (rules-first, LLM fallback via OpenAICompat/xAI), CypherOptimizer, advise/scene packs merged under parser/architecture/. Computational AI codegen pending."
     },
     {
       "name": "test_harness",
@@ -39,8 +39,8 @@
     },
     {
       "name": "docs",
-      "status": "planned",
-      "notes": "Tutorials, API reference, language guide"
+      "status": "in_progress",
+      "notes": "Architecture docs merged into docs/architecture/ + spec/NL_CYPHER_SPEC.md. Full language guides still pending."
     }
   ],
   "created": "1787804714.2874022"

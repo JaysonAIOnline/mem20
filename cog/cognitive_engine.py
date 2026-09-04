@@ -16,8 +16,11 @@ memories for later self-audit.
 import sys
 import os
 import asyncio
+import json
+import re
+import sqlite3
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 
 sys.path.insert(0, os.environ.get("MEM20_ENGINE_PATH", "/home/jayson/mem20"))
 from llm import chat, achat, LLMError  # noqa: E402
@@ -224,6 +227,377 @@ async def areason(problem, reasoning_type="deductive", depth=5, track_confidence
                                               working_memory_limit), max_tokens=1500)
     _store_cognitive("reason", problem, out, reasoning_type)
     return out
+
+
+# --------------------------------------------------------------------------
+# Chain-of-Thought (CoT)
+# --------------------------------------------------------------------------
+async def acot_reason(problem: str, steps: int = 5, style: str = "deductive") -> str:
+    system = (
+        "You are a Chain-of-Thought reasoning engine. "
+        f"Reason through the problem step-by-step in natural language using {style} reasoning. "
+        f"Use exactly {steps} steps. At each step, state your intermediate conclusion. "
+        "End with a final conclusion that synthesizes all steps."
+    )
+    user = f"PROBLEM:\n{problem}\n\nREASONING STEPS: {steps}\nSTYLE: {style}"
+    out = await achat([{"role": "system", "content": system}, {"role": "user", "content": user}], max_tokens=1500)
+    _store_cognitive("cot_reason", problem, out, style)
+    return out
+
+
+# --------------------------------------------------------------------------
+# Program-of-Thought (PoT)
+# --------------------------------------------------------------------------
+async def apot_reason(problem: str, language: str = "python", complexity: str = "standard") -> str:
+    system = (
+        "You are a Program-of-Thought reasoning engine. "
+        f"Solve the problem by writing executable {language} code. "
+        f"Complexity level: {complexity}. "
+        "The code should be complete, runnable, and solve the stated problem."
+    )
+    user = f"PROBLEM:\n{problem}\n\nLANGUAGE: {language}\nCOMPLEXITY: {complexity}"
+    out = await achat([{"role": "system", "content": system}, {"role": "user", "content": user}], max_tokens=1500)
+    _store_cognitive("pot_reason", problem, out, language)
+    return out
+
+
+# --------------------------------------------------------------------------
+# Tree-of-Thoughts (ToT) — persistent substrate-enabled version
+# --------------------------------------------------------------------------
+_TOT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "..", "tot_state.db")
+
+def get_tot_historical_lessons(problem_context: str, max_lessons: int = 3) -> list:
+    """
+    Scans past session trees to isolate branches that were pruned or heavily penalized.
+    Uses semantic matching via memory recall when available, falls back to keyword scan.
+    """
+    lessons = []
+    
+    # Try semantic recall first (if memory system available)
+    if MEMORY_AVAILABLE:
+        try:
+            from memory import recall as mem_recall
+            recs = mem_recall(topic=problem_context, k=10) or []
+            for rec in recs:
+                content = rec.get("content", "") if isinstance(rec, dict) else str(rec)
+                if "pruned" in content.lower() or "tot_reason" in content.lower():
+                    lessons.append({
+                        "source": "memory_recall",
+                        "context": content[:300],
+                    })
+                    if len(lessons) >= max_lessons:
+                        return lessons
+        except Exception:
+            pass
+    
+    # Fallback: scan ToT database for pruned branches
+    try:
+        with sqlite3.connect(_TOT_DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT substrate_payload, heuristic_score_delta, is_pruned 
+                FROM cognitive_substrate_history 
+                WHERE is_pruned = 1 OR heuristic_score_delta < -10.0
+                ORDER BY created_at DESC LIMIT 50
+            """)
+            rows = cursor.fetchall()
+            
+            # Extract keywords from problem context
+            keywords = [w.lower() for w in problem_context.split() if len(w) > 4]
+            
+            for row in rows:
+                try:
+                    substrate = json.loads(row[0]) if row[0] else {}
+                    if not substrate:
+                        continue
+                    
+                    # Check relevance using compressed 5-key structure
+                    foundations = substrate.get("foundations", {})
+                    utility = substrate.get("utility", {})
+                    
+                    # Build search text from compressed schema
+                    search_text = " ".join([
+                        str(foundations.get("premise_validation", "")),
+                        str(foundations.get("falsification_notes", "")),
+                        str(utility.get("load_summary", "")),
+                    ]).lower()
+                    
+                    if any(kw in search_text for kw in keywords):
+                        lessons.append({
+                            "source": "tot_history",
+                            "failed_approach": foundations.get("premise_validation", ""),
+                            "why_it_failed": foundations.get("falsification_notes", ""),
+                            "correction": utility.get("load_summary", ""),
+                            "score_delta": row[1],
+                        })
+                        if len(lessons) >= max_lessons:
+                            break
+                except (json.JSONDecodeError, KeyError):
+                    continue
+    except Exception:
+        pass
+    
+    return lessons[:max_lessons]
+
+
+def _init_tot_db():
+    """Initialize the ToT state database. Non-destructive: only creates if missing."""
+    try:
+        with sqlite3.connect(_TOT_DB_PATH) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS tot_nodes (
+                    node_id TEXT PRIMARY KEY,
+                    session_id TEXT NOT NULL,
+                    parent_node_id TEXT,
+                    branch_index INTEGER,
+                    depth INTEGER,
+                    prompt_context TEXT,
+                    raw_llm_output TEXT,
+                    cleaned_output TEXT,
+                    substrate_payload TEXT,
+                    heuristic_score_delta REAL DEFAULT 0.0,
+                    status TEXT CHECK(status IN ('pending','active','pruned','completed','selected')) DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS cognitive_substrate_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    node_id TEXT NOT NULL,
+                    session_id TEXT NOT NULL,
+                    substrate_payload TEXT,
+                    heuristic_score_delta REAL DEFAULT 0.0,
+                    is_pruned INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(node_id) REFERENCES tot_nodes(node_id)
+                )
+            """)
+            conn.commit()
+    except Exception:
+        pass
+
+_init_tot_db()
+
+
+def robust_slice(raw_output: str) -> tuple:
+    """
+    Stack-based JSON extraction. Scans sequentially for the first valid top-level JSON object.
+    Returns (cleaned_text_without, parsed_dict).
+    Handles nested brackets, escaped strings, and multiple code blocks.
+    """
+    first_bracket = raw_output.find('{')
+    if first_bracket == -1:
+        return raw_output, {"parsing_error": "No JSON block found"}
+    
+    stack = 0
+    in_string = False
+    escape = False
+    json_end = -1
+    
+    for i in range(first_bracket, len(raw_output)):
+        char = raw_output[i]
+        
+        if escape:
+            escape = False
+            continue
+        if char == '\\':
+            escape = True
+            continue
+        if char == '"':
+            in_string = not in_string
+            continue
+        
+        if not in_string:
+            if char == '{':
+                stack += 1
+            elif char == '}':
+                stack -= 1
+                if stack == 0:
+                    json_end = i + 1
+                    break
+    
+    if json_end == -1:
+        return raw_output, {"parsing_error": "Malformed or unclosed JSON block"}
+    
+    try:
+        json_payload = json.loads(raw_output[first_bracket:json_end])
+        dirty_segment = raw_output[first_bracket:json_end]
+        cleaned_text = raw_output.replace(dirty_segment, "")
+        # Clean up empty markdown code fences
+        cleaned_text = re.sub(r"```json\s*```|```\s*```", "", cleaned_text).strip()
+        return cleaned_text, json_payload
+    except json.JSONDecodeError:
+        return raw_output, {"parsing_error": "JSONDecodeError during extraction"}
+
+
+def _extract_substrate(raw_text: str) -> tuple:
+    """
+    Extract the 28-layer JSON substrate from raw LLM output.
+    Uses robust stack-based parser instead of regex.
+    Returns (substrate_dict, cleaned_text_without_block).
+    """
+    # First try: look for ```json ... ``` blocks
+    if '```json' in raw_text:
+        matches = re.findall(r'```json\s*(.*?)\s*```', raw_text, re.DOTALL)
+        if matches:
+            # Take the largest valid JSON block
+            best = {}
+            best_text = raw_text
+            for match in matches:
+                try:
+                    parsed = json.loads(match)
+                    if isinstance(parsed, dict) and len(str(parsed)) > len(str(best)):
+                        best = parsed
+                        best_text = raw_text.replace(f'```json{match}```', '').strip()
+                except json.JSONDecodeError:
+                    continue
+            if best:
+                return best, best_text
+    
+    # Fallback: scan for raw JSON objects
+    cleaned, parsed = robust_slice(raw_text)
+    return parsed, cleaned
+
+
+def _evaluate_substrate(substrate: dict) -> Tuple[float, int]:
+    """
+    Run heuristic checks on the 28-layer substrate.
+    Returns (score_delta, is_pruned).
+    """
+    if not substrate:
+        return -50.0, 0  # Malformed/missing substrate penalty
+    
+    score_delta = 0.0
+    is_pruned = 0
+    
+    # Heuristic 1: Idempotency side-effects (Layer 14)
+    idempotency = substrate.get("DEFENSIVE_ENGINEERING", {}).get("14_idempotency_side_effect_audit", {})
+    blast = str(idempotency.get("blast_radius", "")).lower()
+    if "unpredictable" in blast or "infinite" in blast or "irreversible" in blast:
+        score_delta = -100.0
+        is_pruned = 1
+    
+    # Heuristic 2: Complexity explosions (Layer 19)
+    complexity = substrate.get("RESOURCE_MANAGEMENT", {}).get("19_complexity_cost_analysis", {})
+    big_o = complexity.get("big_o_notation", "")
+    if any(banned in big_o for banned in ["O(n^n)", "O(2^n)", "O(n!)"]):
+        score_delta = -100.0
+        is_pruned = 1
+    
+    # Heuristic 3: Excessive speculative assumptions (Layer 5)
+    humility = substrate.get("PRIMARY_COGNITIVE_FOUNDATIONS", {}).get("5_epistemic_humility_map", {})
+    spec_count = len(humility.get("speculative_assumptions", []))
+    if spec_count > 5:
+        score_delta -= 20.0
+    
+    return score_delta, is_pruned
+
+
+def persist_tot_node(node_id: str, session_id: str, parent_node_id: str = None,
+                     branch_index: int = 0, depth: int = 0, prompt_context: str = "",
+                     raw_output: str = "", cleaned_output: str = "",
+                     substrate: dict = None, score_delta: float = 0.0,
+                     status: str = "pending"):
+    """Persist a ToT node to SQLite."""
+    try:
+        with sqlite3.connect(_TOT_DB_PATH) as conn:
+            conn.execute("""
+                INSERT INTO tot_nodes (node_id, session_id, parent_node_id, branch_index, depth,
+                                       prompt_context, raw_llm_output, cleaned_output,
+                                       substrate_payload, heuristic_score_delta, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(node_id) DO UPDATE SET
+                    cleaned_output = excluded.cleaned_output,
+                    substrate_payload = excluded.substrate_payload,
+                    heuristic_score_delta = excluded.heuristic_score_delta,
+                    status = excluded.status
+            """, (node_id, session_id, parent_node_id, branch_index, depth,
+                  prompt_context, raw_output, cleaned_output,
+                  json.dumps(substrate or {}), score_delta, status))
+            
+            # Also log to history
+            conn.execute("""
+                INSERT INTO cognitive_substrate_history (node_id, session_id, substrate_payload, heuristic_score_delta, is_pruned)
+                VALUES (?, ?, ?, ?, ?)
+            """, (node_id, session_id, json.dumps(substrate or {}), score_delta, 1 if score_delta <= -100 else 0))
+            conn.commit()
+    except Exception:
+        pass
+
+
+_TOT_SUBSTRATE_PROMPT = """
+After your reasoning, append a JSON code block containing your cognitive telemetry.
+Format: ```json { ... } ```
+
+Include these 5 consolidated keys (keep values dense, under 150 tokens total):
+1. "foundations": { "premise_validation": str, "state_hash": str, "falsification_notes": str }
+2. "metacognition": { "self_critique": str, "drift_pct": float }
+3. "defensive": { "blast_radius": str, "is_idempotent": bool, "invariant_rule": str }
+4. "resource": { "big_o": str, "latency_bottleneck": str }
+5. "utility": { "load_summary": str, "checklist_verified": bool }
+
+Do not pollute your reasoning text with this data."""
+
+
+async def atot_reason(problem: str, branches: int = 3, depth: int = 3,
+                      evaluation_criteria: str = "feasibility,novelty,simplicity",
+                      session_id: str = "default") -> str:
+    """Enhanced ToT with substrate validation and persistence."""
+    import uuid
+    
+    root_id = f"tot-{uuid.uuid4().hex[:8]}"
+    
+    system = (
+        "You are a Tree-of-Thoughts reasoning engine. "
+        f"Explore {branches} distinct reasoning paths, each {depth} steps deep. "
+        f"Evaluate each path against: {evaluation_criteria}. "
+        "Score each path (1-10), then select the best. Justify your selection."
+        f"\n\n{_TOT_SUBSTRATE_PROMPT}"
+    )
+    user = (f"PROBLEM:\n{problem}\n\nBRANCHES: {branches}\nDEPTH: {depth}\n"
+            f"EVALUATION CRITERIA: {evaluation_criteria}")
+    
+    # Inject cross-session historical lessons if available
+    historical_lessons = get_tot_historical_lessons(problem, max_lessons=2)
+    if historical_lessons:
+        lesson_block = "\n\n=== HISTORICAL EXECUTION LESSONS (DO NOT REPEAT) ===\n"
+        for idx, lesson in enumerate(historical_lessons, 1):
+            lesson_block += f"Lesson {idx}:\n"
+            if lesson.get("failed_approach"):
+                lesson_block += f"- Discarded: {lesson['failed_approach'][:200]}\n"
+            if lesson.get("why_it_failed"):
+                lesson_block += f"- Reason: {lesson['why_it_failed'][:200]}\n"
+            if lesson.get("correction"):
+                lesson_block += f"- Fix: {lesson['correction'][:200]}\n"
+            lesson_block += "\n"
+        user += lesson_block
+    
+    raw_out = await achat([{"role": "system", "content": system}, {"role": "user", "content": user}], max_tokens=2500)
+    
+    # Extract and validate substrate
+    substrate, cleaned = _extract_substrate(raw_out)
+    score_delta, is_pruned = _evaluate_substrate(substrate)
+    
+    # Persist node
+    status = "pruned" if is_pruned else "completed"
+    persist_tot_node(
+        node_id=root_id,
+        session_id=session_id,
+        prompt_context=problem[:500],
+        raw_output=raw_out[:2000],
+        cleaned_output=cleaned[:2000],
+        substrate=substrate,
+        score_delta=score_delta,
+        status=status,
+    )
+    
+    _store_cognitive("tot_reason", problem, cleaned, f"branches={branches},delta={score_delta}")
+    
+    # If pruned, note it in the output
+    if is_pruned:
+        return f"{cleaned}\n\n[System: This branch was pruned due to substrate violations (score_delta={score_delta})]"
+    
+    return cleaned
 
 
 # --------------------------------------------------------------------------

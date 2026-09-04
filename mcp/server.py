@@ -57,11 +57,13 @@ from tools.world_tools import WorldToolsMixin
 from tools.blender_tools import BlenderToolsMixin
 from tools.unity_tools import UnityToolsMixin
 from tools.integration_tools import IntegrationToolsMixin
+from tools.a2a_tools import A2AToolsMixin
+from tools.thought_process import ThoughtProcessMixin
 from health import start_health_server
 
 class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
                      WorldToolsMixin, BlenderToolsMixin, UnityToolsMixin,
-                     IntegrationToolsMixin):
+                     IntegrationToolsMixin, A2AToolsMixin, ThoughtProcessMixin):
     def __init__(self):
         self.tools = {}
         self._start_time = time.time()
@@ -88,6 +90,8 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
         self.register_blender_tools()
         self.register_unity_tools()
         self.register_integration_tools()
+        self.register_a2a_tools()
+        self.register_thought_process_tools()
     async def _handle_list_tools(self, context: ServerRequestContext, params: Optional[mt.PaginatedRequestParams]) -> mt.ListToolsResult:
         """Handle tools/list request."""
         return mt.ListToolsResult(
@@ -352,6 +356,37 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
             return await self._unity_generate_asmdef(arguments)
         elif tool_name == "unity_validate_project":
             return await self._unity_validate_project(arguments)
+        
+        # A2A tools
+        elif tool_name == "a2a_list":
+            return await self._a2a_list(arguments)
+        elif tool_name == "a2a_call":
+            return await self._a2a_call(arguments)
+        elif tool_name == "a2a_discover":
+            return await self._a2a_discover(arguments)
+        elif tool_name == "a2a_history":
+            return await self._a2a_history(arguments)
+        elif tool_name == "a2a_orchestrate":
+            return await self._a2a_orchestrate(arguments)
+        # Thought process tools (ToT only - CoT/PoT are native LLM behaviors)
+        elif tool_name == "tot_reason":
+            return await self._tot_reason(arguments)
+        elif tool_name == "tot_modeling":
+            return await self._tot_modeling(arguments)
+        elif tool_name == "tot_diagnose":
+            return await self._tot_diagnose(arguments)
+        elif tool_name == "reflexion":
+            return await self._reflexion(arguments)
+        elif tool_name == "least_to_most":
+            return await self._least_to_most(arguments)
+        elif tool_name == "react_reason":
+            return await self._react_reason(arguments)
+        elif tool_name == "beam_search":
+            return await self._beam_search(arguments)
+        
+        # ToT state query
+        elif tool_name == "get_cognitive_tree_state":
+            return await self._get_cognitive_tree_state(arguments)
         
         return f"Unknown tool: {tool_name}"
     def _persist_simulated(self, args: Dict, out, sim_type: str):

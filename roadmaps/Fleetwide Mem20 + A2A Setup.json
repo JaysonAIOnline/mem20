@@ -1,0 +1,37 @@
+{
+  "name": "Fleetwide Mem20 + A2A Setup",
+  "description": "Network-wide rollout: every bot gets isolated mem20 namespace, A2A inter-bot communication, and decision persistence. Crash recovery without session hunting.",
+  "phases": [
+    {
+      "name": "Phase 1: Rename releasecoach \u2192 coach (directory + SOUL header)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Phase 2: Enable A2A on all 18 profiles (platform_toolsets or config)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Phase 3: Add mem20 MCP to all profile configs (13 profiles missing it)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Phase 4: Create isolated mem20 namespace for each bot",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Phase 5: Add fleetwide rule: every bot stores decisions to mem20 immediately",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Phase 6: Test \u2014 crash a bot, verify resume from mem20 without session search",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1788371144.7886407"
+}
