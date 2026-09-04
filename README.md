@@ -14,8 +14,8 @@ simulated partition are evidence-based rather than honor-system.
 
 ```
                         ┌──────────────────────────────────────────┐
-   MCP client  ──stdio──▶│  mcp/mcp_server.py  (Mem20MCPServer)     │
-   (Hermes, Claude,      │  JSON-RPC 2.0 · ~97 tools · 13 domains   │
+   MCP client  --stdio──▶│  mcp/mcp_server.py  (Mem20MCPServer)     │
+   (Hermes, Claude,      │  JSON-RPC 2.0 · ~80 tools · 16 domains   │
     any MCP host)        └───────────────┬──────────────────────────┘
                                          │ calls
                  ┌────────────────────────┼─────────────────────────┐
@@ -31,8 +31,10 @@ simulated partition are evidence-based rather than honor-system.
   `Mem20MCPServer` (in `server.py`) aggregates per-domain mixin classes and dispatches in `_execute_tool()`.
    Tool schemas + handlers live in per-domain modules: `memory_tools.py`, `cognitive_tools.py`, `roadmap_tools.py`,
    `tools/world_tools.py` (world-model/affective/procedural), `tools/blender_tools.py` (OPTIONAL Blender),
-   `tools/unity_tools.py` (OPTIONAL Unity), and `tools/integration_tools.py` (filesystem + blank template for new
-   optional integrations). `mcp_server.py` is a thin entry-point shim preserving the systemd unit path.
+   `tools/unity_tools.py` (OPTIONAL Unity), `tools/integration_tools.py` (filesystem + blank template for new
+   optional integrations), `tools/a2a_tools.py` (Agent-to-Agent communication), `tools/thought_process.py`
+   (reasoning paradigms + cognitive substrate). `mcp_server.py` is a thin entry-point shim preserving the
+   systemd unit path.
 
    **Optional integrations (2.1):** Blender and Unity ship as *separate, pluggable modules*. They require the
    respective external application installed (`blender` on PATH, or `MEM20_BLENDER_EXECUTABLE` / `MEM20_UNITY_EXECUTABLE`);
@@ -46,7 +48,7 @@ simulated partition are evidence-based rather than honor-system.
 - **Roadmap registry (`roadmaps/`):** JSON files describing multi-phase project plans.
 - **Deployment (`systemd/`):** a user service unit runs the MCP server under a virtualenv.
 
-### Tool domains (13)
+### Tool domains (16)
 
 | Prefix                | Domain                          |
 |-----------------------|--------------------------------|
@@ -63,6 +65,37 @@ simulated partition are evidence-based rather than honor-system.
 | `fs_*`                | sandboxed filesystem access     |
 | `blender_*`           | Blender automation — **OPTIONAL** (needs Blender app; `tools/blender_tools.py`) |
 | `unity_*`             | Unity automation — **OPTIONAL** (needs Unity app; `tools/unity_tools.py`) |
+| `a2a_*`               | Agent-to-Agent communication    |
+| `tot_*`               | Tree-of-Thoughts reasoning      |
+| `cognitive_substrate` | 28-paradigm reasoning framework |
+
+#### A2A tools (`mcp/tools/a2a_tools.py`)
+
+Agent-to-Agent communication — lets bots discover peers, send tasks, and orchestrate fan-out.
+
+| Tool | Description |
+|------|-------------|
+| `a2a_list` | List all configured A2A peer agents and their status |
+| `a2a_call` | Send a natural-language task to a remote A2A agent |
+| `a2a_discover` | Fetch and summarize a peer agent's Agent Card (capabilities, status) |
+| `a2a_history` | Recall a persisted A2A conversation transcript by context ID |
+| `a2a_orchestrate` | Fan-out a task to multiple peer agents by capability |
+
+#### Thought process tools (`mcp/tools/thought_process.py`)
+
+Reasoning paradigms — structured approaches to complex problems.
+
+| Tool | Description |
+|------|-------------|
+| `tot_reason` | Tree-of-Thoughts: explore multiple reasoning paths, evaluate, select best |
+| `tot_modeling` | Specialized ToT for 3D modeling decisions |
+| `tot_diagnose` | Specialized ToT for diagnosing issues (root-cause exploration) |
+| `reflexion` | Reflect on failures, extract lessons, store to memory |
+| `least_to_most` | Decompose complex problems from simplest to hardest |
+| `react_reason` | Interleave reasoning with tool calls (Think → Act → Observe) |
+| `beam_search` | Maintain top-K reasoning paths at each step |
+| `cognitive_substrate` | Invoke a specific paradigm from the 28-paradigm framework |
+| `get_cognitive_tree_state` | Retrieve persistent ToT telemetry for a session |
 
 ---
 
@@ -107,6 +140,59 @@ store/
   records/<id>.md           # deep-store markdown (header carries epistemic_status)
   simulated/                # simulated partition (never indexed)
 ```
+
+---
+
+## Cognitive Substrate (28 Paradigms)
+
+The cognitive substrate is a 28-paradigm reasoning framework organized in 5 categories.
+Each paradigm is a structured lens for evaluating decisions, code, or plans.
+
+### Primary Cognitive Foundations
+1. **Premise Validation** — List 3 unstated assumptions, evaluate veracity
+2. **State Estimation** — Identify active goal, constraints, system state
+3. **Adversarial Falsification** — Propose thesis, attack it, harden synthesis
+4. **Depth-First Branching** — Generate pathways, score confidence, select best
+5. **Epistemic Humility Map** — Separate facts, inferences, and speculation
+6. **Opportunity Cost Calculation** — Heavy footprint vs. minimalist 80/20 path
+7. **Inversion Principle** — Simulate catastrophic failure, add mitigations
+8. **Semantic Compression** — Feynman analogy test, verify structural purity
+
+### Metacognition & Processing
+9. **Explanatory Depth Map** — Surface intent vs. underlying primitives
+10. **Cognitive Dissonance Audit** — Find conflicting constraints, resolve
+11. **Dialectical Inquiry** — Socratic self-critique, rebuttal, adaptation
+12. **Premature Convergence Brake** — Discard first instinct, explore orthogonal paths
+13. **Semantic Drift Sentinel** — Verify root goal alignment, track drift %
+
+### Defensive Engineering
+14. **Idempotency Audit** — Blast radius, safe-to-re-run proof
+15. **Graceful Degradation** — Failure triggers, low-power fallback
+16. **Boundary Stress Testing** — Null/zero/max input behavior
+17. **Zero Trust Security** — Assumed exploit, mitigation shield
+18. **State Invariant Enforcement** — Immutable rule, validation step
+
+### Resource Management
+19. **Complexity Cost Analysis** — Big O, scalability bottleneck
+20. **Lazy Evaluation** — Deferred computations
+21. **Dependency Minimization** — External requirements, vanilla fallback
+22. **Bottleneck Prediction** — Highest latency line, optimization
+23. **Context Window Budgeting** — Token weight, compression strategy
+
+### Human Utility
+24. **Cognitive Load Minimization** — 10-second review summary
+25. **Progressive Disclosure** — Executive summary + hidden details
+26. **Idiomatic Purity** — Style guide, anti-patterns evaded
+27. **Premise Correction Loop** — User instruction flaws, proposed correction
+28. **Intent Alignment Verification** — Final checklist of resolved goals
+
+### Cross-Session Tree-of-Thought Learning
+
+The ToT state is persisted to `tot_state.db` (SQLite) so reasoning survives crashes:
+- **Persistent paths** — active reasoning branches stored across sessions
+- **Pruned branch memory** — dead ends recorded to avoid re-exploration
+- **Historical lessons** — `get_cognitive_tree_state` retrieves telemetry for evolutionary learning
+- **5-key telemetry schema** — foundations / metacognition / defensive / resource / utility
 
 ---
 
@@ -178,8 +264,8 @@ Point an MCP host at the server (stdio).
 
 ## Installation
 
-mem20 is distributed through four channels. All of them run the **same** server
-(`mcp/mcp_server.py`): an MCP stdio JSON-RPC server plus an HTTP health endpoint
+mem20 is distributed through four channels. All of them run the **same**
+server (`mcp/mcp_server.py`): an MCP stdio JSON-RPC server plus an HTTP health endpoint
 on `:8080` (`/health`, `/ready`, `/metrics`). Pick whichever fits your environment.
 
 ### 1. pip (Python)
@@ -260,7 +346,6 @@ Optional / integration-only (external applications — degrade gracefully when a
 
 - **Blender** — install Blender; ensure `blender` is on PATH or set `MEM20_BLENDER_EXECUTABLE`. (`blender_*` tools.)
 - **Unity** — install the Unity Editor; set `MEM20_UNITY_EXECUTABLE`. (`unity_build_project`, `unity_run_test`.)
-  `unity_create_script` / `unity_generate_asmdef` / `unity_validate_project` work without the executable.
 
 Install core:
 
@@ -279,11 +364,11 @@ Environment variables:
 
 | Variable                | Default                              | Purpose                                   |
 |-------------------------|--------------------------------------|-------------------------------------------|
-| `MEM20_STORE_PATH`      | `~/.mem20/store`       | Memory engine module + store location     |
+| `MEM20_STORE_PATH`      | `~/.mem20/store`                     | Memory engine module + store location     |
 | `MEM20_COG_PATH`        | (mem20 `cog/` dir)                   | Cognitive engine location                 |
 | `MEM20_LLM_BASE_URL`    | `https://integrate.api.nvidia.com/v1`| LLM chat-completions base URL             |
 | `MEM20_LLM_MODEL`       | (project default)                    | Model name                                |
-| `NVAPI_KEY` / `NVIDIA_API_KEY` / `MEM20_LLM_API_KEY` | —                  | LLM bearer token (required)               |
+| `NVAPI_KEY` / `NVIDIA_API_KEY` / `MEM20_LLM_API_KEY` | —      | LLM bearer token (required)               |
 | `MEM20_ENV_FILE`        | —                                    | Optional `.env` to load API keys from     |
 
 ---
@@ -301,6 +386,9 @@ Environment variables:
   `UnityToolsMixin._resolve_optional_executable`), add the mixin to `Mem20MCPServer`'s bases in `server.py`,
   and call `self.register_<name>_tools()` in `_setup_tools()`. The blank scaffold is
   `IntegrationToolsMixin.register_integration_template()`.
+- **Adding a reasoning paradigm:** add the tool to `tools/thought_process.py`, create the handler,
+  and register the Pydantic model in `resources/cognitive_substrate.py` + the JSON schema in
+  `resources/cognitive_substrate_schema.json`.
 - **Verify governance** after changes: call `memory_audit_contamination()` and confirm
   `contamination_rate == 0.0`; ensure no simulated record reaches the vector/BM25 indexes.
 - **Roadmaps** are plain JSON in `roadmaps/`; edit via the `roadmap_*` tools or directly.
