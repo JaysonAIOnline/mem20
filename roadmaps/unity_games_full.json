@@ -1,0 +1,69 @@
+{
+  "name": "unity_games_full",
+  "description": "Complete Unity game development roadmap with individual game submaps. Each game (VRTestProject, VRTestProject2, TheUnreliableProphecy) gets its own submap. Blender pipeline tracked as a submap.",
+  "submaps": [
+    {
+      "name": "vrtestproject",
+      "description": "VR experimentation project — first Unity VR project for testing VR mechanics and interactions.",
+      "location": "/home/jayson/VRTestProject",
+      "phases": [
+        {"name": "Phase 1: VR setup and basic mechanics", "status": "completed", "notes": "Initial VR project setup completed."},
+        {"name": "Phase 2: Interaction testing and iteration", "status": "in_progress", "notes": "Testing VR interactions and mechanics."}
+      ]
+    },
+    {
+      "name": "vrtestproject2",
+      "description": "Second VR test project — expanded VR experimentation with refined mechanics.",
+      "location": "/home/jayson/VRTestProject2",
+      "phases": [
+        {"name": "Phase 1: Project setup and VR configuration", "status": "completed", "notes": "Project initialized with VR settings."},
+        {"name": "Phase 2: Advanced VR interactions", "status": "in_progress", "notes": "Building on VRTestProject learnings."}
+      ]
+    },
+    {
+      "name": "theunreliableprophecy",
+      "description": "Narrative-driven game (The Unreliable Prophecy). Story-rich experience with branching narrative. Builds available for Windows and Linux.",
+      "location": "/home/jayson/Desktop/jayson-openwebui/projects/unreliable_prophecy/engine_project",
+      "builds": {
+        "windows": "/home/jayson/Desktop/jayson-openwebui/projects/unreliable_prophecy/engine_project/Builds/Windows/v0.5.0_VerticalSlice/TheUnreliableProphecy.exe",
+        "linux": "/home/jayson/Desktop/jayson-openwebui/projects/unreliable_prophecy/engine_project/Builds/Linux/v0.5.0_VerticalSlice/TheUnreliableProphecy"
+      },
+      "phases": [
+        {"name": "Phase 1: Concept and narrative design", "status": "completed", "notes": "Story and narrative structure designed."},
+        {"name": "Phase 2: Core game mechanics", "status": "completed", "notes": "Basic gameplay implemented."},
+        {"name": "Phase 3: Vertical slice (v0.5.0)", "status": "completed", "notes": "v0.5.0 vertical slice built for Windows and Linux."},
+        {"name": "Phase 4: Full game development", "status": "in_progress", "notes": "Expanding vertical slice to full game."},
+        {"name": "Phase 5: Polish and optimization", "status": "planned", "notes": "Performance optimization and polish pass."},
+        {"name": "Phase 6: DLC and expansions", "status": "planned", "notes": "Post-launch content and new chapters."}
+      ]
+    },
+    {
+      "name": "blender_pipeline",
+      "description": "Blender 3D asset pipeline for Unity game development. Model creation, texturing, export workflow.",
+      "location": "/home/jayson/glb/",
+      "phases": [
+        {"name": "Phase 1: Blender model creation", "status": "completed", "notes": "GLB models created (altima-2000 and others)."},
+        {"name": "Phase 2: Export workflow (Blender→GLB→Unity)", "status": "completed", "notes": "GLB export pipeline established."},
+        {"name": "Phase 3: Unity import and material setup", "status": "in_progress", "notes": "GLB importing into Unity with proper materials."},
+        {"name": "Phase 4: Pipeline automation", "status": "planned", "notes": "Automated export/import workflow."}
+      ]
+    }
+  ],
+  "phases": [
+    {"name": "Phase 1: Unity MCP tools integration", "status": "completed", "notes": "Unity MCP tools (create_script, build, test, validate) integrated into mem20."},
+    {"name": "Phase 2: VRTestProject — VR experimentation", "status": "completed", "notes": "First VR project completed at /home/jayson/VRTestProject."},
+    {"name": "Phase 3: VRTestProject2 — expanded VR", "status": "in_progress", "notes": "Second VR project at /home/jayson/VRTestProject2."},
+    {"name": "Phase 4: TheUnreliableProphecy — narrative game", "status": "in_progress", "notes": "v0.5.0 vertical slice built. Full game in development."},
+    {"name": "Phase 5: Blender pipeline for game assets", "status": "in_progress", "notes": "GLB models and export workflow established."},
+    {"name": "Phase 6: TheUnreliableProphecy expansion", "status": "planned", "notes": "DLC and new chapters post-launch."},
+    {"name": "Phase 7: Mobile game project", "status": "planned", "notes": "Future mobile game concept TBD."},
+    {"name": "Phase 8: Multiplayer/networked game", "status": "planned", "notes": "Future networked game concept TBD."},
+    {"name": "Phase 9: Blender-to-Unity pipeline automation", "status": "planned", "notes": "Full automation of asset pipeline."}
+  ],
+  "retroactive_audit": {
+    "completion_date": "2026-09-06",
+    "completion_status": "phase_1_2_completed",
+    "notes": "Phase 1 (MCP tools) completed. Phase 2 (VRTestProject) completed. Phases 3-5 in progress. Each game has its own submap for granular tracking. Documentation at /opt/unity/docs/."
+  },
+  "created": "1788740400.0"
+}

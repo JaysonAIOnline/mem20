@@ -1,0 +1,52 @@
+{
+  "name": "kanban_integration",
+  "description": "Kanban board integration for mem20: task tracking, workflow visualization, automated status updates from roadmap phases, and cross-project progress monitoring.",
+  "phases": [
+    {
+      "name": {
+        "name": "Phase 1: Audit existing kanban-mcp code at /home/jayson/mem20/kanban-mcp/",
+        "status": "completed"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 2: Integrate kanban with mem20 roadmap system (auto-sync phases to cards)",
+        "status": "in_progress"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 3: Add CLI and web dashboard views",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 4: Cross-project progress monitoring and reporting",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 5: Automated task creation from roadmap phase changes",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1788371144.7886407",
+  "retroactive_audit": {
+    "completion_date": "2026-09-06",
+    "completion_status": "phase_1_completed",
+    "notes": "Phase 1 (audit kanban-mcp code) completed. Phase 2 (integrate with mem20 roadmaps) in progress. Phases 3-5 planned."
+  }
+}

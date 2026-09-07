@@ -1,0 +1,561 @@
+#!/usr/bin/env python3
+"""
+Extended memory features for mem20.
+Simulated memory, namespaces, pinned blocks, epistemic status, knowledge gaps, auto-consolidation.
+Uses SQLite for structured storage.
+"""
+
+import json
+import os
+import shutil
+import sqlite3
+import time
+import glob
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+
+DB_PATH = Path(__file__).parent / "memory.db"
+LEDGER = Path(__file__).parent / "ledger.jsonl"
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS simulated_entries (
+            id TEXT PRIMARY KEY,
+            topic TEXT NOT NULL,
+            content TEXT NOT NULL,
+            tags TEXT DEFAULT '[]',
+            scenario TEXT DEFAULT '',
+            sim_type TEXT DEFAULT 'imagination',
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            is_qu INTEGER DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS namespaces (
+            name TEXT PRIMARY KEY,
+            created_by TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            permissions TEXT DEFAULT '{}'
+        );
+        CREATE TABLE IF NOT EXISTS shared_entries (
+            id TEXT PRIMARY KEY,
+            namespace TEXT NOT NULL,
+            topic TEXT NOT NULL,
+            content TEXT NOT NULL,
+            tags TEXT DEFAULT '[]',
+            created_by TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(namespace) REFERENCES namespaces(name)
+        );
+        CREATE TABLE IF NOT EXISTS pinned_blocks (
+            block_id TEXT PRIMARY KEY,
+            content TEXT NOT NULL,
+            reason TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS epistemic_status (
+            fact_id TEXT PRIMARY KEY,
+            status TEXT NOT NULL,
+            confidence REAL DEFAULT 0.5,
+            updated_at TEXT NOT NULL
+        );
+    """)
+    return conn
+
+def _now():
+    return datetime.now(timezone.utc).isoformat()
+
+# ---------- Simulated Memory ----------
+
+def remember_simulated(topic, content, tags=None, scenario="", sim_type="imagination", ttl_days=30):
+    """Store a simulated/hypothetical fact with expiration."""
+    conn = get_db()
+    entry_id = f"{int(time.time()*1000):x}{os.urandom(2).hex()}"
+    now = datetime.now(timezone.utc)
+    expires = now + timedelta(days=ttl_days)
+    conn.execute(
+        "INSERT INTO simulated_entries (id, topic, content, tags, scenario, sim_type, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (entry_id, topic, content, json.dumps(tags or []), scenario, sim_type, now.isoformat(), expires.isoformat())
+    )
+    conn.commit()
+    conn.close()
+    return {"id": entry_id, "topic": topic, "expires": expires.isoformat()}
+
+def list_simulated(active_only=True):
+    """List simulation entries. If active_only, exclude expired."""
+    conn = get_db()
+    if active_only:
+        rows = conn.execute("SELECT * FROM simulated_entries WHERE expires_at > ? AND is_qu = 0", (_now(),)).fetchall()
+    else:
+        rows = conn.execute("SELECT * FROM simulated_entries").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def quarantine_simulated():
+    """Remove all expired simulation entries. Returns count."""
+    conn = get_db()
+    now = _now()
+    cursor = conn.execute("DELETE FROM simulated_entries WHERE expires_at < ? AND is_qu = 0", (now,))
+    count = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return {"quarantined": count}
+
+def audit_contamination():
+    """Check for simulation entries that may have leaked into grounded memory."""
+    conn = get_db()
+    sim_topics = [r["topic"] for r in conn.execute("SELECT DISTINCT topic FROM simulated_entries").fetchall()]
+    conn.close()
+    
+    # Check ledger for entries matching sim topics
+    contaminated = []
+    if LEDGER.exists():
+        for line in open(LEDGER):
+            try:
+                rec = json.loads(line)
+                if rec.get("topic") in sim_topics and "simulation" not in rec.get("tags", []):
+                    contaminated.append(rec)
+            except:
+                pass
+    return {"contaminated_count": len(contaminated), "contaminated": contaminated[:20]}
+
+# ---------- Namespaces ----------
+
+def namespace_create(name, created_by, permissions=None):
+    """Create a shared namespace."""
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO namespaces (name, created_by, created_at, permissions) VALUES (?, ?, ?, ?)",
+            (name, created_by, _now(), json.dumps(permissions or {}))
+        )
+        conn.commit()
+        conn.close()
+        return {"namespace": name, "created_by": created_by}
+    except sqlite3.IntegrityError:
+        conn.close()
+        return {"namespace": name, "error": "already exists"}
+
+def namespace_list():
+    """List all namespaces."""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM namespaces").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def shared_store(namespace, content, tags, created_by, topic="general"):
+    """Store a fact in a shared namespace."""
+    conn = get_db()
+    entry_id = f"{int(time.time()*1000):x}{os.urandom(2).hex()}"
+    conn.execute(
+        "INSERT INTO shared_entries (id, namespace, topic, content, tags, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (entry_id, namespace, topic, content, tags, created_by, _now())
+    )
+    conn.commit()
+    conn.close()
+    return {"id": entry_id, "namespace": namespace}
+
+def shared_recall(namespace, query, created_by, k=5):
+    """Recall facts from a shared namespace."""
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM shared_entries WHERE namespace = ? AND content LIKE ? ORDER BY created_at DESC LIMIT ?",
+        (namespace, f"%{query}%", k)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+# ---------- Pinned Blocks ----------
+
+def pin_block(block_id, content, reason=""):
+    """Pin an important fact."""
+    conn = get_db()
+    now = _now()
+    conn.execute(
+        "INSERT OR REPLACE INTO pinned_blocks (block_id, content, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+        (block_id, content, reason, now, now)
+    )
+    conn.commit()
+    conn.close()
+    return {"block_id": block_id}
+
+def list_pinned_blocks():
+    """List all pinned blocks."""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM pinned_blocks").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_pinned_block(block_id):
+    """Get a specific pinned block."""
+    conn = get_db()
+    row = conn.execute("SELECT * FROM pinned_blocks WHERE block_id = ?", (block_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def unpin_block(block_id):
+    """Remove a pinned block."""
+    conn = get_db()
+    conn.execute("DELETE FROM pinned_blocks WHERE block_id = ?", (block_id,))
+    conn.commit()
+    conn.close()
+    return {"block_id": block_id, "unpinned": True}
+
+# ---------- Epistemic Status ----------
+
+def set_epistemic_status(fact_id, status):
+    """Set epistemic status: verified, agent_generated, disputed, etc."""
+    conn = get_db()
+    conn.execute(
+        "INSERT OR REPLACE INTO epistemic_status (fact_id, status, updated_at) VALUES (?, ?, ?)",
+        (fact_id, status, _now())
+    )
+    conn.commit()
+    conn.close()
+    return {"fact_id": fact_id, "status": status}
+
+def assess_confidence(fact_id, confidence):
+    """Set confidence score (0-1) for a fact."""
+    conn = get_db()
+    conn.execute(
+        "INSERT OR REPLACE INTO epistemic_status (fact_id, confidence, status, updated_at) VALUES (?, ?, ?, ?)",
+        (fact_id, confidence, "assessed", _now())
+    )
+    conn.commit()
+    conn.close()
+    return {"fact_id": fact_id, "confidence": confidence}
+
+# ---------- Knowledge Gaps ----------
+
+def detect_gaps(topic, threshold=0.5):
+    """Detect knowledge gaps in a topic area."""
+    conn = get_db()
+    # Count total entries and recent entries for topic
+    ledger = _load_ledger()
+    topic_entries = [r for r in ledger if topic.lower() in r.get("topic", "").lower()]
+    total = len(topic_entries)
+    
+    # Simple heuristic: low count = gap
+    if total < 3:
+        gap_score = 1.0
+    elif total < 10:
+        gap_score = 0.5
+    else:
+        gap_score = 0.1
+    
+    has_gap = gap_score > threshold
+    
+    conn.close()
+    return {"topic": topic, "gap_score": gap_score, "has_gap": has_gap, "entry_count": total}
+
+def self_audit(topic=None):
+    """Audit overall memory health."""
+    conn = get_db()
+    ledger = _load_ledger()
+    
+    if topic:
+        entries = [r for r in ledger if topic.lower() in r.get("topic", "").lower()]
+    else:
+        entries = ledger
+    
+    # Check epistemic status coverage
+    status_rows = conn.execute("SELECT status, COUNT(*) FROM epistemic_status GROUP BY status").fetchall()
+    status_breakdown = {r["status"]: r[1] for r in status_rows}
+    
+    total = len(entries)
+    with_confidence = len(status_rows)
+    
+    return {
+        "total_entries": total,
+        "with_epistemic_status": with_confidence,
+        "coverage_pct": round(with_confidence / max(total, 1) * 100, 1),
+        "status_breakdown": status_breakdown,
+        "topics_covered": len(set(r.get("topic") for r in entries))
+    }
+
+# ---------- Auto Consolidation ----------
+
+def auto_consolidate(topic, min_cluster_size=2, similarity_threshold=0.7, generate_summaries=True):
+    """Consolidate similar entries for a topic."""
+    ledger = _load_ledger()
+    entries = [r for r in ledger if r.get("action") == "remember" and topic.lower() in r.get("topic", "").lower()]
+    
+    if len(entries) < min_cluster_size:
+        return {"consolidated": 0, "reason": "insufficient entries"}
+    
+    # Simple consolidation: group by tag overlap
+    groups = {}
+    for e in entries:
+        key = tuple(sorted(e.get("tags", [])))
+        groups.setdefault(key, []).append(e)
+    
+    consolidated = 0
+    for tag_key, group in groups.items():
+        if len(group) >= min_cluster_size:
+            consolidated += len(group)
+    
+    return {
+        "consolidated": consolidated,
+        "topic": topic,
+        "groups_found": len(groups),
+        "entries_processed": len(entries)
+    }
+
+# ---------- Original store functions (for compatibility) ----------
+
+def _load_ledger():
+    if not LEDGER.exists():
+        return []
+    out = []
+    for line in open(LEDGER):
+        line = line.strip()
+        if line:
+            try:
+                out.append(json.loads(line))
+            except:
+                pass
+    return out
+
+def remember(topic, content, tags=None, priority="normal", actor="agent"):
+    """Append a fact to the ledger and write/append its deep-store entry."""
+    os.makedirs(ENTRIES, exist_ok=True)
+    rec = {
+        "id": f"{int(time.time()*1000):x}{os.urandom(2).hex()}",
+        "ts": _now(),
+        "actor": actor,
+        "action": "remember",
+        "topic": topic,
+        "tags": tags or [],
+        "priority": priority,
+        "content": content,
+    }
+    _append_ledger(rec)
+
+    path = ENTRIES / f"{_slug(topic)}.md"
+    header = f"\n\n## {_now()}  (pri={priority}, tags={tags or []})\n"
+    mode = "a" if path.exists() else "w"
+    with open(path, mode, encoding="utf-8") as f:
+        if mode == "w":
+            f.write(f"# {topic}\n")
+        f.write(header + content.strip() + "\n")
+
+    rebuild_index()
+    return rec
+
+def recall(topic=None, tags=None, k=5):
+    recs = _load_ledger()
+    recs = [r for r in recs if r.get("action") == "remember"
+            and SUPERSEDED not in r.get("content", "")]
+    if topic:
+        recs = [r for r in recs if topic.lower() in r.get("topic", "").lower()]
+    if tags:
+        recs = [r for r in recs
+                if any(t in (r.get("tags") or []) for t in tags)]
+    recs = list(reversed(recs))
+    return recs[:k]
+
+def rebuild_index():
+    recs = _load_ledger()
+    topics = {}
+    for r in recs:
+        if r.get("action") != "remember":
+            continue
+        t = r.get("topic", "unknown")
+        if t not in topics:
+            topics[t] = {"count": 0, "last": r.get("ts", ""),
+                         "tags": set(r.get("tags") or []),
+                         "pri": r.get("priority", "normal")}
+        topics[t]["count"] += 1
+        topics[t]["last"] = r.get("ts", topics[t]["last"])
+        topics[t]["tags"].update(r.get("tags") or [])
+        if r.get("priority") == "high":
+            topics[t]["pri"] = "high"
+    lines = ["# Memory Store Index", "",
+             f"_auto-generated {_now()} — {len(topics)} topics, {len(recs)} events_",
+             "", "## Topics", ""]
+    for t in sorted(topics):
+        meta = topics[t]
+        lines.append(f"- **{t}** — {meta['count']} entries, last {meta['last'][:10]}, "
+                     f"pri={meta['pri']}, tags={sorted(meta['tags'])}")
+    lines.append("")
+    lines.append("## How to use")
+    lines.append("- `python3 memory.py recall --topic <name>` to read full detail")
+    lines.append("- `python3 memory.py remember --topic <name> --content \"...\"` to add")
+    lines.append("- Deep detail per topic lives in `entries/<topic>.md`")
+    text = "\n".join(lines)
+    with open(INDEX, "w", encoding="utf-8") as f:
+        f.write(text + "\n")
+    return text
+
+def backup():
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    dest = BACKUP_DIR / f"mem_{stamp}"
+    shutil.copytree(str(HERE), str(dest), ignore=shutil.ignore_patterns("backups"))
+    cutoff = time.time() - 7 * 86400
+    for d in glob.glob(str(BACKUP_DIR / "mem_*")):
+        if os.path.getmtime(d) < cutoff:
+            shutil.rmtree(d, ignore_errors=True)
+    mirrored = False
+    MIRROR = next((m for m in MIRROR_CANDIDATES if m.is_dir()), None)
+    if MIRROR:
+        try:
+            os.makedirs(str(MIRROR), exist_ok=True)
+            for fn in ("MEMORY.md", "USER.md"):
+                src = MEM_DIR / fn
+                if src.exists():
+                    shutil.copy2(str(src), str(MIRROR / fn))
+            idx = HERE / "INDEX.md"
+            if idx.exists():
+                shutil.copy2(str(idx), str(MIRROR / "INDEX.md"))
+            mirrored = True
+        except Exception:
+            mirrored = False
+    return f"backed up to {dest} (mirror={'yes' if mirrored else 'n/a'})"
+
+def status():
+    recs = _load_ledger()
+    mem = open(str(MEM_DIR / "MEMORY.md"), encoding="utf-8").read() \
+        if (MEM_DIR / "MEMORY.md").exists() else ""
+    user = open(str(MEM_DIR / "USER.md"), encoding="utf-8").read() \
+        if (MEM_DIR / "USER.md").exists() else ""
+    out = []
+    out.append(f"ledger events : {len(recs)}")
+    out.append(f"deep entries  : {len(list(ENTRIES.glob('*.md')))}")
+    out.append(f"MEMORY.md     : {len(mem)}/{MEM_CAP} chars "
+               f"{'OK' if len(mem) <= MEM_CAP else 'OVER CAP!'}")
+    out.append(f"USER.md       : {len(user)}/{USER_CAP} chars "
+               f"{'OK' if len(user) <= USER_CAP else 'OVER CAP!'}")
+    out.append(f"last event    : {recs[-1]['ts'] if recs else 'none'}")
+    return "\n".join(out)
+
+def ledger_view(k=20, since=None):
+    recs = _load_ledger()
+    if since:
+        recs = [r for r in recs if r.get("ts", "") >= since]
+    recs = list(reversed(recs))[:k]
+    out = []
+    for r in recs:
+        out.append(f"[{r.get('ts','?')[:19]}] {r.get('action')} "
+                   f"topic={r.get('topic','-')} pri={r.get('priority','-')}")
+        c = r.get("content", "")
+        out.append("    " + (c[:200] + ("…" if len(c) > 200 else "")))
+    return "\n".join(out) if out else "(empty)"
+
+def memory_probe(entity):
+    """Probe for all facts about an entity."""
+    recs = _load_ledger()
+    results = [r for r in recs if entity.lower() in r.get("topic", "").lower()
+               or entity.lower() in r.get("content", "").lower()]
+    return list(reversed(results))[:10]
+
+def memory_contradict():
+    """Find potential contradictions in memory."""
+    recs = _load_ledger()
+    by_topic = {}
+    for r in recs:
+        t = r.get("topic", "")
+        by_topic.setdefault(t, []).append(r)
+    contradictions = []
+    for topic, entries in by_topic.items():
+        if len(entries) > 1:
+            contents = set(e.get("content", "")[:100] for e in entries)
+            if len(contents) > 1:
+                contradictions.append({"topic": topic, "entries": len(entries)})
+    return contradictions
+
+def memory_related(topic, k=5):
+    """Find related entries by tag overlap."""
+    recs = _load_ledger()
+    topic_recs = [r for r in recs if topic.lower() in r.get("topic", "").lower()]
+    if not topic_recs:
+        return []
+    tags = set()
+    for r in topic_recs:
+        tags.update(r.get("tags", []))
+    related = []
+    for r in recs:
+        if r not in topic_recs:
+            if any(t in (r.get("tags") or []) for t in tags):
+                related.append(r)
+    return list(reversed(related))[:k]
+
+# Constants
+MEM_CAP = 2200
+USER_CAP = 1375
+SUPERSEDED = "[SUPERSEEDED]"
+MIRROR_CANDIDATES = [
+    Path.home() / "TheStack/mirror/opt/thestack/memory",
+    Path("/home/jayson/TheStack/mirror/opt/thestack/memory"),
+    Path("/root/TheStack/mirror/opt/thestack/memory"),
+]
+
+# Path setup
+HERE = Path(__file__).parent
+MEM_DIR = HERE.parent
+LEDGER = HERE / "ledger.jsonl"
+ENTRIES = HERE / "entries"
+INDEX = HERE / "INDEX.md"
+BACKUP_DIR = HERE / "backups"
+
+def _slug(topic):
+    return topic.replace(" ", "_").replace("/", "_").replace(":", "_").lower()
+
+def _append_ledger(rec):
+    os.makedirs(HERE, exist_ok=True)
+    with open(LEDGER, "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    try:
+        with open(LEDGER, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        if len(lines) > 2000:
+            os.makedirs(BACKUP_DIR, exist_ok=True)
+            arch = BACKUP_DIR / f"ledger_{int(time.time())}.jsonl"
+            shutil.move(str(LEDGER), str(arch))
+            open(LEDGER, "w").close()
+    except Exception:
+        pass
+
+if __name__ == "__main__":
+    import argparse
+    p = argparse.ArgumentParser(description="Hermes tiered memory system")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    pr = sub.add_parser("remember")
+    pr.add_argument("--topic", required=True)
+    pr.add_argument("--content", required=True)
+    pr.add_argument("--tags", default="")
+    pr.add_argument("--priority", default="normal")
+    pc = sub.add_parser("recall")
+    pc.add_argument("--topic")
+    pc.add_argument("--tags", default="")
+    pc.add_argument("--k", type=int, default=5)
+    pl = sub.add_parser("ledger")
+    pl.add_argument("--k", type=int, default=20)
+    pl.add_argument("--since")
+    sub.add_parser("rebuild")
+    sub.add_parser("backup")
+    sub.add_parser("status")
+    sub.add_parser("prune")
+    args = p.parse_args()
+    tags = [t.strip() for t in getattr(args, "tags", "").split(",") if t.strip()] if getattr(args, "tags", "") else []
+    if args.cmd == "remember":
+        r = remember(args.topic, args.content, tags, args.priority)
+        print(f"remembered -> {r['id']} ({args.topic})")
+    elif args.cmd == "recall":
+        for r in recall(args.topic, tags, args.k):
+            print(f"[{r['ts'][:19]}] {r['topic']} (pri={r['priority']})")
+            print("   " + r["content"][:400])
+            print()
+    elif args.cmd == "ledger":
+        print(ledger_view(args.k, args.since))
+    elif args.cmd == "rebuild":
+        print("index rebuilt:\n" + rebuild_index())
+    elif args.cmd == "backup":
+        print(backup())
+    elif args.cmd == "status":
+        print(status())
+    elif args.cmd == "prune":
+        print("prune: manual consolidation — see memory skill.")

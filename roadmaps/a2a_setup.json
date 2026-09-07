@@ -1,0 +1,60 @@
+{
+  "name": "a2a_setup",
+  "description": "A2A inter-bot communication setup: listeners, agent discovery, peer routing, message persistence, and ongoing reliability. This is an ongoing operational concern \u2014 not a one-time project.",
+  "phases": [
+    {
+      "name": {
+        "name": "Phase 1: Audit current A2A listener status across all profiles",
+        "status": "in_progress"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 2: Standardize A2A port configuration (fix port conflicts)",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 3: Implement agent auto-discovery and health checking",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 4: Add message persistence and replay",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 5: Create A2A reliability monitoring and alerting",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 6: Document A2A troubleshooting runbook",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1788371144.7886407",
+  "retroactive_audit": {
+    "completion_date": "2026-09-06",
+    "completion_status": "in_progress",
+    "notes": "Phase 1 (audit) in progress. Phases 2-6 planned. This is an ongoing operational concern, not a one-time project."
+  }
+}

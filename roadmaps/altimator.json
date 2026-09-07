@@ -1,0 +1,84 @@
+{
+  "name": "altimator",
+  "description": "Altimator Service Bay v2: interactive 2000 Nissan Altima service bay web app. React + TanStack Router + three.js. Load real GLB parts per-part, interactive removable/explosable components. FUTURE: Phase 7: Multi-car support (add more vehicles). Phase 8: Collaborative service mode (multi-user). Phase 9: AR/VR support for service visualization.",
+  "phases": [
+    {
+      "name": {
+        "name": "Phase 1: App scaffold and routing (React + TanStack Router)",
+        "status": "completed"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 2: GLB part loading and 3D scene setup",
+        "status": "completed"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 3: Fix assets.ts BASE path (/assets/altima-2000 \u2192 /models/altima-2000)",
+        "status": "completed"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 4: Per-part interactive removal and explosion",
+        "status": "in_progress"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 5: UI overlay and service manual integration",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 6: Performance optimization and mobile support",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 7: Multi-car support (add more vehicles)",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 8: Collaborative service mode (multi-user)",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 9: AR/VR support for service visualization",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1788371144.7886407",
+  "retroactive_audit": {
+    "completion_date": "2026-09-06",
+    "completion_status": "phase_1_2_3_completed",
+    "notes": "Phases 1-3 completed (app scaffold, GLB loading, asset path fix). Phase 4 (interactive removal/explosion) in progress. Documentation at /opt/altimator/docs/ (3 files, 64KB total)."
+  }
+}

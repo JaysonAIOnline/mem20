@@ -1,0 +1,52 @@
+{
+  "name": "oreo_language",
+  "description": "Build OREO visual-first NL-first programming language",
+  "phases": [
+    {
+      "name": "research",
+      "status": "completed",
+      "notes": "Research completed. Sources: Neo4j graph databases, Graph-Native Programming, Machine-Level Computing, ECC, Information Theory. Research materials stored in /home/jayson/OREO/IDE/docs/."
+    },
+    {
+      "name": "spec",
+      "status": "completed",
+      "notes": "Spec at /home/jayson/OREO/IDE/spec/OREO_LANGUAGE_SPEC.md. Defines GIR (Graph Intermediate Representation), type system, NL syntax, visual editor architecture. NL_CYPHER_SPEC.md extends with Cypher/Neo4j integration details."
+    },
+    {
+      "name": "parser",
+      "status": "completed",
+      "notes": "GraphLang-based parser at /home/jayson/OREO/IDE/parser/. Architecture: NL->intent->Cypher/Neo4j. Key files: architecture/parser.py, architecture/engine.py, nl_parser/architecture_router.py, nl_parser/semantic_parser.py. GIR types at parser/gir/types.py (dataclass bug pre-existing). 20+ modules covering parsing, emission, optimization, import/export, voice, visual, audit, advise, bolt protocol, queries, LLM integration, shape analysis, lines/drawing."
+    },
+    {
+      "name": "runtime",
+      "status": "in_progress",
+      "notes": "Runtime at /home/jayson/OREO/IDE/runtime/ with compiler, interpreter, memory subsystems. Architecture RelationshipEngine implements handshake protocol (pages refuse until CONNECTS_TO line). FunctionRuntime and app emission operational. Full graph interpreter still pending."
+    },
+    {
+      "name": "visual_editor",
+      "status": "in_progress",
+      "notes": "Visual editor at /home/jayson/OREO/IDE/visual_editor/ with architecture.py, canvas, interaction, nodes. Talk+draw web editor with ears+voice. GraphLang editor HTML at parser/architecture/graphlang_editor.html. Computational GIR editor blocked by GIR import bug."
+    },
+    {
+      "name": "ai_integration",
+      "status": "in_progress",
+      "notes": "AI integration at /home/jayson/OREO/IDE/ai_integration/ with codegen, explanation, verification. HybridParser uses rules-first with LLM fallback via OpenAICompat/xAI. CypherOptimizer, advise/scene packs merged. Computational AI codegen pending."
+    },
+    {
+      "name": "test_harness",
+      "status": "in_progress",
+      "notes": "Test harness at /home/jayson/OREO/IDE/test_harness/ with property_tests, fuzzing, integration, model_checking directories. Framework in place, tests need expansion."
+    },
+    {
+      "name": "docs",
+      "status": "in_progress",
+      "notes": "Documentation at /home/jayson/OREO/IDE/docs/ (architecture subdirectory), spec/OREO_LANGUAGE_SPEC.md, spec/NL_CYPHER_SPEC.md, README.md, PROJECT_STRUCTURE.md. Full language guides still pending \u2014 need comprehensive user-facing docs."
+    }
+  ],
+  "created": "1787804714.2874022",
+  "retroactive_audit": {
+    "completion_date": "2026-09-06",
+    "completion_status": "phase_1_2_3_completed",
+    "notes": "Phases 1-3 completed (research, spec, parser). Phases 4-8 in progress (runtime, visual editor, AI integration, test harness, docs). Documentation at /opt/oreo/docs/ (7 files, 87KB total)."
+  }
+}

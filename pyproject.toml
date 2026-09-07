@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20"
+version = "2.1.0rc2"
+description = "mem20 — trusted, auditable memory + world-model layer for agents (MCP server)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["agent", "memory", "mcp", "world-model", "cognitive"]
+dependencies = [
+    "mcp>=2.1.1",
+    "pydantic>=2.13.4",
+    "anyio>=4.14.2",
+    "numpy>=1.24",
+    "faiss-cpu>=1.7.4",
+    "sentence-transformers>=2.2.0",
+]
+
+[project.optional-dependencies]
+# Dev: run the test suite on a clean clone.
+dev = ["pytest>=7"]
+# Optional integrations are EXTERNAL APPLICATIONS, not pip packages.
+# Blender / Unity must be installed on the host (see requirements-optional.txt).
+integrations = []
+
+[project.scripts]
+# Run via the launcher, which locates the bundled MCP server directory and runs
+# it as a script (equivalent to `python mcp/mcp_server.py`). This avoids
+# importing the local `mcp/` dir as a package, which would shadow the `mcp` SDK.
+mem20-mcp = "launcher:main"
+# Query aggregated install metrics from the local event log, or run the
+# collector dashboard server (MEM20_COLLECTOR_PORT=9090).
+mem20-metrics = "metrics_collector:main"
+
+[tool.setuptools]
+packages = ["memory_engine", "mem20_runtime"]
+# The repo-root `memory.py` shim lets `import memory` resolve to memory_engine.
+# `metrics_collector.py` is the standalone install-metrics collector server.
+py-modules = ["memory", "metrics_collector"]
+# Ship the MCP server files as package data (NOT as an importable `mcp` package).
+[tool.setuptools.package-data]
+mem20_runtime = [
+    "mcp/*.py",
+    "mcp/tools/*.py",
+    "mcp/prompts/*.py",
+    "mcp/resources/*.py",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

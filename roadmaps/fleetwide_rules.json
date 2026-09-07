@@ -1,0 +1,60 @@
+{
+  "name": "fleetwide_rules",
+  "description": "Fleetwide rules enforcement: every bot stores decisions to mem20 immediately, fail log review before work, advice implementation, A2A communication, bot chain hierarchy, decision persistence, and all cross-bot operational rules.",
+  "phases": [
+    {
+      "name": {
+        "name": "Phase 1: Audit current rule compliance across all 18 profiles",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 2: Enforce decision persistence \u2014 every bot stores to mem20 immediately",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 3: Enforce fail log review before starting work",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 4: Enforce advice implementation from Coach sessions",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 5: Verify A2A inter-bot communication chain",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": {
+        "name": "Phase 6: Bot chain hierarchy enforcement (specialist\u2192Coach\u2192QAMaster\u2192Jayson\u2192Jesse)",
+        "status": "planned"
+      },
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1788371144.7886407",
+  "retroactive_audit": {
+    "completion_date": "2026-09-06",
+    "completion_status": "enforcement_ongoing",
+    "notes": "All 6 phases in planning/enforcement stage. Rules defined in SOUL.md fleetwide rules section. Compliance audit pending."
+  }
+}
