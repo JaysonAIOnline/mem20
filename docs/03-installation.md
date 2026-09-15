@@ -56,6 +56,34 @@ pip install .
 mem20-mcp   # starts the MCP server + :8080 health endpoint
 ```
 
+### Penguin Linux (ChromeOS Crostini)
+
+Penguin Linux is Debian-based with systemd — the standard systemd install works perfectly:
+
+```bash
+# Clone and install as a system service (recommended for always-on)
+git clone https://github.com/JaysonAIOnline/mem20.git /opt/mem20
+sudo /opt/mem20/install.sh --user $USER --dir /opt/mem20
+
+# Verify it's running
+curl http://localhost:8080/health
+```
+
+**What the installer does:**
+- Creates a Python venv at `/opt/mem20/.venv`
+- Installs core deps from `requirements.txt` (mcp, pydantic, numpy, faiss-cpu, sentence-transformers)
+- Creates `/etc/systemd/system/mem20.service` and enables/starts it
+- Default store path: `/opt/mem20/store`
+
+**If you want to run without systemd (simpler for testing):**
+```bash
+sudo /opt/mem20/install.sh --no-systemd
+# Then run manually:
+MEM20_STORE_PATH=/opt/mem20/store /opt/mem20/.venv/bin/python /opt/mem20/mcp/mcp_server.py
+```
+
+**Note:** Penguin Linux has systemd, so the default install (without `--no-systemd`) is recommended. The service runs on port 8080.
+
 ### Docker
 
 Best for isolated deployments and production.

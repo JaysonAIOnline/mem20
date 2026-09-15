@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.venv/
+venv/
+env/
+ENV/
+
+# Build
+build/
+dist/
+*.egg-info/
+.mem20/
+
+# Memory store
+store/
+*.faiss
+*.jsonl
+*.pkl
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# mem20 specific
+affective_state.json
+ledger.jsonl
+ledger.jsonl.*
+pinned_blocks.json
+procedural_memory.json
+simulated_ledger.jsonl
+vector_index.faiss
+vector_meta.jsonl
+tot_state.db
+
+# Entries (session logs)
+entries/*.md
+
+# Secrets
+secrets/
+.env
+*.key
+*.pem
+
+# Docker
+.docker/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Test
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Blender/Unity cache
+*.blend*
