@@ -68,6 +68,20 @@ npm-debug.log*
 .pytest_cache/
 htmlcov/
 
+# Model / embedding caches
+# These are downloaded on demand and can contain symlink loops (HF snapshots
+# link back into ../../), which breaks `git add`, `git diff --stat`, and any
+# checkout on a filesystem without symlink support. They are reproducible from
+# the model id, so they belong in neither git nor a backup.
+**/data/cache/
+**/huggingface/
+**/.cache/huggingface/
+**/models--*/
+**/snapshots/
+**/.no_exist/
+CACHEDIR.TAG
+*.npz.cache/
+
 # Blender/Unity cache
 *.blend*
 
