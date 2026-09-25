@@ -1,0 +1,304 @@
+{
+  "version": "1.0",
+  "date": "2026-09-05",
+  "coordinate_system": "Y-up, Z-forward, X-right, 1 unit = 1 meter",
+  "regions": {
+    "R1": {
+      "id": "R1",
+      "name": "Quietvale",
+      "type": "tutorial_village",
+      "scene": "Quietvale.unity",
+      "bounds": {"x": [-100, 100], "z": [-50, 130]},
+      "walkable_bounds": {"x": [-30, 50], "z": [-40, 120]},
+      "elevation": {"min": -2, "max": 4},
+      "lighting": {
+        "type": "warm_morning",
+        "color_temp_k": 5500,
+        "tint": "slight_orange",
+        "ambient_intensity": 1.0
+      },
+      "navmesh": "walkable_ground_only",
+      "zones": [
+        {"id": "QV-HOME", "name": "Player House", "bounds": {"x": [-30, -10], "z": [-40, -20]}},
+        {"id": "QV-SQ", "name": "Village Square", "bounds": {"x": [-20, 20], "z": [-10, 20]}},
+        {"id": "QV-WIZ", "name": "Wizard's Corner", "bounds": {"x": [15, 35], "z": [25, 45]}},
+        {"id": "QV-PATH", "name": "Forest Path", "bounds": {"x": [-5, 5], "z": [30, 80]}},
+        {"id": "QV-WOODS", "name": "Tutorial Woods", "bounds": {"x": [5, 45], "z": [75, 110]}},
+        {"id": "QV-GATE", "name": "Village Exit Gate", "bounds": {"x": [-10, 10], "z": [100, 120]}},
+        {"id": "QV-POND", "name": "Reflection Pond", "bounds": {"x": [-50, -30], "z": [-30, -10]}}
+      ],
+      "building_slots": [
+        {"id": "QV-B01", "name": "Player House", "position": [-20, 0, -30], "footprint": [8, 6], "prefab": "CH_PC1_Player", "interior": true},
+        {"id": "QV-B02", "name": "Bureaucrat's Desk", "position": [0, 0, 5], "footprint": [3, 2], "prefab": "PR_Desk", "interior": false},
+        {"id": "QV-B03", "name": "Wizard's Lean-To", "position": [25, 0, 35], "footprint": [5, 4], "prefab": null, "interior": false},
+        {"id": "QV-B04", "name": "Form Station", "position": [-5, 0, 15], "footprint": [2, 2], "prefab": "PR_Forms", "interior": false},
+        {"id": "QV-B05", "name": "Village Gate Arch", "position": [0, 0, 110], "footprint": [6, 4], "prefab": null, "interior": false},
+        {"id": "QV-B06", "name": "Ink & Parchment Cart", "position": [10, 0, -5], "footprint": [2, 1.5], "prefab": null, "interior": false},
+        {"id": "QV-B07", "name": "Filing Cabinet (dec)", "position": [-15, 0, 10], "footprint": [1, 0.6], "prefab": "PR_FilingCabinet", "interior": false}
+      ],
+      "waypoints": [
+        {"id": "WP-QV-01", "name": "Player Spawn", "pos": [-20, 0, -35], "type": "spawn"},
+        {"id": "WP-QV-02", "name": "House Door", "pos": [-20, 0, -25], "type": "exit"},
+        {"id": "WP-QV-03", "name": "Square Entry", "pos": [-10, 0, 0], "type": "path"},
+        {"id": "WP-QV-04", "name": "Bureaucrat Desk", "pos": [0, 0, 5], "type": "npc"},
+        {"id": "WP-QV-05", "name": "Form Station", "pos": [-5, 0, 15], "type": "interact"},
+        {"id": "WP-QV-06", "name": "Wizard Corner", "pos": [25, 0, 35], "type": "npc"},
+        {"id": "WP-QV-07", "name": "Path Entrance", "pos": [0, 0, 30], "type": "path"},
+        {"id": "WP-QV-08", "name": "Woods Clearing", "pos": [25, 0, 90], "type": "combat"},
+        {"id": "WP-QV-09", "name": "Combat Spawn", "pos": [30, 0, 95], "type": "enemy"},
+        {"id": "WP-QV-10", "name": "Gate Approach", "pos": [0, 0, 105], "type": "path"},
+        {"id": "WP-QV-11", "name": "Gate Trigger", "pos": [0, 0, 112], "type": "transition"}
+      ],
+      "npcs": [
+        {"id": "CH_Bureaucrat", "waypoint": "WP-QV-04", "role": "quest_giver"},
+        {"id": "CH_Wizard", "waypoint": "WP-QV-06", "role": "companion"}
+      ],
+      "enemies": [
+        {"id": "CR_MisfiledSkeleton", "waypoint": "WP-QV-09", "trigger": "enter_clearing"}
+      ],
+      "quest_objects": [
+        {"id": "FormStation", "waypoint": "WP-QV-05", "interact": "file_form"},
+        {"id": "BinderPickup", "waypoint": "WP-QV-04", "interact": "dialogue_locked"},
+        {"id": "GateTrigger_QV", "waypoint": "WP-QV-11", "interact": "region_transition"}
+      ]
+    },
+    "R2": {
+      "id": "R2",
+      "name": "Bureaucracy Hills",
+      "type": "first_major_region",
+      "scene": "BureaucracyHills.unity",
+      "bounds": {"x": [-80, 80], "z": [-30, 170]},
+      "walkable_bounds": {"x": [-50, 70], "z": [-20, 160]},
+      "elevation": {"min": 0, "max": 12},
+      "lighting": {
+        "type": "institutional",
+        "color_temp_k": 6500,
+        "tint": "slight_blue",
+        "ambient_intensity": 0.9
+      },
+      "navmesh": "full_ground_plus_hills",
+      "zones": [
+        {"id": "BH-ENT", "name": "Entrance Plaza", "bounds": {"x": [-30, 30], "z": [-20, 20]}},
+        {"id": "BH-PATH", "name": "Main Path", "bounds": {"x": [-10, 10], "z": [20, 100]}},
+        {"id": "BH-ANN", "name": "Annex Side Area", "bounds": {"x": [20, 60], "z": [40, 80]}},
+        {"id": "BH-CAB", "name": "Filing Cabinet Field", "bounds": {"x": [-40, -10], "z": [50, 90]}},
+        {"id": "BH-OFF", "name": "Permit Office", "bounds": {"x": [5, 25], "z": [100, 120]}},
+        {"id": "BH-MAG", "name": "Magistrate's Hall", "bounds": {"x": [-25, -5], "z": [110, 130]}},
+        {"id": "BH-EXIT", "name": "Hills Exit", "bounds": {"x": [-10, 10], "z": [140, 160]}},
+        {"id": "BH-LEDGER", "name": "Archivist's Nook", "bounds": {"x": [35, 50], "z": [55, 70]}}
+      ],
+      "building_slots": [
+        {"id": "BH-B01", "name": "Permit Office", "position": [15, 0, 110], "footprint": [10, 8], "prefab": null, "interior": true},
+        {"id": "BH-B02", "name": "Magistrate's Hall", "position": [-15, 0, 120], "footprint": [8, 6], "prefab": null, "interior": true},
+        {"id": "BH-B03", "name": "Archivist's Nook", "position": [42, 0, 62], "footprint": [6, 5], "prefab": null, "interior": true},
+        {"id": "BH-B04", "name": "Filing Cabinet A", "position": [-25, 0, 65], "footprint": [1, 0.6], "prefab": "PR_FilingCabinet", "interior": false},
+        {"id": "BH-B05", "name": "Filing Cabinet B", "position": [-20, 0, 70], "footprint": [1, 0.6], "prefab": "PR_FilingCabinet", "interior": false},
+        {"id": "BH-B06", "name": "Filing Cabinet C", "position": [-30, 0, 75], "footprint": [1, 0.6], "prefab": "PR_FilingCabinet", "interior": false},
+        {"id": "BH-B07", "name": "Filing Cabinet D", "position": [-15, 0, 80], "footprint": [1, 0.6], "prefab": "PR_FilingCabinet", "interior": false},
+        {"id": "BH-B08", "name": "Desk (Permit Office)", "position": [15, 0, 110], "footprint": [3, 2], "prefab": "PR_Desk", "interior": true},
+        {"id": "BH-B09", "name": "Desk (Magistrate)", "position": [-15, 0, 120], "footprint": [3, 2], "prefab": "PR_Desk", "interior": true},
+        {"id": "BH-B10", "name": "Hills Exit Arch", "position": [0, 0, 150], "footprint": [6, 4], "prefab": null, "interior": false}
+      ],
+      "waypoints": [
+        {"id": "WP-BH-01", "name": "Entrance Spawn", "pos": [0, 0, 0], "type": "spawn"},
+        {"id": "WP-BH-02", "name": "Path Start", "pos": [0, 0, 25], "type": "path"},
+        {"id": "WP-BH-03", "name": "Path Mid", "pos": [0, 0, 60], "type": "path"},
+        {"id": "WP-BH-04", "name": "Path Fork", "pos": [0, 0, 80], "type": "path"},
+        {"id": "WP-BH-05", "name": "Annex Entrance", "pos": [25, 0, 50], "type": "path"},
+        {"id": "WP-BH-06", "name": "Archivist Nook", "pos": [42, 0, 62], "type": "npc"},
+        {"id": "WP-BH-07", "name": "Cabinet Field Start", "pos": [-15, 0, 55], "type": "path"},
+        {"id": "WP-BH-08", "name": "Cabinet Field Center", "pos": [-25, 0, 75], "type": "combat"},
+        {"id": "WP-BH-09", "name": "Permit Office Door", "pos": [15, 0, 105], "type": "interact"},
+        {"id": "WP-BH-10", "name": "Magistrate Door", "pos": [-15, 0, 115], "type": "interact"},
+        {"id": "WP-BH-11", "name": "Hills Exit", "pos": [0, 0, 150], "type": "transition"},
+        {"id": "WP-BH-12", "name": "Enemy Spawn A", "pos": [-20, 0, 65], "type": "enemy"},
+        {"id": "WP-BH-13", "name": "Enemy Spawn B", "pos": [-30, 0, 80], "type": "enemy"},
+        {"id": "WP-BH-14", "name": "Companion Banter A", "pos": [10, 0, 40], "type": "banter"},
+        {"id": "WP-BH-15", "name": "Companion Banter B", "pos": [-5, 0, 90], "type": "banter"}
+      ],
+      "npcs": [
+        {"id": "CH_Bureaucrat", "waypoint": "WP-BH-09", "role": "quest_giver"},
+        {"id": "CH_Wizard", "waypoint": "WP-BH-02", "role": "companion"},
+        {"id": "Archivist_NPC", "waypoint": "WP-BH-06", "role": "side_quest"}
+      ],
+      "enemies": [
+        {"id": "CR_MisfiledSkeleton", "waypoint": "WP-BH-12", "trigger": "enter_cabinet_field"},
+        {"id": "CR_InkBlot", "waypoint": "WP-BH-13", "trigger": "enter_cabinet_field"}
+      ],
+      "quest_objects": [
+        {"id": "PermitForm", "waypoint": "WP-BH-09", "interact": "collect"},
+        {"id": "AmendmentForm", "waypoint": "WP-BH-10", "interact": "collect"},
+        {"id": "LedgerPage_1", "pos": [30, 0, 45], "interact": "collect"},
+        {"id": "LedgerPage_2", "pos": [45, 0, 55], "interact": "collect"},
+        {"id": "LedgerPage_3", "pos": [50, 0, 70], "interact": "collect"},
+        {"id": "GateTrigger_BH", "waypoint": "WP-BH-11", "interact": "region_transition"}
+      ]
+    },
+    "R3": {
+      "id": "R3",
+      "name": "Forest of Unhelpful Trees",
+      "type": "exploration",
+      "scene": "Forest.unity",
+      "bounds": {"x": [-125, 125], "z": [-125, 125]},
+      "walkable_bounds": {"x": [-90, 90], "z": [-90, 90]},
+      "elevation": {"min": 0, "max": 8},
+      "lighting": {"type": "dappled_green", "color_temp_k": 6000, "tint": "green_eerie"},
+      "navmesh": "winding_paths",
+      "zones": [
+        {"id": "FR-ENT", "name": "Forest Entry", "bounds": {"x": [-20, 20], "z": [-100, -60]}},
+        {"id": "FR-WIND", "name": "Winding Paths", "bounds": {"x": [-60, 60], "z": [-60, 60]}},
+        {"id": "FR-CLEAR", "name": "Clearing", "bounds": {"x": [-30, 30], "z": [30, 70]}},
+        {"id": "FR-DEEP", "name": "Deep Forest", "bounds": {"x": [-90, 90], "z": [60, 120]}},
+        {"id": "FR-EXIT", "name": "Forest Exit", "bounds": {"x": [-20, 20], "z": [100, 130]}}
+      ],
+      "building_slots": [
+        {"id": "FR-B01", "name": "Talking Tree", "position": [0, 0, 30], "footprint": [3, 3], "prefab": null},
+        {"id": "FR-B02", "name": "Fallen Log Bridge", "position": [20, 0, 60], "footprint": [8, 2], "prefab": null},
+        {"id": "FR-B03", "name": "Mushroom Circle", "position": [-25, 0, 80], "footprint": [5, 5], "prefab": null}
+      ],
+      "waypoints": [
+        {"id": "WP-FR-01", "name": "Forest Entry", "pos": [0, 0, -80], "type": "spawn"},
+        {"id": "WP-FR-02", "name": "First Fork", "pos": [0, 0, -40], "type": "path"},
+        {"id": "WP-FR-03", "name": "Talking Tree", "pos": [0, 0, 30], "type": "npc"},
+        {"id": "WP-FR-04", "name": "Clearing", "pos": [0, 0, 50], "type": "combat"},
+        {"id": "WP-FR-05", "name": "Deep Forest Entry", "pos": [0, 0, 80], "type": "path"},
+        {"id": "WP-FR-06", "name": "Forest Exit", "pos": [0, 0, 115], "type": "transition"}
+      ]
+    },
+    "R4": {
+      "id": "R4",
+      "name": "City of Forms",
+      "type": "hub_city",
+      "scene": "CityOfForms.unity",
+      "bounds": {"x": [-200, 200], "z": [-200, 200]},
+      "walkable_bounds": {"x": [-150, 150], "z": [-150, 150]},
+      "elevation": {"min": 0, "max": 15},
+      "lighting": {"type": "institutional_neon", "color_temp_k": 7000, "tint": "cool_neon"},
+      "navmesh": "complex_multi_level",
+      "zones": [
+        {"id": "CT-OUT", "name": "Outer Queue District", "bounds": {"x": [-150, 150], "z": [-150, -50]}},
+        {"id": "CT-COM", "name": "Commercial & Services", "bounds": {"x": [-80, 80], "z": [-50, 0]}},
+        {"id": "CT-OFF", "name": "Official District", "bounds": {"x": [-50, 50], "z": [0, 80]}},
+        {"id": "CT-UPP", "name": "Upper Offices", "bounds": {"x": [-30, 30], "z": [80, 130]}},
+        {"id": "CT-PREV", "name": "Dept of Previous Failures", "bounds": {"x": [-60, -20], "z": [20, 60]}}
+      ],
+      "building_slots": [
+        {"id": "CT-B01", "name": "Queue Arch", "position": [0, 0, -100], "footprint": [12, 8], "prefab": null},
+        {"id": "CT-B02", "name": "Permit Office", "position": [0, 0, 20], "footprint": [15, 12], "prefab": null},
+        {"id": "CT-B03", "name": "Amendment Office", "position": [30, 0, 30], "footprint": [12, 10], "prefab": null},
+        {"id": "CT-B04", "name": "Dept of Previous Failures", "position": [-40, 0, 40], "footprint": [10, 10], "prefab": null},
+        {"id": "CT-B05", "name": "Shop Row", "position": [20, 0, -30], "footprint": [20, 6], "prefab": null},
+        {"id": "CT-B06", "name": "Upper Office Tower", "position": [0, 15, 100], "footprint": [8, 8], "prefab": null}
+      ],
+      "waypoints": [
+        {"id": "WP-CT-01", "name": "City Entry", "pos": [0, 0, -130], "type": "spawn"},
+        {"id": "WP-CT-02", "name": "Queue District Center", "pos": [0, 0, -80], "type": "path"},
+        {"id": "WP-CT-03", "name": "Commercial Center", "pos": [0, 0, -25], "type": "path"},
+        {"id": "WP-CT-04", "name": "Official District Entry", "pos": [0, 0, 10], "type": "path"},
+        {"id": "WP-CT-05", "name": "Permit Office", "pos": [0, 0, 20], "type": "interact"},
+        {"id": "WP-CT-06", "name": "Upper Offices", "pos": [0, 0, 100], "type": "interact"}
+      ]
+    },
+    "R5": {
+      "id": "R5",
+      "name": "Overflow Archives",
+      "type": "optional_dungeon",
+      "scene": "Archives.unity",
+      "bounds": {"x": [-75, 75], "z": [-75, 75]},
+      "walkable_bounds": {"x": [-50, 50], "z": [-50, 50]},
+      "elevation": {"min": -6, "max": 6},
+      "lighting": {"type": "dim_dusty", "color_temp_k": 4500, "tint": "warm_dusty"},
+      "navmesh": "multi_level_stairs",
+      "zones": [
+        {"id": "OA-ENT", "name": "Entrance Hall", "bounds": {"x": [-20, 20], "z": [-50, -20]}},
+        {"id": "OA-STACK", "name": "Main Stacks", "bounds": {"x": [-40, 40], "z": [-20, 30]}},
+        {"id": "OA-UNSORT", "name": "Unsorted Wing", "bounds": {"x": [20, 50], "z": [-10, 30]}},
+        {"id": "OA-DEEP", "name": "Deep Storage", "bounds": {"x": [-30, 0], "z": [30, 50]}},
+        {"id": "OA-READ", "name": "Quiet Reading Room", "bounds": {"x": [-50, -20], "z": [20, 40]}}
+      ],
+      "waypoints": [
+        {"id": "WP-OA-01", "name": "Entrance", "pos": [0, 0, -40], "type": "spawn"},
+        {"id": "WP-OA-02", "name": "Main Stacks Center", "pos": [0, 0, 0], "type": "path"},
+        {"id": "WP-OA-03", "name": "Unsorted Wing Entry", "pos": [35, 0, 10], "type": "path"},
+        {"id": "WP-OA-04", "name": "Deep Storage Entry", "pos": [-15, 0, 40], "type": "path"},
+        {"id": "WP-OA-05", "name": "Reading Room", "pos": [-35, 0, 30], "type": "interact"}
+      ]
+    },
+    "R6": {
+      "id": "R6",
+      "name": "Ruins of Previous Chosen Ones",
+      "type": "memorial",
+      "scene": "Ruins.unity",
+      "bounds": {"x": [-100, 100], "z": [-100, 100]},
+      "walkable_bounds": {"x": [-75, 75], "z": [-75, 75]},
+      "elevation": {"min": 0, "max": 6},
+      "lighting": {"type": "melancholy_golden_hour", "color_temp_k": 4800, "tint": "warm_long_shadows"},
+      "navmesh": "open_with_memorials",
+      "zones": [
+        {"id": "RU-ENT", "name": "Entry Path", "bounds": {"x": [-20, 20], "z": [-100, -50]}},
+        {"id": "RU-MEM", "name": "Memorial Hall", "bounds": {"x": [-40, 40], "z": [-30, 30]}},
+        {"id": "RU-STATUE", "name": "Statue Garden", "bounds": {"x": [-60, 60], "z": [30, 80]}},
+        {"id": "RU-EXIT", "name": "Exit to Final Zone", "bounds": {"x": [-20, 20], "z": [80, 110]}}
+      ],
+      "waypoints": [
+        {"id": "WP-RU-01", "name": "Entry", "pos": [0, 0, -80], "type": "spawn"},
+        {"id": "WP-RU-02", "name": "Memorial Center", "pos": [0, 0, 0], "type": "interact"},
+        {"id": "WP-RU-03", "name": "Statue Garden", "pos": [0, 0, 55], "type": "path"},
+        {"id": "WP-RU-04", "name": "Exit", "pos": [0, 0, 95], "type": "transition"}
+      ]
+    },
+    "R7": {
+      "id": "R7",
+      "name": "Final Administrative Zone",
+      "type": "climax_arena",
+      "scene": "FinalZone.unity",
+      "bounds": {"x": [-60, 60], "z": [-60, 60]},
+      "walkable_bounds": {"x": [-50, 50], "z": [-50, 50]},
+      "elevation": {"min": 0, "max": 4},
+      "lighting": {"type": "dramatic_shifting", "color_temp_k": 6500, "tint": "department_spotlights"},
+      "navmesh": "arena_floor",
+      "zones": [
+        {"id": "FA-ENT", "name": "Entrance Corridor", "bounds": {"x": [-10, 10], "z": [-60, -30]}},
+        {"id": "FA-ARENA", "name": "Central Arena", "bounds": {"x": [-40, 40], "z": [-30, 30]}},
+        {"id": "FA-ZONE1", "name": "Prophetic Continuity Zone", "bounds": {"x": [-40, -10], "z": [-30, 30]}},
+        {"id": "FA-ZONE2", "name": "Narrative Oversight Zone", "bounds": {"x": [-10, 20], "z": [-30, 30]}},
+        {"id": "FA-ZONE3", "name": "Celestial Compliance Zone", "bounds": {"x": [20, 40], "z": [-30, 30]}},
+        {"id": "FA-DESK", "name": "Desk of Absolute Authority", "bounds": {"x": [-15, 15], "z": [30, 50]}}
+      ],
+      "waypoints": [
+        {"id": "WP-FA-01", "name": "Entrance", "pos": [0, 0, -50], "type": "spawn"},
+        {"id": "WP-FA-02", "name": "Arena Center", "pos": [0, 0, 0], "type": "combat"},
+        {"id": "WP-FA-03", "name": "Zone 1 Marker", "pos": [-25, 0, 0], "type": "combat"},
+        {"id": "WP-FA-04", "name": "Zone 2 Marker", "pos": [5, 0, 0], "type": "combat"},
+        {"id": "WP-FA-05", "name": "Zone 3 Marker", "pos": [30, 0, 0], "type": "combat"},
+        {"id": "WP-FA-06", "name": "Final Desk", "pos": [0, 0, 40], "type": "interact"}
+      ]
+    }
+  },
+  "region_transitions": [
+    {"id": "QV-GATE", "from": "R1", "to": "R2", "waypoint": "WP-QV-11", "autosave": true},
+    {"id": "BH-GATE", "from": "R2", "to": "R3", "waypoint": "WP-BH-11", "autosave": true},
+    {"id": "FR-GATE", "from": "R3", "to": "R4", "waypoint": "WP-FR-06", "autosave": true},
+    {"id": "CT-GATE-ARCHIVES", "from": "R4", "to": "R5", "waypoint": "WP-CT-06", "autosave": true},
+    {"id": "CT-GATE-RUINS", "from": "R4", "to": "R6", "waypoint": "WP-CT-04", "autosave": true},
+    {"id": "RU-GATE", "from": "R6", "to": "R7", "waypoint": "WP-RU-04", "autosave": true}
+  ],
+  "scene_registry": [
+    {"scene": "Boot.unity", "load_mode": "single", "region": null},
+    {"scene": "MainMenu.unity", "load_mode": "single", "region": null},
+    {"scene": "Quietvale.unity", "load_mode": "additive", "region": "R1"},
+    {"scene": "BureaucracyHills.unity", "load_mode": "additive", "region": "R2"},
+    {"scene": "Forest.unity", "load_mode": "additive", "region": "R3"},
+    {"scene": "CityOfForms.unity", "load_mode": "additive", "region": "R4"},
+    {"scene": "Archives.unity", "load_mode": "additive", "region": "R5"},
+    {"scene": "Ruins.unity", "load_mode": "additive", "region": "R6"},
+    {"scene": "FinalZone.unity", "load_mode": "additive", "region": "R7"},
+    {"scene": "CombatTest.unity", "load_mode": "single", "region": null}
+  ],
+  "naming_conventions": {
+    "waypoint": "WP-{region}-{number}",
+    "building_slot": "{region}-B{number}",
+    "zone": "{region-abbrev}-{name}",
+    "gate": "{from}-GATE"
+  }
+}

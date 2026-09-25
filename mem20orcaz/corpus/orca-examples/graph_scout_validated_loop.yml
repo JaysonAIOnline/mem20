@@ -1,0 +1,231 @@
+# GraphScout with Boolean Validation Loop
+# Iteratively validates and improves GraphScout's path selection
+#
+# ROBUSTNESS FEATURES:
+# - Realistic thresholds (0.40) for path proposals
+# - Fallback and timeout scores
+# - Explicit output format requirements
+# - Safe template accessors with defaults
+
+orchestrator:
+  id: validated-graph-scout
+  strategy: sequential
+  agents:
+    - path_discovery_loop
+    - path_executor
+    - final_execution
+
+agents:
+  - id: path_discovery_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.35
+    fallback_score: 0.20
+    timeout_score: 0.15
+    persist_across_runs: false
+    
+    # Boolean scoring for path validation - simplified for realistic local LLM scoring
+    scoring:
+      preset: lenient
+      context: loop_convergence
+      # Focus on fewer, high-impact criteria that local LLMs can evaluate reliably
+      custom_weights:
+        improvement.better_than_previous: 0.40
+        convergence.within_tolerance: 0.35
+        stability.consistent_direction: 0.25
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+      mistakes: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: discovery-validation
+        strategy: sequential
+        agents: [path_proposer, path_validator_moderate]
+      
+      agents:
+        - id: path_proposer
+          type: graph-scout
+          params:
+            k_beam: 5
+            max_depth: 3
+            commit_margin: 0.1
+            require_terminal: false
+            score_weights:
+              llm: 0.5
+              heuristics: 0.25
+              prior: 0.15
+              cost: 0.05
+              latency: 0.05
+            evaluation_model: "local_llm"
+            evaluation_model_name: "openai/gpt-oss-20b"
+            llm_evaluation_enabled: true
+            provider: lm_studio
+            model_url: http://localhost:1234
+            fallback_to_heuristics: true
+          prompt: |
+            TASK: Select optimal execution path.
+            QUERY: {{ get_input() }}
+            
+            {% if has_past_loops() %}
+            VALIDATION FEEDBACK (Loop {{ get_loop_number() }}):
+            {% set last = get_past_loops()[-1] %}
+            Previous Score: {{ last.score }} (need 0.35)
+            
+            ISSUES TO ADDRESS:
+            {{ last.mistakes | default('None specified') }}
+            
+            IMPROVEMENTS NEEDED:
+            {{ last.improvements | default('Improve path completeness and logical flow') }}
+            {% endif %}
+            
+            Select a path with:
+            1. All required steps for the query
+            2. Logical agent sequence
+            3. Appropriate agent selection
+        
+        - id: path_validator_moderate
+          type: plan_validator
+          llm_model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.1
+          timeout: 60
+          scoring_preset: lenient
+          scoring_context: graphscout
+          # Simplified criteria - focus on 3 key dimensions for reliable local LLM evaluation
+          custom_weights:
+            completeness.has_all_required_steps: 0.40
+            coherence.logical_agent_sequence: 0.35
+            efficiency.uses_appropriate_agents: 0.25
+
+  # Execution agents (top-level for GraphScout discovery)
+  - id: search_agent
+    type: duckduckgo
+    capabilities: [data_retrieval, web_search]
+    max_results: 5
+  
+  - id: analysis_agent
+    type: local_llm
+    capabilities: [reasoning, analysis]
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    timeout: 60
+    prompt: |
+      TASK: Analyze the following.
+      QUERY: {{ input }}
+      
+      {% if previous_outputs.search_agent %}
+      SEARCH RESULTS: {{ safe_get_response('search_agent', 'None', previous_outputs) }}
+      {% endif %}
+      
+      OUTPUT FORMAT:
+      ANALYSIS: [Thorough analysis]
+      KEY_FINDINGS: [3-5 bullet points]
+  
+  - id: memory_reader
+    type: memory
+    namespace: validated_paths
+    memory_preset: "semantic"
+    config:
+      operation: read
+      vector: true
+      query_key: input
+    prompt: |
+      Retrieve context for: {{ input }}
+  
+  - id: memory_writer
+    type: memory
+    namespace: validated_paths
+    memory_preset: "episodic"
+    config:
+      operation: write
+      vector: true
+    prompt: |
+      {
+        "type": "validated_path_record",
+        "query": {{ input | tojson }},
+        "analysis": {{ safe_get_response('analysis_agent', 'None', previous_outputs) | tojson }}
+      }
+    metadata:
+      category: stored
+      source: graph_scout_validated_loop
+    key_template: "validated_{{ input | truncate(60) }}"
+  
+  - id: response_builder
+    type: local_llm
+    is_terminal: true  # Mark as terminal for GraphScout path completion
+    capabilities: [answer_emit, response_generation]
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    timeout: 60
+    prompt: |
+      TASK: Create comprehensive response.
+      QUERY: {{ input }}
+      
+      CONTEXT: {{ safe_get_response('memory_reader', 'None', previous_outputs) }}
+      SEARCH: {{ safe_get_response('search_agent', 'None', previous_outputs) }}
+      ANALYSIS: {{ safe_get_response('analysis_agent', 'None', previous_outputs) }}
+      
+      OUTPUT FORMAT:
+      RESPONSE: [Clear, well-structured answer]
+      SOURCES: [What informed this response]
+
+  - id: path_executor
+    type: path_executor
+    path_source: path_discovery_loop
+    on_agent_failure: continue
+
+  - id: final_execution
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    timeout: 60
+    prompt: |
+      TASK: Report on validated path execution.
+      
+      {% if previous_outputs.path_discovery_loop %}
+      {% set lr = get_loop_output('path_discovery_loop', previous_outputs) %}
+      
+      VALIDATION:
+      - Loops: {{ previous_outputs.path_discovery_loop.loops_completed | default('N/A') }}
+      - Score: {{ (previous_outputs.path_discovery_loop.final_score | default(0)) | round(3) }}
+      - Status: {{ 'APPROVED' if previous_outputs.path_discovery_loop.threshold_met | default(false) else 'FAILED' }}
+      
+      PATH: {{ lr.result.path_proposer.response | default('Not available') }}
+      
+      EVOLUTION:
+      {% if lr.past_loops %}
+      {% for pl in lr.past_loops %}
+      Loop {{ pl.loop_number }}: {{ pl.score }} - {{ pl.mistakes | default('None') }}
+      {% endfor %}
+      {% endif %}
+      
+      {% if previous_outputs.path_executor %}
+      EXECUTION:
+      {% set ex = get_loop_output('path_executor', previous_outputs) %}
+      Status: {{ (ex.status | default('unknown')) | upper }}
+      Agents: {{ (ex.results | default({})) | length }}
+      {% endif %}
+      {% else %}
+      No results available.
+      {% endif %}
+      
+      OUTPUT FORMAT:
+      
+      SUMMARY: [2-3 sentences on validation + execution]
+      
+      QUALITY: [Assessment based on score and criteria]
+      
+      RECOMMENDATIONS: [Next steps or improvements]

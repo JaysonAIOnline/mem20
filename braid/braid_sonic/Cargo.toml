@@ -1,0 +1,11 @@
+[package]
+name = "braid_sonic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+braid_core = { path = "../braid_core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]

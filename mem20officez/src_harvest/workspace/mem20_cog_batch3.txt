@@ -1,0 +1,77 @@
+============================================================
+MEM20 COGNITIVE REASONING TEST RESULTS — BATCH 3
+============================================================
+Generated: 2026-09-03
+Note: MCP server 'mem20' became unreachable after first test.
+      Auto-retry available in ~59s.
+============================================================
+
+TEST #1 — CAUSAL
+Problem: If a plant is not watered for a month during summer, what happens and why?
+Result:
+  1. Identify causal factors: The plant is deprived of water (input) for a month (duration) during summer (high-temperature accelerant). (conf: 1.00)
+  2. Analyze biological requirements: Plants require water for turgor pressure (structural support, nutrient transport, and photosynthesis. (conf: 1.00)
+  3. Evaluate environmental impact: Summer heat increases transpiration, accelerating dehydration beyond the three-week threshold. (conf: 0.95)
+  4. Determine physiological outcome: Loss of turgor pressure leads to wilting; lack of water causes cellular death and systemic failure. (conf: 0.98)
+  5. Conclusion: The plant will likely die because extended water deprivation during high-evaporation period prevents essential biological functions. (conf: 0.99)
+Confidence: 0.99
+
+TEST #2 — CAUSAL
+Problem: What causes ice to form on the surface of a lake rather than throughout its entire volume?
+Result: FAILED — MCP server timeout after 300s
+Confidence: N/A
+
+TEST #3 — CAUSAL
+Problem: Why does deforestation in the Amazon affect rainfall patterns in distant regions?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #4 — DEDUCTIVE
+Problem: All mammals are warm-blooded. Whales are mammals. What can we conclude about whales?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #5 — DEDUCTIVE
+Problem: If it rains, the ground gets wet. The ground is wet. Can we conclude it rained? Explain the logical reasoning.
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #6 — INDUCTIVE
+Problem: The sun has risen every morning in recorded history across thousands of years. What can we infer about whether the sun will rise tomorrow?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #7 — INDUCTIVE
+Problem: Every swan observed in this lake for the past 20 years has been white. What can we infer about the next swan seen here?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #8 — ABDUCTIVE
+Problem: The grass is wet and the sky is clear with no signs of rain. What is the most likely explanation for the wet grass?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #9 — ABDUCTIVE
+Problem: A student arrives at school with muddy shoes, a torn backpack, and wet hair on a sunny day. What is the best explanation for this combination of observations?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+TEST #10 — ANALOGICAL
+Problem: The heart is analogous to a mechanical pump in a water circulation system. What does this analogy reveal about how the heart functions in the body?
+Result: FAILED — MCP server unreachable
+Confidence: N/A
+
+============================================================
+SUMMARY
+============================================================
+Total tests: 10
+Passed: 1
+Failed: 9 (MCP server mem20 unreachable after initial success)
+
+Reasoning type breakdown:
+  Causal:    1/3 passed
+  Deductive: 0/2 passed
+  Inductive: 0/2 passed
+  Abductive: 0/2 passed
+  Analogical:0/1 passed
+============================================================

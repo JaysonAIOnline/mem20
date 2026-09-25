@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20ucgz"
+version = "0.1.0"
+description = "mem20 RM-001 Universal Capability Graph (absorbed from FreeStack RM-001) — typed capability graph, composition planner, mesh, event plane"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+mem20ucgz = "mem20ucgz.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

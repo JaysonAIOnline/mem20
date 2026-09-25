@@ -1,0 +1,15 @@
+[package]
+name = "braid_wire"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "braid_wire — ONE wire protocol: transport framing, message contracts, HTTP surface."
+
+[dependencies]
+braid_core = { path = "../braid_core" }
+braid_keys = { path = "../braid_keys" }
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+ed25519-dalek = { workspace = true }

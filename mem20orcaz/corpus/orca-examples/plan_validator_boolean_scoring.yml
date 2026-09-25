@@ -1,0 +1,250 @@
+# GraphScout + Boolean Scoring Demo
+# ===================================
+#
+# Basic example of GraphScout validated by PlanValidator
+# using boolean scoring for deterministic path evaluation.
+#
+# Shows the core concept of:
+# 1. GraphScout proposes paths from available agents
+# 2. PlanValidator scores with boolean criteria
+# 3. Loop repeats if quality insufficient
+# 4. Feedback guides GraphScout's next proposal
+
+orchestrator:
+  id: graphscout-boolean-demo
+  strategy: sequential
+  agents:
+    - routing_loop
+    - path_executor
+    - execution_summary
+
+agents:
+  # Main loop: GraphScout → PlanValidator
+  - id: routing_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.30
+    persist_across_runs: true
+    fallback_score: 0.15
+    timeout_score: 0.10
+    
+    # Boolean scoring configuration - simplified for reliable local LLM evaluation
+    scoring:
+      preset: lenient
+      context: loop_convergence
+      
+      # Focused criteria weights
+      custom_weights:
+        improvement.better_than_previous: 0.45
+        convergence.within_tolerance: 0.35
+        stability.consistent_direction: 0.20
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+      mistakes: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: route-validate
+        strategy: sequential
+        agents: [graphscout_router, path_validator]
+      
+      agents:
+        # GraphScout selects execution path
+        - id: graphscout_router
+          type: graph-scout
+          params:
+            k_beam: 4
+            max_depth: 2
+            commit_margin: 0.15
+            require_terminal: true
+            score_weights:
+              llm: 0.45
+              heuristics: 0.30
+              prior: 0.15
+              cost: 0.05
+              latency: 0.05
+            evaluation_model: "local_llm"
+            evaluation_model_name: "openai/gpt-oss-20b"
+            llm_evaluation_enabled: true
+            provider: lm_studio
+            model_url: http://localhost:1234
+            fallback_to_heuristics: true
+          prompt: |
+            Select optimal agent path for: {{ get_input() }}
+            
+            {% if has_past_loops() %}
+            ## Validation Feedback (Attempt {{ get_loop_number() }})
+            {% set last = get_past_loops()[-1] %}
+            Previous score: {{ last.score }} (need 0.30)
+            Issues: {{ last.mistakes }}
+            {% endif %}
+            
+            **Available Agents:**
+            - data_retriever: Fetch information (web search, databases)
+            - analyzer: Process and analyze data
+            - generator: Create final output (REQUIRED for terminal paths)
+            
+            Select a complete path that addresses the query.
+        
+        # PlanValidator with boolean scoring
+        - id: path_validator
+          type: plan_validator
+          llm_model:  openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.2
+          timeout: 60
+          scoring_preset: lenient
+          # Focused criteria for reliable validation
+          custom_weights:
+            completeness.has_all_required_steps: 0.50
+            efficiency.uses_appropriate_agents: 0.30
+            coherence.logical_agent_sequence: 0.20
+
+  # ===== EXECUTION AGENTS (Top Level) =====
+  # CRITICAL: These agents MUST be at top-level, NOT inside internal_workflow
+  # - GraphScout discovers agents from orchestrator.agents (global registry)
+  # - PathExecutor can only execute agents in the global registry
+  # - Agents inside internal_workflow are scoped locally and NOT accessible
+  
+  # Supporting agents for GraphScout to route to
+  - id: data_retriever
+    type: duckduckgo
+    capabilities: [data_retrieval, web_search]
+    prompt: |
+      {{ input }}
+  
+  - id: analyzer
+    type: local_llm
+    capabilities: [analysis, reasoning]
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    prompt: |
+      Analyze: {{ input }}
+      
+      {% if previous_outputs.data_retriever %}
+      Data: {{ safe_get_response('data_retriever', 'No data available', previous_outputs) }}
+      {% endif %}
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number
+  
+  - id: generator
+    type: local_llm
+    capabilities: [answer_emit, generation, synthesis]
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    prompt: |
+      Generate response for: {{ input }}
+      
+      Context: {{ previous_outputs }}
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number
+
+  # Execute the validated path
+  - id: path_executor
+    type: path_executor
+    path_source: routing_loop
+    on_agent_failure: continue
+
+  # Execution summary
+  - id: execution_summary
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    timeout: 60
+    prompt: |
+      # Boolean Scoring & Execution Results
+      
+      **Original Query:** {{ input }}
+      
+      {% if previous_outputs.routing_loop %}
+      {% set loop = previous_outputs.routing_loop %}
+      
+      ## Validation Summary
+      - Attempts: {{ loop.loops_completed | default('N/A') }}
+      - Final Score: {{ (loop.final_score | default(0)) | round(3) }}
+      - Threshold Met: {{ 'YES ✓' if loop.threshold_met | default(false) else 'NO ✗' }}
+      
+      ## GraphScout's Routing Decision
+      {% if loop.response %}
+      {% set gs_result = loop.response.result.graphscout_router | default(loop.response.graphscout_router) %}
+      {% if gs_result %}
+      - Target: {{ gs_result.target | default(gs_result.response.target | default('N/A')) }}
+      - Confidence: {{ gs_result.confidence | default(gs_result.response.confidence | default('N/A')) }}
+      {% endif %}
+      {% endif %}
+      
+      ## Validation Details
+      {% if loop.response and loop.response.result %}
+      {% set val = loop.response.result.path_validator | default({}) %}
+      {% if val %}
+      - Overall Score: {{ (val.validation_score | default(0)) | round(3) }}
+      - Assessment: {{ val.overall_assessment | default('N/A') }}
+      - Criteria Passed: {{ (val.passed_criteria | default([])) | length }}
+      {% endif %}
+      {% endif %}
+      
+      ## Execution Results
+      {% if previous_outputs.path_executor %}
+      {% set executor = previous_outputs.path_executor %}
+      {% set exec_resp = executor.response | default(executor) %}
+      
+      **Status:** {{ (exec_resp.status | default('completed')) | upper }}
+      
+      {% if exec_resp.executed_path %}
+      **Executed Path:** {{ exec_resp.executed_path }}
+      {% endif %}
+      
+      {% if exec_resp.results %}
+      **Agent Results:**
+      {% for agent_id, result in exec_resp.results.items() %}
+      - {{ agent_id }}: {{ 'SUCCESS' if result.success | default(true) else 'FAILED' }}
+      {% endfor %}
+      {% endif %}
+      
+      **Final Output:**
+      {{ exec_resp.result | default(executor.result | default('Execution completed')) }}
+      {% else %}
+      PathExecutor waiting for validation approval.
+      {% endif %}
+      
+      ---
+      
+      ## Analysis
+      Provide a concise summary:
+      1. How well did the workflow handle the query?
+      2. Was the path selection appropriate?
+      3. What was the quality of the final output?
+      
+      {% else %}
+      Routing loop in progress. Awaiting results.
+      {% endif %}
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number

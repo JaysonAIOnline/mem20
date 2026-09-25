@@ -1,0 +1,20 @@
+test_browser_zero_install_serving (test_remote_and_browser.RemoteBrowserTests.test_browser_zero_install_serving) ... ok
+test_cloud_peer_execution (test_remote_and_browser.RemoteBrowserTests.test_cloud_peer_execution) ... ok
+test_bounded_load (test_resilience.ResilienceTests.test_bounded_load) ... ok
+test_degraded_network_hybrid_falls_back (test_resilience.ResilienceTests.test_degraded_network_hybrid_falls_back) ... ok
+test_feedback_changes_tunable_mode_score (test_resilience.ResilienceTests.test_feedback_changes_tunable_mode_score) ... ok
+test_misuse_entrypoint_escape_blocked (test_resilience.ResilienceTests.test_misuse_entrypoint_escape_blocked) ... ok
+test_privacy_environment_isolation (test_resilience.ResilienceTests.test_privacy_environment_isolation) ... ok
+test_restart_recovery_replays_persisted_job (test_resilience.ResilienceTests.test_restart_recovery_replays_persisted_job) ... ok
+test_hybrid_fallback (test_runtime.RuntimeTests.test_hybrid_fallback) ... ok
+test_idempotency (test_runtime.RuntimeTests.test_idempotency) ... ok
+test_offline_scheduler (test_runtime.RuntimeTests.test_offline_scheduler) ... ok
+test_signed_launch (test_runtime.RuntimeTests.test_signed_launch) ... ok
+test_global_subscription_event (test_security_and_registry.SecurityAndRegistryTests.test_global_subscription_event) ... ok
+test_registry_crud (test_security_and_registry.SecurityAndRegistryTests.test_registry_crud) ... ok
+test_tamper_blocked (test_security_and_registry.SecurityAndRegistryTests.test_tamper_blocked) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 9.884s
+
+OK

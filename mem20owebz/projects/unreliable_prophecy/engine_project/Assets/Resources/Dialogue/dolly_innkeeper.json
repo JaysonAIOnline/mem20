@@ -1,0 +1,26 @@
+{
+  "npcId": "dolly_innkeeper",
+  "npcDisplayName": "Dolly Mercer",
+  "coreBackstory": "Dolly has run the Wayward Rest for twenty years after her husband passed and left her with the inn and a mountain of debt.",
+  "greetings": [
+    "Welcome to the Wayward Rest! You look like you could use a hot meal and a soft bed.",
+    "Come in, dear. Don't mind the mess — we're between guests. Mostly.",
+    "A room for the night? I've got just the one. Quiet, clean, and the roof doesn't leak. Much."
+  ],
+  "idleChatter": [
+    "I've been making my grandmother's stew. The secret is patience and a lot of butter.",
+    "Travelers these days are so tense. In my day, we knew how to relax. Now everyone's in a hurry.",
+    "I heard the most interesting thing from a guest last night. But a lady doesn't repeat everything she hears.",
+    "The inn's been full lately. Something's drawing people to this town. I'm not sure I like it."
+  ],
+  "farewells": [
+    "Safe travels, dear. And remember — there's always a bed here if you need it.",
+    "Take some bread for the road. You look like you haven't had a proper meal in days.",
+    "Come back anytime. The door's always open, and the stew's always warm."
+  ],
+  "reactiveComments": [
+    "Oh, you poor thing. Sit down, I'll get you something warm. You can tell me what happened.",
+    "You're heading out there? At least take a packed lunch. I won't have you starving.",
+    "I've seen a lot of adventurers come through here. The careful ones are the ones who come back."
+  ]
+}

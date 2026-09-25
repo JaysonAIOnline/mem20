@@ -1,8 +1,4 @@
-"""
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
-Marketing Tools Mixin for mem20 MCP Server
+"""Marketing Tools Mixin for mem20 MCP Server.
 
 Provides marketing tools with multi-backend support:
 - SEO analysis (Ahrefs, SEMrush, Moz)
@@ -16,16 +12,13 @@ Provides marketing tools with multi-backend support:
 - Hashtag research
 - Influencer discovery
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 
-import os
-import sys
 import json
-import asyncio
-import urllib.request
+import os
 import urllib.parse
+import urllib.request
+
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -35,7 +28,7 @@ try:
     import mcp_types as mt
 except ImportError:
     print("Error: mcp package not installed. Please install with: pip install mcp")
-    sys.exit(1)
+    raise
 
 
 class MarketingToolsMixin:
@@ -181,176 +174,176 @@ class MarketingToolsMixin:
         tool = args.get("tool", "pagespeed")
         keywords = args.get("keywords", "")
         try:
-    if tool == "pagespeed":
-    api_key = os.environ.get("GOOGLE_PAGESPEED_API_KEY", "")
-    api_url = f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={urllib.parse.quote(url)}"
-    if api_key:
-    api_url += f"&key={api_key}"
-    req = urllib.request.Request(api_url)
-    with urllib.request.urlopen(req, timeout=30) as resp:
-    data = json.loads(resp.read().decode("utf-8"))
-    lighthouse = data.get("lighthouseResult", {})
-    categories = lighthouse.get("categories", {})
-    scores = {}
-    for key, val in categories.items():
-    scores[key] = val.get("score", 0) * 100
-    output = f"PageSpeed Scores for {url}:\n"
-    for category, score in scores.items():
-    output += f"  {category}: {score:.0f}/100\n"
-    return output
-    elif tool == "ahrefs":
-    return "Ahrefs API requires API key. Set AHREFS_API_KEY environment variable."
-    elif tool == "semrush":
-    return "SEMrush API requires API key. Set SEMRUSH_API_KEY environment variable."
-    elif tool == "moz":
-    return "Moz API requires API key. Set MOZ_ACCESS_ID and MOZ_SECRET_KEY environment variables."
-    else:
-    return f"Unknown tool: {tool}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if tool == "pagespeed":
+                api_key = os.environ.get("GOOGLE_PAGESPEED_API_KEY", "")
+                api_url = f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={urllib.parse.quote(url)}"
+                if api_key:
+                    api_url += f"&key={api_key}"
+                req = urllib.request.Request(api_url)
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                lighthouse = data.get("lighthouseResult", {})
+                categories = lighthouse.get("categories", {})
+                scores = {}
+                for key, val in categories.items():
+                    scores[key] = val.get("score", 0) * 100
+                output = f"PageSpeed Scores for {url}:\n"
+                for category, score in scores.items():
+                    output += f"  {category}: {score:.0f}/100\n"
+                return output
+            elif tool == "ahrefs":
+                return "Ahrefs API requires API key. Set AHREFS_API_KEY environment variable."
+            elif tool == "semrush":
+                return "SEMrush API requires API key. Set SEMRUSH_API_KEY environment variable."
+            elif tool == "moz":
+                return "Moz API requires API key. Set MOZ_ACCESS_ID and MOZ_SECRET_KEY environment variables."
+            else:
+                return f"Unknown tool: {tool}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_social_post(self, args: Dict) -> str:
-    platform = args.get("platform", "twitter")
-    message = args.get("message", "")
-    media_urls = args.get("media_urls", "")
-    schedule = args.get("schedule", "")
+        platform = args.get("platform", "twitter")
+        message = args.get("message", "")
+        media_urls = args.get("media_urls", "")
+        schedule = args.get("schedule", "")
         try:
-    if platform == "twitter":
-    Use Twitter API v2
-    api_key = os.environ.get("TWITTER_API_KEY", "")
-    api_secret = os.environ.get("TWITTER_API_SECRET", "")
-    access_token = os.environ.get("TWITTER_ACCESS_TOKEN", "")
-    if not api_key or not access_token:
-    return "Error: TWITTER_API_KEY and TWITTER_ACCESS_TOKEN required."
-    return f"Twitter post scheduled: {message[:100]}..."
-    elif platform == "mastodon":
-    instance = os.environ.get("MASTODON_INSTANCE", "")
-    token = os.environ.get("MASTODON_ACCESS_TOKEN", "")
-    if not instance or not token:
-    return "Error: MASTODON_INSTANCE and MASTODON_ACCESS_TOKEN required."
-    return f"Mastodon post: {message[:100]}..."
-    elif platform == "linkedin":
-    return "LinkedIn posting requires OAuth2 setup."
-    else:
-    return f"Platform '{platform}' not yet implemented."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if platform == "twitter":
+                # Use Twitter API v2
+                api_key = os.environ.get("TWITTER_API_KEY", "")
+                api_secret = os.environ.get("TWITTER_API_SECRET", "")
+                access_token = os.environ.get("TWITTER_ACCESS_TOKEN", "")
+                if not api_key or not access_token:
+                    return "Error: TWITTER_API_KEY and TWITTER_ACCESS_TOKEN required."
+                return f"Twitter post scheduled: {message[:100]}..."
+            elif platform == "mastodon":
+                instance = os.environ.get("MASTODON_INSTANCE", "")
+                token = os.environ.get("MASTODON_ACCESS_TOKEN", "")
+                if not instance or not token:
+                    return "Error: MASTODON_INSTANCE and MASTODON_ACCESS_TOKEN required."
+                return f"Mastodon post: {message[:100]}..."
+            elif platform == "linkedin":
+                return "LinkedIn posting requires OAuth2 setup."
+            else:
+                return f"Platform '{platform}' not yet implemented."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_social_analytics(self, args: Dict) -> str:
-    platform = args.get("platform", "twitter")
-    metric = args.get("metric", "followers")
-    period = args.get("period", "week")
+        platform = args.get("platform", "twitter")
+        metric = args.get("metric", "followers")
+        period = args.get("period", "week")
         try:
-    if platform == "twitter":
-    return f"Twitter analytics ({metric}, {period}): Requires Twitter API access."
-    elif platform == "facebook":
-    return f"Facebook analytics ({metric}, {period}): Requires Facebook Graph API."
-    else:
-    return f"Social analytics for {platform} not yet implemented."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if platform == "twitter":
+                return f"Twitter analytics ({metric}, {period}): Requires Twitter API access."
+            elif platform == "facebook":
+                return f"Facebook analytics ({metric}, {period}): Requires Facebook Graph API."
+            else:
+                return f"Social analytics for {platform} not yet implemented."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_email_campaign(self, args: Dict) -> str:
-    provider = args.get("provider", "sendgrid")
-    action = args.get("action", "create")
-    list_id = args.get("list_id", "")
-    subject = args.get("subject", "")
-    content = args.get("content", "")
+        provider = args.get("provider", "sendgrid")
+        action = args.get("action", "create")
+        list_id = args.get("list_id", "")
+        subject = args.get("subject", "")
+        content = args.get("content", "")
         try:
-    if provider == "sendgrid":
-    api_key = os.environ.get("SENDGRID_API_KEY", "")
-    if not api_key:
-    return "Error: SENDGRID_API_KEY required."
-    if action == "create":
-    return f"Email campaign created: {subject}"
-    elif action == "send":
-    return f"Email campaign sent to list: {list_id}"
-    else:
-    return f"Action '{action}' not yet implemented."
-    elif provider == "mailchimp":
-    return "Mailchimp integration requires API key."
-    elif provider == "convertkit":
-    return "ConvertKit integration requires API key."
-    else:
-    return f"Unknown provider: {provider}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if provider == "sendgrid":
+                api_key = os.environ.get("SENDGRID_API_KEY", "")
+                if not api_key:
+                    return "Error: SENDGRID_API_KEY required."
+                if action == "create":
+                    return f"Email campaign created: {subject}"
+                elif action == "send":
+                    return f"Email campaign sent to list: {list_id}"
+                else:
+                    return f"Action '{action}' not yet implemented."
+            elif provider == "mailchimp":
+                return "Mailchimp integration requires API key."
+            elif provider == "convertkit":
+                return "ConvertKit integration requires API key."
+            else:
+                return f"Unknown provider: {provider}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_content_generate(self, args: Dict) -> str:
-    content_type = args.get("type", "blog")
-    topic = args.get("topic", "")
-    tone = args.get("tone", "professional")
-    length = args.get("length", "medium")
-    keywords = args.get("keywords", "")
+        content_type = args.get("type", "blog")
+        topic = args.get("topic", "")
+        tone = args.get("tone", "professional")
+        length = args.get("length", "medium")
+        keywords = args.get("keywords", "")
         try:
-    This would integrate with an LLM for content generation
-    return f"Content generation for '{topic}' ({content_type}, {tone}, {length}) requires LLM integration."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            # This would integrate with an LLM for content generation
+            return f"Content generation for '{topic}' ({content_type}, {tone}, {length}) requires LLM integration."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_ab_test(self, args: Dict) -> str:
-    action = args.get("action", "list")
-    test_name = args.get("test_name", "")
-    variants = json.loads(args.get("variants", "[]"))
-    metric = args.get("metric", "conversion_rate")
+        action = args.get("action", "list")
+        test_name = args.get("test_name", "")
+        variants = json.loads(args.get("variants", "[]"))
+        metric = args.get("metric", "conversion_rate")
         try:
-    store_path = Path(os.environ.get("MEM20_STORE_PATH", Path.home() / ".mem20" / "store"))
-    ab_path = store_path / "ab_tests.json"
-    store_path.mkdir(parents=True, exist_ok=True)
-    tests = []
-    if ab_path.exists():
-    with open(ab_path) as f:
-    tests = json.load(f)
-    if action == "create":
-    test = {
-    "name": test_name,
-    "variants": variants,
-    "metric": metric,
-    "status": "running",
-    "created_at": datetime.now().isoformat(),
-    }
-    tests.append(test)
-    with open(ab_path, "w") as f:
-    json.dump(tests, f, indent=2)
-    return f"A/B test created: {test_name}"
-    elif action == "list":
-    if tests:
-    return f"A/B Tests ({len(tests)}):\n" + "\n".join(f"  {t['name']}: {t['status']}" for t in tests)
-    return "No A/B tests."
-    else:
-    return f"Action '{action}' not yet implemented."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            store_path = Path(os.environ.get("MEM20_STORE_PATH", Path.home() / ".mem20" / "store"))
+            ab_path = store_path / "ab_tests.json"
+            store_path.mkdir(parents=True, exist_ok=True)
+            tests = []
+            if ab_path.exists():
+                with open(ab_path) as f:
+                    tests = json.load(f)
+            if action == "create":
+                test = {
+                    "name": test_name,
+                    "variants": variants,
+                    "metric": metric,
+                    "status": "running",
+                    "created_at": datetime.now().isoformat(),
+                }
+                tests.append(test)
+                with open(ab_path, "w") as f:
+                    json.dump(tests, f, indent=2)
+                return f"A/B test created: {test_name}"
+            elif action == "list":
+                if tests:
+                    return f"A/B Tests ({len(tests)}):\n" + "\n".join(f"  {t['name']}: {t['status']}" for t in tests)
+                return "No A/B tests."
+            else:
+                return f"Action '{action}' not yet implemented."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_analytics(self, args: Dict) -> str:
-    provider = args.get("provider", "google")
-    property_id = args.get("property_id", "")
-    metric = args.get("metric", "pageviews")
-    period = args.get("period", "week")
+        provider = args.get("provider", "google")
+        property_id = args.get("property_id", "")
+        metric = args.get("metric", "pageviews")
+        period = args.get("period", "week")
         try:
-    if provider == "google":
-    return f"Google Analytics ({property_id}, {metric}, {period}): Requires GA4 API credentials."
-    elif provider == "plausible":
-    return f"Plausible Analytics ({metric}, {period}): Requires Plausible API key."
-    else:
-    return f"Analytics provider '{provider}' not yet implemented."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if provider == "google":
+                return f"Google Analytics ({property_id}, {metric}, {period}): Requires GA4 API credentials."
+            elif provider == "plausible":
+                return f"Plausible Analytics ({metric}, {period}): Requires Plausible API key."
+            else:
+                return f"Analytics provider '{provider}' not yet implemented."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_hashtag_research(self, args: Dict) -> str:
-    topic = args.get("topic", "")
-    platform = args.get("platform", "instagram")
-    limit = args.get("limit", 20)
+        topic = args.get("topic", "")
+        platform = args.get("platform", "instagram")
+        limit = args.get("limit", 20)
         try:
-    Use a simple approach - search for related hashtags
-    return f"Hashtag research for '{topic}' on {platform}:\nThis would use platform APIs to find trending hashtags."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            # Use a simple approach - search for related hashtags
+            return f"Hashtag research for '{topic}' on {platform}:\nThis would use platform APIs to find trending hashtags."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _mkt_competitor_analysis(self, args: Dict) -> str:
-    competitor = args.get("competitor", "")
-    aspect = args.get("aspect", "all")
+        competitor = args.get("competitor", "")
+        aspect = args.get("aspect", "all")
         try:
-    return f"Competitor analysis for '{competitor}' ({aspect}):\nThis would use SEO/social APIs to analyze competitors."
-    except Exception as e:
-    return f"Error: {str(e)}"
+            return f"Competitor analysis for '{competitor}' ({aspect}):\nThis would use SEO/social APIs to analyze competitors."
+        except Exception as e:
+            return f"Error: {str(e)}"

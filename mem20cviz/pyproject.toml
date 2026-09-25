@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20cviz"
+version = "0.1.0"
+description = "mem20 Computer-Vision-inference subsystem (imagined by mem20, built real) — classical CV feature inference (numpy/PIL), deterministic contract simulator, braid-journaled results, UCG-capable descriptor"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["numpy", "Pillow"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+fs-cv = "mem20cviz.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20secretz"
+version = "0.1.0"
+description = "mem20 secrets governance — detect floating credentials that have escaped the central store, classify leak vs config duplication, and report git-exposure risk. Read-only: never mutates stored data."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "secrets", "security", "audit", "redaction"]
+dependencies = []
+
+[project.scripts]
+mem20secretz = "mem20secretz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20secretz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -35,7 +35,8 @@ def test_world_model_transition_rule_simulate(fresh_store):
     wm.add_transition_rule("pressure < 100", {"pressure": 1})
     traj = wm.simulate_step(steps=3)
     assert len(traj) == 3
-    assert traj[-1]["pressure"] == 3.0
+    assert [t["pressure"] for t in traj] == [2.0, 3.0, 4.0]
+    assert traj[-1]["pressure"] == 4.0
     assert wm.state_variables["pressure"]["value"] == 4.0
 
 

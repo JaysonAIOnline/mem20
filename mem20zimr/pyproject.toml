@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20zimr"
+version = "0.2.0"
+description = "mem20 RM-002 Zero-Install Microapp Runtime (absorbed from FreeStack RM-002) — signed portable microapps, no install/dependency pollution, capability-scoped process sandbox"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+fs-microapp = "mem20zimr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

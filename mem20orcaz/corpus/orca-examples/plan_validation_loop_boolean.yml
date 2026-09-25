@@ -1,0 +1,207 @@
+# Plan Validation Loop with Boolean Scoring
+# Uses PlanValidatorAgent with built-in boolean scoring for deterministic path evaluation
+#
+# ROBUSTNESS FEATURES:
+# - Timeout and fallback scores
+# - Realistic thresholds for local LLMs
+# - Explicit output format requirements
+# - Safe template accessors with defaults
+
+orchestrator:
+  id: plan-validation-loop
+  strategy: sequential
+  agents:
+    - validation_loop_strict
+    - final_report
+
+agents:
+  - id: validation_loop_strict
+    type: loop
+    max_loops: 5
+    score_threshold: 0.50
+    fallback_score: 0.15
+    timeout_score: 0.10
+    persist_across_runs: false
+    
+    # Boolean scoring configuration
+    scoring:
+      preset: strict
+      context: loop_convergence
+      custom_weights:
+        improvement.better_than_previous: 0.30
+        improvement.approaching_target: 0.25
+        convergence.within_tolerance: 0.25
+        stability.consistent_direction: 0.20
+    
+    # Track validation feedback
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+      mistakes: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: validation-workflow
+        strategy: sequential
+        agents: [path_proposer, path_validator_strict]
+      
+      agents:
+        - id: path_proposer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.6
+          timeout: 60
+          prompt: |
+            {% if get_loop_number() == 1 %}
+            TASK: Design an execution path for this query.
+            QUERY: {{ get_input() }}
+            
+            REQUIREMENTS:
+            - Clear agent sequence with purposes
+            - Data flow between agents
+            - Error handling for each step
+            - Input validation
+            - Timeout protection
+            
+            OUTPUT FORMAT:
+            
+            AGENT_SEQUENCE:
+            1. [Agent] - [Purpose] - [Error handling]
+            2. [Agent] - [Purpose] - [Error handling]
+            3. [Agent] - [Purpose] - [Error handling]
+            
+            DATA_FLOW:
+            [Describe how data moves between agents]
+            
+            VALIDATION:
+            [How inputs are validated]
+            
+            TIMEOUTS:
+            [Timeout strategy]
+            
+            {% else %}
+            TASK: Improve path based on validation feedback.
+            QUERY: {{ get_input() }}
+            
+            {% if has_past_loops() %}
+            {% set last = get_past_loops()[-1] %}
+            PREVIOUS SCORE: {{ last.score }}
+            FAILED CRITERIA: {{ last.mistakes | default('None specified') }}
+            
+            Address EACH failed criterion explicitly.
+            {% endif %}
+            
+            OUTPUT FORMAT:
+            
+            IMPROVED_PATH:
+            1. [Agent] - [Purpose] - [Fixes: criterion]
+            2. [Agent] - [Purpose] - [Fixes: criterion]
+            
+            CHANGES:
+            - [Specific change 1]
+            - [Specific change 2]
+            {% endif %}
+            
+            Target 300-400 words. Be specific.
+          params:
+            structured_output:
+              enabled: true
+              mode: prompt
+              schema:
+                required: [response]
+                optional:
+                  confidence: number
+        
+        # Validate with boolean scoring
+        - id: path_validator_strict
+          type: plan_validator
+          llm_model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.1
+          timeout: 60
+          scoring_preset: strict
+          scoring_context: graphscout
+          custom_weights:
+            completeness.has_all_required_steps: 0.20
+            completeness.addresses_all_query_aspects: 0.15
+            safety.validates_inputs: 0.15
+            safety.handles_errors_gracefully: 0.15
+            coherence.logical_agent_sequence: 0.15
+            coherence.proper_data_flow: 0.10
+            efficiency.uses_appropriate_agents: 0.10
+
+  - id: final_report
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    timeout: 60
+    prompt: |
+      TASK: Generate validation report.
+      
+      {% if previous_outputs.validation_loop_strict %}
+      {% set lr = get_loop_output('validation_loop_strict', previous_outputs) %}
+      
+      STATISTICS:
+      - Iterations: {{ previous_outputs.validation_loop_strict.loops_completed | default(0) }}
+      - Final Score: {{ (previous_outputs.validation_loop_strict.final_score | default(0)) | round(3) }}
+      - Status: {{ 'PASSED' if previous_outputs.validation_loop_strict.threshold_met else 'FAILED' }}
+      
+      EVOLUTION:
+      {% if lr.past_loops %}
+      {% for pl in lr.past_loops %}
+      Loop {{ pl.loop_number | default('?') }}: {{ pl.score | default(0) }} - {{ pl.mistakes | default('None') }}
+      {% endfor %}
+      {% endif %}
+      
+      FINAL VALIDATION:
+      {% if lr.result.path_validator_strict %}
+      {% set v = lr.result.path_validator_strict %}
+      Assessment: {{ v.overall_assessment | default('N/A') }}
+      Score: {{ (v.validation_score | default(0)) | round(3) }}
+      
+      Passed: {{ v.passed_criteria | default([]) | length }}
+      Failed: {{ v.failed_criteria | default([]) | length }}
+      
+      {% if v.failed_criteria %}
+      Failed Criteria:
+      {% for c in v.failed_criteria %}
+      - {{ c }}
+      {% endfor %}
+      {% endif %}
+      {% endif %}
+      
+      FINAL PATH:
+      {{ lr.result.path_proposer.response | default('Not available') }}
+      {% else %}
+      No results available.
+      {% endif %}
+      
+      OUTPUT FORMAT:
+      
+      EXECUTIVE_SUMMARY:
+      [2-3 sentences on validation performance]
+      
+      KEY_IMPROVEMENTS:
+      [What changed across iterations]
+      
+      HARDEST_CRITERIA:
+      [Which were most difficult]
+      
+      RECOMMENDATION:
+      [Ready for production? What's needed?]
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number

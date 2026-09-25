@@ -1,8 +1,4 @@
-"""
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
-Database Tools Mixin for mem20 MCP Server
+"""Database Tools Mixin for mem20 MCP Server.
 
 Provides database tools with multi-backend support:
 - SQLite (built-in, always available)
@@ -14,16 +10,12 @@ Provides database tools with multi-backend support:
 - Schema inspection
 - Migration runner
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 
-import os
-import sys
 import json
-import asyncio
+import os
 import sqlite3
-import tempfile
+import time
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -33,7 +25,7 @@ try:
     import mcp_types as mt
 except ImportError:
     print("Error: mcp package not installed. Please install with: pip install mcp")
-    sys.exit(1)
+    raise
 
 
 class DatabaseToolsMixin:
@@ -212,273 +204,273 @@ class DatabaseToolsMixin:
         database = args.get("database", "")
         params = json.loads(args.get("params", "[]"))
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    cursor = conn.execute(query, params)
-    if query.strip().upper().startswith("SELECT"):
-    rows = cursor.fetchall()
-    if not rows:
-    return "No results."
-    columns = [desc[0] for desc in cursor.description]
-    result = " | ".join(columns) + "\n" + "-" * 50 + "\n"
-    for row in rows[:100]:
-    result += " | ".join(str(v) for v in row) + "\n"
-    if len(rows) > 100:
-    result += f"\n... ({len(rows)} total rows)"
-    conn.close()
-    return result
-    else:
-    conn.commit()
-    conn.close()
-    return f"Query executed. Rows affected: {cursor.rowcount}"
-    elif db_type == "postgresql":
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                cursor = conn.execute(query, params)
+                if query.strip().upper().startswith("SELECT"):
+                    rows = cursor.fetchall()
+                    if not rows:
+                        return "No results."
+                    columns = [desc[0] for desc in cursor.description]
+                    result = " | ".join(columns) + "\n" + "-" * 50 + "\n"
+                    for row in rows[:100]:
+                        result += " | ".join(str(v) for v in row) + "\n"
+                    if len(rows) > 100:
+                        result += f"\n... ({len(rows)} total rows)"
+                    conn.close()
+                    return result
+                else:
+                    conn.commit()
+                    conn.close()
+                    return f"Query executed. Rows affected: {cursor.rowcount}"
+            elif db_type == "postgresql":
                 try:
-    import asyncpg
-    conn = await asyncpg.connect(database)
-    if query.strip().upper().startswith("SELECT"):
-    rows = await conn.fetch(query, *params)
-    if not rows:
-    return "No results."
-    columns = list(rows[0].keys())
-    result = " | ".join(columns) + "\n" + "-" * 50 + "\n"
-    for row in rows[:100]:
-    result += " | ".join(str(v) for v in row.values()) + "\n"
-    return result
-    else:
-    result = await conn.execute(query, *params)
-    return f"Query executed. {result}"
+                    import asyncpg
+                    conn = await asyncpg.connect(database)
+                    if query.strip().upper().startswith("SELECT"):
+                        rows = await conn.fetch(query, *params)
+                        if not rows:
+                            return "No results."
+                        columns = list(rows[0].keys())
+                        result = " | ".join(columns) + "\n" + "-" * 50 + "\n"
+                        for row in rows[:100]:
+                            result += " | ".join(str(v) for v in row.values()) + "\n"
+                        return result
+                    else:
+                        result = await conn.execute(query, *params)
+                        return f"Query executed. {result}"
                 except ImportError:
-    return "Error: asyncpg not installed. Run: pip install asyncpg"
-    elif db_type == "mysql":
+                    return "Error: asyncpg not installed. Run: pip install asyncpg"
+            elif db_type == "mysql":
                 try:
-    import pymysql
-    Parse connection string or use defaults
-    conn = pymysql.connect(host="localhost", user="root", database=database or "mem20")
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    if query.strip().upper().startswith("SELECT"):
-    rows = cursor.fetchall()
-    if not rows:
-    return "No results."
-    columns = [desc[0] for desc in cursor.description]
-    result = " | ".join(columns) + "\n" + "-" * 50 + "\n"
-    for row in rows[:100]:
-    result += " | ".join(str(v) for v in row) + "\n"
-    return result
-    else:
-    conn.commit()
-    return f"Query executed. Rows affected: {cursor.rowcount}"
+                    import pymysql
+                    # Parse connection string or use defaults
+                    conn = pymysql.connect(host="localhost", user="root", database=database or "mem20")
+                    cursor = conn.cursor()
+                    cursor.execute(query, params)
+                    if query.strip().upper().startswith("SELECT"):
+                        rows = cursor.fetchall()
+                        if not rows:
+                            return "No results."
+                        columns = [desc[0] for desc in cursor.description]
+                        result = " | ".join(columns) + "\n" + "-" * 50 + "\n"
+                        for row in rows[:100]:
+                            result += " | ".join(str(v) for v in row) + "\n"
+                        return result
+                    else:
+                        conn.commit()
+                        return f"Query executed. Rows affected: {cursor.rowcount}"
                 except ImportError:
-    return "Error: pymysql not installed. Run: pip install pymysql"
-    else:
-    return f"Unsupported database type: {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+                    return "Error: pymysql not installed. Run: pip install pymysql"
+            else:
+                return f"Unsupported database type: {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_schema(self, args: Dict) -> str:
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
-    table = args.get("table", "")
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
+        table = args.get("table", "")
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    if table:
-    cursor = conn.execute(f"PRAGMA table_info({table})")
-    columns = cursor.fetchall()
-    if not columns:
-    return f"Table '{table}' not found."
-    result = f"Schema for table '{table}':\n"
-    for col in columns:
-    result += f"  {col[1]} ({col[2]}) {'PRIMARY KEY' if col[5] else ''}\n"
-    return result
-    else:
-    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = cursor.fetchall()
-    if not tables:
-    return "No tables found."
-    result = "Tables:\n"
-    for t in tables:
-    result += f"  {t[0]}\n"
-    return result
-    elif db_type == "postgresql":
-    return "PostgreSQL schema inspection requires asyncpg connection."
-    elif db_type == "mysql":
-    return "MySQL schema inspection requires pymysql connection."
-    elif db_type == "mongodb":
-    return "MongoDB is schemaless. Use db_list_tables to see collections."
-    else:
-    return f"Unsupported database type: {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                if table:
+                    cursor = conn.execute(f"PRAGMA table_info({table})")
+                    columns = cursor.fetchall()
+                    if not columns:
+                        return f"Table '{table}' not found."
+                    result = f"Schema for table '{table}':\n"
+                    for col in columns:
+                        result += f"  {col[1]} ({col[2]}) {'PRIMARY KEY' if col[5] else ''}\n"
+                    return result
+                else:
+                    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                    tables = cursor.fetchall()
+                    if not tables:
+                        return "No tables found."
+                    result = "Tables:\n"
+                    for t in tables:
+                        result += f"  {t[0]}\n"
+                    return result
+            elif db_type == "postgresql":
+                return "PostgreSQL schema inspection requires asyncpg connection."
+            elif db_type == "mysql":
+                return "MySQL schema inspection requires pymysql connection."
+            elif db_type == "mongodb":
+                return "MongoDB is schemaless. Use db_list_tables to see collections."
+            else:
+                return f"Unsupported database type: {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_insert(self, args: Dict) -> str:
-    table = args.get("table", "")
-    data = json.loads(args.get("data", "{}"))
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
+        table = args.get("table", "")
+        data = json.loads(args.get("data", "{}"))
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    columns = ", ".join(data.keys())
-    placeholders = ", ".join(["?" for _ in data])
-    query = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
-    conn.execute(query, list(data.values()))
-    conn.commit()
-    conn.close()
-    return f"Inserted into {table}"
-    elif db_type == "mongodb":
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                columns = ", ".join(data.keys())
+                placeholders = ", ".join(["?" for _ in data])
+                query = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+                conn.execute(query, list(data.values()))
+                conn.commit()
+                conn.close()
+                return f"Inserted into {table}"
+            elif db_type == "mongodb":
                 try:
-    from pymongo import MongoClient
-    client = MongoClient(args.get("mongo_url", "mongodb://localhost:27017"))
-    db = client[args.get("database_name", "mem20")]
-    result = db[table].insert_one(data)
-    return f"Inserted into {table} (id: {result.inserted_id})"
+                    from pymongo import MongoClient
+                    client = MongoClient(args.get("mongo_url", "mongodb://localhost:27017"))
+                    db = client[args.get("database_name", "mem20")]
+                    result = db[table].insert_one(data)
+                    return f"Inserted into {table} (id: {result.inserted_id})"
                 except ImportError:
-    return "Error: pymongo not installed. Run: pip install pymongo"
-    else:
-    return f"Insert not yet implemented for {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+                    return "Error: pymongo not installed. Run: pip install pymongo"
+            else:
+                return f"Insert not yet implemented for {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_update(self, args: Dict) -> str:
-    table = args.get("table", "")
-    data = json.loads(args.get("data", "{}"))
-    where = args.get("where", "")
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
+        table = args.get("table", "")
+        data = json.loads(args.get("data", "{}"))
+        where = args.get("where", "")
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    set_clause = ", ".join(f"{k} = ?" for k in data)
-    query = f"UPDATE {table} SET {set_clause} WHERE {where}"
-    conn.execute(query, list(data.values()))
-    conn.commit()
-    conn.close()
-    return f"Updated {table}"
-    else:
-    return f"Update not yet implemented for {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                set_clause = ", ".join(f"{k} = ?" for k in data)
+                query = f"UPDATE {table} SET {set_clause} WHERE {where}"
+                conn.execute(query, list(data.values()))
+                conn.commit()
+                conn.close()
+                return f"Updated {table}"
+            else:
+                return f"Update not yet implemented for {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_delete(self, args: Dict) -> str:
-    table = args.get("table", "")
-    where = args.get("where", "")
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
+        table = args.get("table", "")
+        where = args.get("where", "")
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    query = f"DELETE FROM {table} WHERE {where}"
-    cursor = conn.execute(query)
-    conn.commit()
-    conn.close()
-    return f"Deleted from {table}. Rows affected: {cursor.rowcount}"
-    else:
-    return f"Delete not yet implemented for {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                query = f"DELETE FROM {table} WHERE {where}"
+                cursor = conn.execute(query)
+                conn.commit()
+                conn.close()
+                return f"Deleted from {table}. Rows affected: {cursor.rowcount}"
+            else:
+                return f"Delete not yet implemented for {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_create_table(self, args: Dict) -> str:
-    table = args.get("table", "")
-    columns = json.loads(args.get("columns", "{}"))
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
+        table = args.get("table", "")
+        columns = json.loads(args.get("columns", "{}"))
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    col_defs = ", ".join(f"{k} {v}" for k, v in columns.items())
-    query = f"CREATE TABLE IF NOT EXISTS {table} ({col_defs})"
-    conn.execute(query)
-    conn.commit()
-    conn.close()
-    return f"Table '{table}' created."
-    else:
-    return f"Create table not yet implemented for {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                col_defs = ", ".join(f"{k} {v}" for k, v in columns.items())
+                query = f"CREATE TABLE IF NOT EXISTS {table} ({col_defs})"
+                conn.execute(query)
+                conn.commit()
+                conn.close()
+                return f"Table '{table}' created."
+            else:
+                return f"Create table not yet implemented for {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_list_tables(self, args: Dict) -> str:
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
         try:
-    if db_type == "sqlite":
-    conn = self._get_sqlite_conn(database)
-    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = [row[0] for row in cursor.fetchall()]
-    conn.close()
-    return f"Tables: {', '.join(tables)}" if tables else "No tables found."
-    elif db_type == "mongodb":
+            if db_type == "sqlite":
+                conn = self._get_sqlite_conn(database)
+                cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                tables = [row[0] for row in cursor.fetchall()]
+                conn.close()
+                return f"Tables: {', '.join(tables)}" if tables else "No tables found."
+            elif db_type == "mongodb":
                 try:
-    from pymongo import MongoClient
-    client = MongoClient(args.get("mongo_url", "mongodb://localhost:27017"))
-    db = client[args.get("database_name", "mem20")]
-    collections = db.list_collection_names()
-    return f"Collections: {', '.join(collections)}" if collections else "No collections found."
+                    from pymongo import MongoClient
+                    client = MongoClient(args.get("mongo_url", "mongodb://localhost:27017"))
+                    db = client[args.get("database_name", "mem20")]
+                    collections = db.list_collection_names()
+                    return f"Collections: {', '.join(collections)}" if collections else "No collections found."
                 except ImportError:
-    return "Error: pymongo not installed."
-    else:
-    return f"List tables not yet implemented for {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+                    return "Error: pymongo not installed."
+            else:
+                return f"List tables not yet implemented for {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_backup(self, args: Dict) -> str:
-    db_type = args.get("db_type", "sqlite")
-    database = args.get("database", "")
-    output_path = args.get("output_path", "")
+        db_type = args.get("db_type", "sqlite")
+        database = args.get("database", "")
+        output_path = args.get("output_path", "")
         try:
-    if db_type == "sqlite":
-    import shutil
-    src = self._get_sqlite_path(database)
-    if not output_path:
-    output_path = f"{src}.backup_{int(time.time())}"
-    shutil.copy2(src, output_path)
-    return f"Database backed up to: {output_path}"
-    elif db_type == "postgresql":
-    return "Use pg_dump for PostgreSQL backups."
-    elif db_type == "mysql":
-    return "Use mysqldump for MySQL backups."
-    else:
-    return f"Backup not yet implemented for {db_type}"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            if db_type == "sqlite":
+                import shutil
+                src = self._get_sqlite_path(database)
+                if not output_path:
+                    output_path = f"{src}.backup_{int(time.time())}"
+                shutil.copy2(src, output_path)
+                return f"Database backed up to: {output_path}"
+            elif db_type == "postgresql":
+                return "Use pg_dump for PostgreSQL backups."
+            elif db_type == "mysql":
+                return "Use mysqldump for MySQL backups."
+            else:
+                return f"Backup not yet implemented for {db_type}"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_redis_command(self, args: Dict) -> str:
-    command = args.get("command", "")
-    cmd_args = json.loads(args.get("args", "[]"))
-    redis_url = args.get("redis_url", "redis://localhost:6379")
+        command = args.get("command", "")
+        cmd_args = json.loads(args.get("args", "[]"))
+        redis_url = args.get("redis_url", "redis://localhost:6379")
         try:
-    import redis
-    r = redis.from_url(redis_url)
-    func = getattr(r, command.lower(), None)
-    if func:
-    result = func(*cmd_args)
-    return f"Result: {result}"
-    else:
-    return f"Unknown Redis command: {command}"
+            import redis
+            r = redis.from_url(redis_url)
+            func = getattr(r, command.lower(), None)
+            if func:
+                result = func(*cmd_args)
+                return f"Result: {result}"
+            else:
+                return f"Unknown Redis command: {command}"
         except ImportError:
-    return "Error: redis not installed. Run: pip install redis"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            return "Error: redis not installed. Run: pip install redis"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _db_mongo_find(self, args: Dict) -> str:
-    collection = args.get("collection", "")
-    filter_q = json.loads(args.get("filter", "{}"))
-    projection = json.loads(args.get("projection", "{}"))
-    limit = args.get("limit", 10)
-    mongo_url = args.get("mongo_url", "mongodb://localhost:27017")
-    database_name = args.get("database_name", "mem20")
+        collection = args.get("collection", "")
+        filter_q = json.loads(args.get("filter", "{}"))
+        projection = json.loads(args.get("projection", "{}"))
+        limit = args.get("limit", 10)
+        mongo_url = args.get("mongo_url", "mongodb://localhost:27017")
+        database_name = args.get("database_name", "mem20")
         try:
-    from pymongo import MongoClient
-    client = MongoClient(mongo_url)
-    db = client[database_name]
-    results = list(db[collection].find(filter_q, projection).limit(limit))
-    if not results:
-    return "No results."
-    output = f"Results ({len(results)}):\n"
-    for doc in results:
-    output += json.dumps(doc, default=str) + "\n"
-    return output
+            from pymongo import MongoClient
+            client = MongoClient(mongo_url)
+            db = client[database_name]
+            results = list(db[collection].find(filter_q, projection).limit(limit))
+            if not results:
+                return "No results."
+            output = f"Results ({len(results)}):\n"
+            for doc in results:
+                output += json.dumps(doc, default=str) + "\n"
+            return output
         except ImportError:
-    return "Error: pymongo not installed. Run: pip install pymongo"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            return "Error: pymongo not installed. Run: pip install pymongo"
+        except Exception as e:
+            return f"Error: {str(e)}"

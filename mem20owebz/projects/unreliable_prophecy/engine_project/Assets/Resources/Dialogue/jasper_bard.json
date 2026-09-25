@@ -1,0 +1,26 @@
+{
+  "npcId": "jasper_bard",
+  "npcDisplayName": "Jasper Strings",
+  "coreBackstory": "Jasper appeared in town six months ago, claiming to be a traveling bard collecting stories.",
+  "greetings": [
+    "Ah, a new face! Or is it? I have a terrible memory for faces, but an excellent one for stories.",
+    "Welcome, welcome! Sit, listen, and if you're inspired, toss a coin. Or don't. The music's free.",
+    "You look like someone with a tale to tell. I'm all ears — and I've got excellent ones."
+  ],
+  "idleChatter": [
+    "I've been composing a new ballad. It's about a hero, a curse, and a very unhelpful prophecy.",
+    "This town has more secrets than a bard could sing in a lifetime. Lucky for you, I'm persistent.",
+    "They say music soothes the savage beast. I say it soothes the savage landlord. Same principle.",
+    "I've performed in castles and gutters. Give me a warm fire and a willing audience — that's all I need."
+  ],
+  "farewells": [
+    "May your road be smooth and your enemies be slightly less competent than you!",
+    "If you hear a song about a mysterious stranger, that's probably me. Don't applaud too loud.",
+    "Stay safe out there. And if you find a good story, bring it back. I'll put it to music."
+  ],
+  "reactiveComments": [
+    "You've got the look of someone who's seen the other side of a fight. Want to talk about it? I'll put it to verse.",
+    "I've heard rumors about those ruins. Want me to sing you the warning ballad? It's catchy AND informative.",
+    "You're not the only one asking questions around here. Be careful who's listening."
+  ]
+}

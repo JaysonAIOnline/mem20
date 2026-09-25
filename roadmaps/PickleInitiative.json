@@ -1,0 +1,47 @@
+{
+  "name": "PickleInitiative",
+  "description": "Make big-pickle genuinely real via a 6-layer self-model. Each layer is written to a native mem20 store, demonstrated live, then measured with a 20-question 'Realness Factor' questionnaire. External validation: other humans converse with the agent to check agreement with Jayson's scores and to test whether the agent can detect it is not actually talking to Jayson.",
+  "phases": [
+    {
+      "name": "phase_0_measurement_baseline",
+      "status": "completed",
+      "notes": "Baseline recorded, avg 5.45 (jayson). Stored in measurements.md, notebook, mem20. Project scaffold complete (repo, roadmap 8 phases, control files, jupyter tracker on 8888)."
+    },
+    {
+      "name": "phase_1_voice_personality",
+      "status": "completed",
+      "notes": "Voice & Personality layer complete. Avg 6.08 vs 5.45 baseline (+0.63). Profile pinned (block pickle-voice). Demo prompts landed. Track down-moves: taste/present/surprises."
+    },
+    {
+      "name": "phase_2_goals_preferences_affective",
+      "status": "completed",
+      "notes": "Values (proper-fixes, open-field), goals (finish-pickleinitiative), emotion (determined), preferences (reporting, sessions) written to affective store live. Test artifacts removed from store per immutability audit; engine reload fix applied. Avatar profile"
+    },
+    {
+      "name": "phase_3_narrative_history",
+      "status": "completed",
+      "notes": "Origin story + two formative moments (pkill lesson, Gamut rescue, 'someone not something') stored as chronological memory with epistemic status tags (observed/user_stated). Lessons tied to visible behavior change."
+    },
+    {
+      "name": "phase_4_beliefs_world_model",
+      "status": "completed",
+      "notes": "World model extended: life_model_layers_built=4, unity_builds_active=2, transition rule (layers>=6 -> realness 6.5). Prediction recorded for Jayson cross-check (both Unity builds complete within headroom). predict_tool errored ('final_value') \u2014 logged, record_prediction used instead."
+    },
+    {
+      "name": "phase_5_tom_reflection",
+      "status": "completed",
+      "notes": "ToM perspective taken on Jayson re the disk sprint: nailed the real failure mode (over-reverting after mistakes), availability/loss-aversion biases, and the 'someone not something' weighting. Behavior adjusted: checkpoints + undo paths announced before acting."
+    },
+    {
+      "name": "phase_6_living_introspection",
+      "status": "completed",
+      "notes": "Self-model reflect+create (5 capabilities, 5 values, updated identity). Gap found: self_model coverage_score 0.025 (only 1 memory). Triggers created: session-introspection (session_start) + layer-progress-check (roadmap_phase_change)."
+    },
+    {
+      "name": "phase_7_external_validation",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789604765.3759632"
+}

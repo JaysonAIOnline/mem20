@@ -1,0 +1,47 @@
+{
+  "name": "jairf-4",
+  "description": "JAIRF Quarter 4 - Polish, Scale & Live-Service Readiness: performance, content volume, live-ops foundations. Deliverable: optimized build, anti-cheat foundations, advanced builder features, simulation-driven balancing, packaging, soft-launch readiness.",
+  "phases": [
+    {
+      "name": "Performance + optimization",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Anti-cheat foundations",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Advanced builder features",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Simulation-driven balancing",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Content volume pass",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Packaging + soft-launch readiness",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "QA by beta-testing swarm",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Human sign-off on Q4",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

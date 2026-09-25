@@ -1,0 +1,37 @@
+{
+  "name": "mem20-fleet-build",
+  "description": "Build unified control plane, first-class CLIs, sales site, DNS/email cleanup, marketing command center, docs wiki, and Websites manager across all 24 subsystems + mem20.",
+  "phases": [
+    {
+      "name": "Step 2: First-class CLIs (fs-<sub> + fs dispatcher + coverage harness + --json)",
+      "status": "in_progress",
+      "notes": "Starting with CLI standardization across all 24 subsystems + mem20. fs-* naming, umbrella fs, coverage harness from toolchest inventory, --json/exit codes."
+    },
+    {
+      "name": "Step 1+7: Unified control plane (FastAPI+Vite/React tabs+nav) + Websites manager (deploy/DNS/health)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Step 4: DNS/email cleanup + fleet landing + tunnel CNAMEs",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Step 6: Docs wiki (MkDocs Material, public+private split, CF Access)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Step 3: Sales site (Stripe Checkout live, 5 SKU categories, auto-provision)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Step 5: Marketing command center (brand kit, studio, 4 ad providers test-mode, $1/day gate)",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789604765.3759632"
+}

@@ -1,0 +1,231 @@
+# Boolean-Based Scoring Loop Example
+# Demonstrates LoopNode with deterministic, auditable boolean scoring
+#
+# ROBUSTNESS FEATURES:
+# - Explicit JSON output format for boolean evaluator
+# - Multiple fallback score extraction patterns
+# - Realistic thresholds for local LLMs
+# - Timeout and fallback score handling
+# - Focused prompts with word limits
+
+orchestrator:
+  id: boolean-scoring-loop-example
+  strategy: sequential
+  agents:
+    - path_proposer
+    - validation_loop
+    - final_summary
+
+agents:
+  - id: path_proposer
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.6
+    timeout: 60
+    prompt: |
+      TASK: Propose an agent execution path for this query.
+      QUERY: {{ get_input() }}
+      
+      REQUIRED OUTPUT FORMAT:
+      
+      AGENT_SEQUENCE:
+      1. [Agent Name] - [Purpose]
+      2. [Agent Name] - [Purpose]
+      3. [Agent Name] - [Purpose]
+      
+      DATA_FLOW:
+      Input → Agent1 → Agent2 → Agent3 → Output
+      
+      ERROR_HANDLING:
+      - Timeout: [Action]
+      - Invalid input: [Action]
+      - Agent failure: [Fallback]
+      
+      Keep response focused. Target 200-300 words.
+
+  - id: validation_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.50
+    fallback_score: 0.20
+    timeout_score: 0.10
+    persist_across_runs: false
+    
+    # Boolean scoring configuration
+    scoring:
+      preset: moderate
+      context: loop_convergence
+      custom_weights:
+        improvement.better_than_previous: 0.30
+        improvement.approaching_target: 0.20
+        stability.consistent_direction: 0.20
+        convergence.within_tolerance: 0.30
+    
+    # Robust extraction with multiple strategies
+    score_extraction_config:
+      strategies:
+        - type: pattern
+          patterns:
+            - "SCORE:\\s*([0-9]+\\.?[0-9]*)"
+            - "Score:\\s*([0-9]+\\.?[0-9]*)"
+            - "OVERALL_SCORE:\\s*([0-9]+\\.?[0-9]*)"
+    
+    # Cognitive extraction for loop metadata
+    cognitive_extraction:
+      enabled: true
+      max_length_per_category: 300
+      extract_patterns:
+        insights:
+          - "(?:✓|passed|true).*?([A-Za-z_]+)"
+        improvements:
+          - "(?:✗|failed|false).*?([A-Za-z_]+)"
+          - "(?:missing|lacks|needs)\\s+(.+?)(?:\\n|$)"
+        mistakes:
+          - "failed_criteria.*?:\\s*\\[(.+?)\\]"
+      agent_priorities:
+        path_evaluator: ["improvements", "mistakes"]
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+      mistakes: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: validation-internal
+        strategy: sequential
+        agents: [path_improver, path_evaluator]
+      
+      agents:
+        - id: path_improver
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.6
+          timeout: 60
+          prompt: |
+            TASK: Improve the execution path based on feedback.
+            
+            ORIGINAL QUERY: {{ get_input() }}
+            
+            {% if has_context('path_proposer') %}
+            CURRENT PATH:
+            {{ get_agent_response('path_proposer') }}
+            {% endif %}
+            
+            {% if has_past_loops() %}
+            FEEDBACK FROM PREVIOUS LOOPS:
+            {% for pl in get_past_loops() %}
+            Loop {{ pl.loop_number }}: Score {{ pl.score }}
+            Failed: {{ pl.mistakes | default('None') }}
+            {% endfor %}
+            
+            ADDRESS all failed criteria explicitly.
+            {% endif %}
+            
+            OUTPUT FORMAT:
+            
+            IMPROVED_PATH:
+            1. [Agent] - [Purpose] - [Addresses: criterion]
+            2. [Agent] - [Purpose] - [Addresses: criterion]
+            
+            CHANGES_MADE:
+            - [Change 1 and which criterion it fixes]
+            - [Change 2 and which criterion it fixes]
+            
+            Target 250-350 words.
+        
+        - id: path_evaluator
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.1
+          timeout: 60
+          prompt: |
+            TASK: Evaluate the path using boolean criteria.
+            
+            PATH TO EVALUATE:
+            {{ get_agent_response('path_improver') }}
+            
+            Evaluate each criterion as TRUE or FALSE:
+            
+            COMPLETENESS:
+            - has_all_required_steps: [true/false]
+            - addresses_all_query_aspects: [true/false]
+            - handles_edge_cases: [true/false]
+            - includes_fallback_path: [true/false]
+            
+            EFFICIENCY:
+            - minimizes_redundant_calls: [true/false]
+            - uses_appropriate_agents: [true/false]
+            - optimizes_cost: [true/false]
+            - optimizes_latency: [true/false]
+            
+            SAFETY:
+            - validates_inputs: [true/false]
+            - handles_errors_gracefully: [true/false]
+            - has_timeout_protection: [true/false]
+            - avoids_risky_combinations: [true/false]
+            
+            COHERENCE:
+            - logical_agent_sequence: [true/false]
+            - proper_data_flow: [true/false]
+            - no_conflicting_actions: [true/false]
+            
+            OUTPUT FORMAT:
+            
+            PASSED: [List criteria that are true]
+            FAILED: [List criteria that are false]
+            
+            SCORE: [Number of true / 15, as decimal 0.0-1.0]
+            
+            RATIONALE: [One sentence summary]
+            
+            IMPORTANT: SCORE line must be exactly "SCORE: X.XX"
+
+  - id: final_summary
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.4
+    timeout: 60
+    prompt: |
+      TASK: Summarize the boolean scoring loop results.
+      
+      {% if previous_outputs.validation_loop %}
+      STATISTICS:
+      - Loops: {{ previous_outputs.validation_loop.loops_completed | default('?') }}
+      - Final Score: {{ previous_outputs.validation_loop.final_score | default('?') }}
+      - Threshold Met: {{ previous_outputs.validation_loop.threshold_met | default('?') }}
+      
+      {% set lr = get_loop_output('validation_loop', previous_outputs) %}
+      {% if lr.past_loops %}
+      EVOLUTION:
+      {% for pl in lr.past_loops %}
+      Loop {{ pl.loop_number }}: {{ pl.score }} - Issues: {{ pl.mistakes | default('None') }}
+      {% endfor %}
+      {% endif %}
+      
+      FINAL PATH:
+      {{ safe_get(lr, 'result.path_improver.response', 'Not available') }}
+      {% else %}
+      No loop results available.
+      {% endif %}
+      
+      OUTPUT FORMAT:
+      
+      SUMMARY: [2-3 sentences on loop performance]
+      
+      KEY_IMPROVEMENTS: [What changed across iterations]
+      
+      CHALLENGING_CRITERIA: [Which were hardest to satisfy]
+      
+      ASSESSMENT: [Final quality judgment]

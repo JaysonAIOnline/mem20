@@ -1,0 +1,553 @@
+{
+  "storyline_id": "main_storyline",
+  "title": "The Unreliable Prophecy",
+  "version": "1.0",
+  "chapters": [
+    {
+      "chapter_id": "CH1",
+      "name": "Ordinary Life",
+      "region": "Quietvale",
+      "region_id": "R1",
+      "narrative": {
+        "opening": "You wake to find a man in a wrinkled celestial robe standing at your desk. He slides a binder across the wood. 'Prophecy 47-B (Revised). Please sign here, here, and initial here.'",
+        "closing": "The binder feels heavier than it looks. Inside, words shift and rearrange themselves. You are now the Chosen One. The paperwork has been filed."
+      },
+      "sequences": [
+        {
+          "id": "CH1_SEQ1",
+          "name": "The Prophecy Arrives",
+          "trigger": "region_enter:R1",
+          "narration": "The Bureaucrat has arrived with Prophecy 47-B (Revised). Your quiet life is over.",
+          "cutscene": "cutscene_prophecy_arrival"
+        },
+        {
+          "id": "CH1_SEQ2",
+          "name": "The First Filing",
+          "trigger": "quest_complete:T01",
+          "narration": "The Prophecy Binder feels heavier than it looks. Inside, words shift and rearrange themselves."
+        },
+        {
+          "id": "CH1_SEQ3",
+          "name": "Ink & Parchment",
+          "trigger": "quest_complete:T02",
+          "narration": "An old wizard appears from behind a filing cabinet. 'I'll be your companion. Try not to lose the paperwork.'",
+          "cutscene": "cutscene_wizard_arrival"
+        },
+        {
+          "id": "CH1_SEQ4",
+          "name": "Tutorial Woods",
+          "trigger": "region_enter:QV-WOODS",
+          "narration": "A skeleton lurches toward you. It appears to have been misfiled. Defend yourself!"
+        },
+        {
+          "id": "CH1_SEQ5",
+          "name": "Leaving Quietvale",
+          "trigger": "region_transition:QV-GATE",
+          "narration": "The gate closes behind you. Ahead lies Bureaucracy Hills, where even the rocks need permits.",
+          "cutscene": "cutscene_leave_quietvale"
+        }
+      ],
+      "key_npcs": [
+        {
+          "npc_id": "CH_Bureaucrat",
+          "role": "quest_giver",
+          "dialogue_routes": {
+            "pre_quest": ["Please sign here. And here. Initial here."],
+            "active_quest": ["The form is still incomplete. Section C requires a full signature."],
+            "post_quest": ["Well done. The prophecy is filed. Next!"]
+          }
+        },
+        {
+          "npc_id": "CH_Wizard",
+          "role": "companion",
+          "dialogue_routes": {
+            "pre_quest": ["I've seen thirty-seven Chosen Ones. You remind me of number twelve. Don't ask."],
+            "active_quest": ["The prophecy is shifting again. It does that when someone's watching."],
+            "post_quest": ["The forest is this way. Try not to talk to the trees. They're passive-aggressive."]
+          }
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH2",
+      "name": "Leaving Home",
+      "region": "Bureaucracy Hills",
+      "region_id": "R2",
+      "narrative": {
+        "opening": "Bureaucracy Hills stretches before you. Filing cabinets line the paths like tombstones. A sign reads: 'Welcome to the Hills. Permits required beyond this point.'",
+        "closing": "The Magistrate hands you the Grand Stamp. 'Well done. The Forest of Unhelpful Trees awaits.'"
+      },
+      "sequences": [
+        {
+          "id": "CH2_SEQ1",
+          "name": "Entering Bureaucracy Hills",
+          "trigger": "region_enter:R2",
+          "narration": "Bureaucracy Hills stretches before you. Filing cabinets line the paths like tombstones."
+        },
+        {
+          "id": "CH2_SEQ2",
+          "name": "The Lost Ledger",
+          "trigger": "waypoint:WP-BH-06",
+          "narration": "The Archivist looks up from a mountain of papers. 'Three ledger pages have gone missing. The entire region is out of balance until they're found.'"
+        },
+        {
+          "id": "CH2_SEQ3",
+          "name": "The Misplaced Amendment",
+          "trigger": "quest_complete:M01",
+          "narration": "The Amendment glows softly: 'Section 47-B is hereby revised to add: All prophecies must be filed in triplicate.'",
+          "cutscene": "cutscene_first_amendment"
+        },
+        {
+          "id": "CH2_SEQ4",
+          "name": "Final Stamp",
+          "trigger": "quest_complete:M02",
+          "narration": "The Magistrate hands you the Grand Stamp. 'Well done. The Forest of Unhelpful Trees awaits.'"
+        },
+        {
+          "id": "CH2_SEQ5",
+          "name": "Exit Bureaucracy Hills",
+          "trigger": "region_transition:BH-GATE",
+          "narration": "The hills fade behind you. Ahead, the trees are already judging your paperwork."
+        }
+      ],
+      "key_npcs": [
+        {
+          "npc_id": "CH_Bureaucrat",
+          "role": "quest_giver",
+          "dialogue_routes": {
+            "pre_quest": ["You need Form 47-B (Revised). It's in Filing Cabinet 3. Or 7. Or possibly 12."],
+            "active_quest": ["No, that's Form 47-C. Completely different. That one's for emergencies."],
+            "post_quest": ["Your permit is valid for one forest traversal. Do not lose it."]
+          }
+        },
+        {
+          "npc_id": "Archivist_NPC",
+          "role": "side_quest",
+          "dialogue_routes": {
+            "pre_quest": ["Three pages from the Grand Ledger. Without them, nothing in this region balances."],
+            "active_quest": ["Two more to go. Check near the Filing Cabinet Field."],
+            "post_quest": ["The Ledger is whole again. Thank you. Here's a Bonus Stamp."]
+          }
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH3",
+      "name": "The Unhelpful Forest",
+      "region": "Forest of Unhelpful Trees",
+      "region_id": "R3",
+      "narrative": {
+        "opening": "The trees here are passive-aggressive. One of them clears its throat as you pass. Another mutters something about your binder being 'too loud.'",
+        "closing": "The forest releases you. Not happily. But it releases you."
+      },
+      "sequences": [
+        {
+          "id": "CH3_SEQ1",
+          "name": "Forest Entry",
+          "trigger": "region_enter:R3",
+          "narration": "The trees here are passive-aggressive. One of them clears its throat as you pass."
+        },
+        {
+          "id": "CH3_SEQ2",
+          "name": "The Talking Tree's Riddle",
+          "trigger": "waypoint:WP-FR-03",
+          "narration": "'I used to be a memo,' the tree rustles. 'Now I'm furniture. Life is full of disappointments. Answer my riddle to pass.'"
+        },
+        {
+          "id": "CH3_SEQ3",
+          "name": "Forest Depths",
+          "trigger": "waypoint:WP-FR-06",
+          "narration": "The trees thin ahead. The City of Forms awaits, its queues already forming."
+        }
+      ],
+      "key_npcs": [
+        {
+          "npc_id": "Talking_Tree",
+          "role": "side_quest",
+          "dialogue_routes": {
+            "pre_quest": ["I used to be a memo. Now I'm furniture. Answer my riddle: What has four corners but isn't a room?"],
+            "active_quest": ["No. Try again. Hint: It's in your binder."],
+            "post_quest": ["A form. Correct. You may pass. Not that anyone appreciates arboreal wisdom."]
+          }
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH4",
+      "name": "Gathering the Unwilling",
+      "region": "City of Forms",
+      "region_id": "R4",
+      "narrative": {
+        "opening": "The City of Forms stretches in concentric rings. Every window has a queue. Every queue has a forms office. Every forms office has a longer queue.",
+        "closing": "Your party is assembled. Reluctant, confused, but assembled. The Ruins of Previous Chosen Ones await."
+      },
+      "sequences": [
+        {
+          "id": "CH4_SEQ1",
+          "name": "City of Forms",
+          "trigger": "region_enter:R4",
+          "narration": "The City of Forms stretches in concentric rings. Every window has a queue.",
+          "cutscene": "cutscene_city_arrival"
+        },
+        {
+          "id": "CH4_SEQ2",
+          "name": "Department of Previous Failures",
+          "trigger": "waypoint:WP-CT-04",
+          "narration": "The Department of Previous Failures is quiet. Rows of plaques honor Chosen Ones who didn't make it. The list is long."
+        },
+        {
+          "id": "CH4_SEQ3",
+          "name": "Party Assembled",
+          "trigger": "quest_complete:M05",
+          "narration": "Your party is assembled. Reluctant, confused, but assembled.",
+          "cutscene": "cutscene_party_assembled"
+        }
+      ],
+      "key_npcs": [
+        {
+          "npc_id": "NPC_Director",
+          "role": "quest_giver",
+          "dialogue_routes": {
+            "pre_quest": ["The Overflow Archives are a mess. The Paper Elemental must be dealt with."],
+            "active_quest": ["The archives are vast. Watch for misfiled souls."],
+            "post_quest": ["Well done. The memo you found confirms my suspicions. Prophecy 47-C is in draft."]
+          }
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH5",
+      "name": "Weight of Precedence",
+      "region": "Overflow Archives",
+      "region_id": "R5",
+      "narrative": {
+        "opening": "The Overflow Archives smell of old paper and forgotten purposes. Something stirs in the deep stacks.",
+        "closing": "The Paper Elemental is reduced to confetti. The memo you found confirms: 47-C is in draft."
+      },
+      "sequences": [
+        {
+          "id": "CH5_SEQ1",
+          "name": "Entering the Archives",
+          "trigger": "region_enter:R5",
+          "narration": "The Overflow Archives smell of old paper and forgotten purposes. Something stirs in the deep stacks."
+        },
+        {
+          "id": "CH5_SEQ2",
+          "name": "The Quiet Reading Room",
+          "trigger": "waypoint:WP-OA-05",
+          "narration": "Tucked behind a misfiled book, you find a memo: 'To whom it may concern: Prophecy 47-C is in draft.'"
+        },
+        {
+          "id": "CH5_SEQ3",
+          "name": "Paper Elemental Boss",
+          "trigger": "waypoint:WP-OA-04",
+          "narration": "The Paper Elemental rises from a mountain of forms. Its eyes are red stamps.",
+          "cutscene": "cutscene_paper_elemental"
+        },
+        {
+          "id": "CH5_SEQ4",
+          "name": "Archives Cleared",
+          "trigger": "quest_complete:M06",
+          "narration": "The Paper Elemental is reduced to confetti. The archives are quiet again."
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH6",
+      "name": "Weight of Precedence",
+      "region": "Ruins of Previous Chosen Ones",
+      "region_id": "R6",
+      "narrative": {
+        "opening": "The statues of previous Chosen Ones line the path. Their faces show determination, fear, and in one case, mild annoyance. The bureaucracy got them all.",
+        "closing": "The path ahead leads to the Final Administrative Zone. The Desk of Absolute Authority awaits."
+      },
+      "sequences": [
+        {
+          "id": "CH6_SEQ1",
+          "name": "The Memorial",
+          "trigger": "region_enter:R6",
+          "narration": "The statues of previous Chosen Ones line the path. Their faces show determination, fear, and in one case, mild annoyance.",
+          "cutscene": "cutscene_ruins_arrival"
+        },
+        {
+          "id": "CH6_SEQ2",
+          "name": "The Final Statue",
+          "trigger": "waypoint:WP-RU-02",
+          "narration": "The last statue holds a plaque: 'Here stood Chosen One #347. Lost due to incomplete paperwork.'"
+        },
+        {
+          "id": "CH6_SEQ3",
+          "name": "Exit to Final Zone",
+          "trigger": "region_transition:RU-GATE",
+          "narration": "The path ahead leads to the Final Administrative Zone. The Desk of Absolute Authority awaits."
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH7",
+      "name": "The Final Review",
+      "region": "Final Administrative Zone",
+      "region_id": "R7",
+      "narrative": {
+        "opening": "The Desk of Absolute Authority looms ahead. Three departments watch from their zones. The Bureaucrat stands waiting.",
+        "closing": "The form lies before you. Sign, and the prophecy is fulfilled. Refuse, and... well, there's always Form 47-C."
+      },
+      "sequences": [
+        {
+          "id": "CH7_SEQ1",
+          "name": "The Final Corridor",
+          "trigger": "region_enter:R7",
+          "narration": "The Desk of Absolute Authority looms ahead. Three departments watch from their zones.",
+          "cutscene": "cutscene_final_zone_arrival"
+        },
+        {
+          "id": "CH7_SEQ2",
+          "name": "The Final Boss",
+          "trigger": "waypoint:WP-FA-02",
+          "narration": "The Desk of Absolute Authority speaks: 'Your prophecy is ready for final review. Please submit all amendments.'",
+          "cutscene": "cutscene_final_boss"
+        },
+        {
+          "id": "CH7_SEQ3",
+          "name": "The Choice",
+          "trigger": "quest_complete:M07",
+          "narration": "The form lies before you. Sign, and the prophecy is fulfilled. Refuse, and... well, there's always Form 47-C.",
+          "cutscene": "cutscene_ending_choice"
+        },
+        {
+          "id": "CH7_SEQ4",
+          "name": "Epilogue",
+          "trigger": "flag_set:ending_chosen",
+          "narration": "The world is (probably) saved. Certificates are issued. The bureaucracy continues.",
+          "cutscene": "cutscene_epilogue"
+        }
+      ]
+    }
+  ],
+  "cutscenes": {
+    "cutscene_prophecy_arrival": {
+      "id": "cutscene_prophecy_arrival",
+      "name": "The Prophecy Arrives",
+      "duration": 8.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 2, -5], "rotation": [0, 0, 0], "fov": 60},
+        {"time": 2.0, "position": [0, 1.5, -3], "rotation": [5, 0, 0], "fov": 55},
+        {"time": 5.0, "position": [-2, 1.5, -2], "rotation": [10, 15, 0], "fov": 50},
+        {"time": 8.0, "position": [0, 1.5, -4], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 1.0},
+        {"time": 1.0, "type": "set_player_position", "target": "PlayerDesk"},
+        {"time": 2.0, "type": "spawn_object", "prefab": "PR_Bureaucrat", "target": "BureaucratSpawn"},
+        {"time": 3.0, "type": "play_animation", "target": "Bureaucrat", "animation": "SlideBinder"},
+        {"time": 5.0, "type": "trigger_quest", "action": "accept", "quest": "T01"},
+        {"time": 6.0, "type": "fade_to_black", "duration": 1.0}
+      ]
+    },
+    "cutscene_wizard_arrival": {
+      "id": "cutscene_wizard_arrival",
+      "name": "The Old Wizard",
+      "duration": 5.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 2, -4], "rotation": [0, 0, 0], "fov": 60},
+        {"time": 2.5, "position": [2, 2, -3], "rotation": [5, -10, 0], "fov": 55},
+        {"time": 5.0, "position": [0, 2, -4], "rotation": [0, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 0.5},
+        {"time": 1.0, "type": "spawn_object", "prefab": "CH_Wizard", "target": "WizardSpawn"},
+        {"time": 2.0, "type": "play_animation", "target": "Wizard", "animation": "Appear"},
+        {"time": 4.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_leave_quietvale": {
+      "id": "cutscene_leave_quietvale",
+      "name": "Leaving Home",
+      "duration": 6.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 3, -6], "rotation": [5, 0, 0], "fov": 65},
+        {"time": 3.0, "position": [0, 5, -10], "rotation": [10, 0, 0], "fov": 70},
+        {"time": 6.0, "position": [0, 8, -15], "rotation": [15, 0, 0], "fov": 75}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 1.0},
+        {"time": 1.0, "type": "set_player_position", "target": "GateApproach"},
+        {"time": 2.0, "type": "enable_object", "target": "GateTrigger", "parameter": "enable"},
+        {"time": 4.0, "type": "fade_to_black", "duration": 1.0},
+        {"time": 5.0, "type": "complete_chapter", "chapter": "CH1"}
+      ]
+    },
+    "cutscene_first_amendment": {
+      "id": "cutscene_first_amendment",
+      "name": "The First Amendment",
+      "duration": 7.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 1.5, -3], "rotation": [5, 0, 0], "fov": 55},
+        {"time": 3.0, "position": [0, 2, -2], "rotation": [0, 0, 0], "fov": 50},
+        {"time": 5.0, "position": [1, 1.5, -3], "rotation": [5, -10, 0], "fov": 55},
+        {"time": 7.0, "position": [0, 1.5, -3], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 0.5},
+        {"time": 1.0, "type": "spawn_object", "prefab": "PR_Binder", "target": "AmendmentSpawn"},
+        {"time": 2.0, "type": "play_animation", "target": "Binder", "animation": "Glow"},
+        {"time": 3.0, "type": "show_ui", "target": "AmendmentUI", "parameter": "show"},
+        {"time": 5.0, "type": "trigger_quest", "action": "accept", "quest": "M02"},
+        {"time": 6.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_city_arrival": {
+      "id": "cutscene_city_arrival",
+      "name": "City of Forms",
+      "duration": 10.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 10, -20], "rotation": [20, 0, 0], "fov": 70},
+        {"time": 3.0, "position": [0, 8, -15], "rotation": [15, 0, 0], "fov": 65},
+        {"time": 6.0, "position": [0, 5, -10], "rotation": [10, 0, 0], "fov": 60},
+        {"time": 10.0, "position": [0, 3, -6], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 2.0},
+        {"time": 2.0, "type": "set_player_position", "target": "CityEntry"},
+        {"time": 5.0, "type": "trigger_quest", "action": "accept", "quest": "M05"},
+        {"time": 8.0, "type": "fade_to_black", "duration": 1.0}
+      ]
+    },
+    "cutscene_party_assembled": {
+      "id": "cutscene_party_assembled",
+      "name": "The Party Assembles",
+      "duration": 8.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 60},
+        {"time": 2.0, "position": [-3, 2, -4], "rotation": [5, 20, 0], "fov": 55},
+        {"time": 4.0, "position": [3, 2, -4], "rotation": [5, -20, 0], "fov": 55},
+        {"time": 6.0, "position": [0, 2, -6], "rotation": [5, 0, 0], "fov": 65},
+        {"time": 8.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 1.0},
+        {"time": 1.0, "type": "enable_object", "target": "WizardCompanion", "parameter": "enable"},
+        {"time": 2.0, "type": "enable_object", "target": "SorceressCompanion", "parameter": "enable"},
+        {"time": 3.0, "type": "enable_object", "target": "RogueCompanion", "parameter": "enable"},
+        {"time": 4.0, "type": "enable_object", "target": "WarriorCompanion", "parameter": "enable"},
+        {"time": 6.0, "type": "complete_chapter", "chapter": "CH4"},
+        {"time": 7.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_paper_elemental": {
+      "id": "cutscene_paper_elemental",
+      "name": "The Paper Elemental",
+      "duration": 5.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 2, -4], "rotation": [5, 0, 0], "fov": 60},
+        {"time": 2.0, "position": [0, 3, -3], "rotation": [10, 0, 0], "fov": 55},
+        {"time": 4.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 65},
+        {"time": 5.0, "position": [0, 2, -4], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 0.5},
+        {"time": 1.0, "type": "spawn_object", "prefab": "CR_PaperElemental", "target": "ElementalSpawn"},
+        {"time": 2.0, "type": "play_animation", "target": "PaperElemental", "animation": "Rise"},
+        {"time": 3.0, "type": "enable_object", "target": "PaperElemental", "parameter": "enable"},
+        {"time": 4.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_ruins_arrival": {
+      "id": "cutscene_ruins_arrival",
+      "name": "The Memorial",
+      "duration": 8.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 3, -10], "rotation": [10, 0, 0], "fov": 65},
+        {"time": 3.0, "position": [0, 2.5, -6], "rotation": [5, 0, 0], "fov": 60},
+        {"time": 6.0, "position": [0, 2, -4], "rotation": [5, 0, 0], "fov": 55},
+        {"time": 8.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 2.0},
+        {"time": 2.0, "type": "set_player_position", "target": "RuinsEntry"},
+        {"time": 5.0, "type": "play_animation", "target": "StatueGarden", "animation": "Glow"},
+        {"time": 7.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_final_zone_arrival": {
+      "id": "cutscene_final_zone_arrival",
+      "name": "The Final Administrative Zone",
+      "duration": 10.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 5, -20], "rotation": [15, 0, 0], "fov": 70},
+        {"time": 3.0, "position": [0, 4, -15], "rotation": [12, 0, 0], "fov": 65},
+        {"time": 6.0, "position": [0, 3, -10], "rotation": [8, 0, 0], "fov": 60},
+        {"time": 10.0, "position": [0, 2, -6], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 3.0},
+        {"time": 3.0, "type": "set_player_position", "target": "FinalEntrance"},
+        {"time": 6.0, "type": "enable_object", "target": "Zone1Marker", "parameter": "enable"},
+        {"time": 7.0, "type": "enable_object", "target": "Zone2Marker", "parameter": "enable"},
+        {"time": 8.0, "type": "enable_object", "target": "Zone3Marker", "parameter": "enable"},
+        {"time": 9.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_final_boss": {
+      "id": "cutscene_final_boss",
+      "name": "The Desk of Absolute Authority",
+      "duration": 8.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 60},
+        {"time": 3.0, "position": [0, 3, -4], "rotation": [10, 0, 0], "fov": 55},
+        {"time": 5.0, "position": [0, 2, -3], "rotation": [5, 0, 0], "fov": 50},
+        {"time": 8.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 1.0},
+        {"time": 1.0, "type": "spawn_object", "prefab": "CR_FinalBoss", "target": "FinalDesk"},
+        {"time": 3.0, "type": "play_animation", "target": "FinalBoss", "animation": "Awaken"},
+        {"time": 5.0, "type": "trigger_quest", "action": "accept", "quest": "M07"},
+        {"time": 6.0, "type": "enable_object", "target": "FinalBoss", "parameter": "enable"},
+        {"time": 7.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_ending_choice": {
+      "id": "cutscene_ending_choice",
+      "name": "The Choice",
+      "duration": 10.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 1.5, -3], "rotation": [5, 0, 0], "fov": 55},
+        {"time": 3.0, "position": [0, 1.5, -2.5], "rotation": [0, 0, 0], "fov": 50},
+        {"time": 6.0, "position": [0, 1.5, -3], "rotation": [5, 0, 0], "fov": 55},
+        {"time": 10.0, "position": [0, 2, -4], "rotation": [5, 0, 0], "fov": 60}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 1.0},
+        {"time": 1.0, "type": "show_ui", "target": "EndingChoiceUI", "parameter": "show"},
+        {"time": 3.0, "type": "enable_object", "target": "SignButton", "parameter": "enable"},
+        {"time": 4.0, "type": "enable_object", "target": "RefuseButton", "parameter": "enable"},
+        {"time": 8.0, "type": "set_flag", "flag": "ending_chosen"},
+        {"time": 9.0, "type": "fade_to_black", "duration": 0.5}
+      ]
+    },
+    "cutscene_epilogue": {
+      "id": "cutscene_epilogue",
+      "name": "Epilogue",
+      "duration": 15.0,
+      "camera_track": [
+        {"time": 0.0, "position": [0, 2, -5], "rotation": [5, 0, 0], "fov": 60},
+        {"time": 5.0, "position": [0, 3, -8], "rotation": [10, 0, 0], "fov": 65},
+        {"time": 10.0, "position": [0, 5, -12], "rotation": [15, 0, 0], "fov": 70},
+        {"time": 15.0, "position": [0, 8, -20], "rotation": [20, 0, 0], "fov": 75}
+      ],
+      "events": [
+        {"time": 0.0, "type": "fade_from_black", "duration": 3.0},
+        {"time": 3.0, "type": "show_ui", "target": "CreditsPanel", "parameter": "show"},
+        {"time": 8.0, "type": "show_ui", "target": "CertificatePanel", "parameter": "show"},
+        {"time": 12.0, "type": "complete_chapter", "chapter": "CH7"},
+        {"time": 14.0, "type": "fade_to_black", "duration": 1.0}
+      ]
+    }
+  },
+  "quest_chains": {
+    "main_path": ["T01", "T02", "M01", "M02", "M03", "AMD01", "M04", "M05", "M06", "M07"],
+    "side_quests": ["S01"],
+    "amendment_quests": ["AMD01"]
+  }
+}

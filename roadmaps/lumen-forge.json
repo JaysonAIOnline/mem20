@@ -1,0 +1,68 @@
+{
+  "name": "lumen-forge",
+  "description": "LUMEN FORGE production roadmap (vertical slice). Governance pack = /home/jayson/Desktop/3 (HARNESS UPGRADES v2.1 + GAME DIRECTIONS Lumen Forge v2.1), FINAL LAW for the harness. Read every .md under it before production work. User overrides (binding): opencode = Main Orchestrator (xAI disallowed, Groq primary, NVIDIA fallback + vision deck); Unity + Godot equal; 4 build targets honest (no faking). Production rule: the HARNESS does all research/asset-production via its workers; the orchestrator never does worker work. Platform: Meta Quest 3 primary (Unity), Windows (Unity), Linux + Android (Godot). Vertical slice loop: stylized splash/menu -> in-station start -> ~25-30 unique non-primitive modules -> diagnostic probe -> 5-tier anomaly escalation -> 4-6 seeded crew with routines/dialogue -> dead star observation + pulse -> shift cycle Rest -> quarters -> ending cinematic. No black screens, no broken cameras, no soft-locks on the critical path. Manifest = /root/Desktop/Beef/harness/projects.json (pid lumen-forge). Pack unpacked at workspace/lumen-forge/ (00_Master..08_Implementation_Notes). Harness code home: /root/Desktop/Beef/harness (src/runner.py, src/v21.py, src/app.py).",
+  "created": "2026-09-17",
+  "phases": [
+    {
+      "name": "0_harness_upgrade_v21",
+      "status": "completed",
+      "notes": "Harness Upgrades v2.1 implemented in src/v21.py + src/runner.py (xAI removed per user override; Groq paid primary, NVIDIA free fallback + vision). Key collection FIRST (collect_keys gate, refuse run without keys). 10 supervisor roles in ROLE_ASSIGNMENTS (assembly_work/assembly_critic/unity_engine/godot_engine/asset_lead/asset_critic/visual_qa_beta/marketing/audio_vfx/systems). TWO orchestrators: ORCHESTRATOR_ASSIGNMENT (groq/qwen3.8-27b) + SECONDARY_ORCH_ASSIGNMENT (groq/qwen3.6-27b), routed via orchestrator_chat(secondary=). Worker pool buckets across Groq (qwen3.8/3.6/oss-20) + NVIDIA nemotron-3-super-120b. Enforced checks: NAMING_RULES, HIERARCHY_CATEGORIES, HANDOFF_FIELDS, primitive check, vision check (NIM_vision), BETA_TESTER_COUNT=5. Runner: phase supervisor gate (PASS/BLOCK/PROCEED), checkpoint resume, retry_workers, assembly of Unity project. 5 Beta Testers use Groq vision qwen3.6/3.8."
+    },
+    {
+      "name": "1_feed_package_to_harness",
+      "status": "completed",
+      "notes": "New package fed to harness: lumen-forge project registered in /root/Desktop/Beef/harness/projects.json (pid lumen-forge, name 'Lumen Forge', pack_root points at /home/jayson/Desktop/3 content, workspace/lumen-forge/ with 00_Master..08_Implementation_Notes unpacked + manifest.json). Orchestrator prompt bound to STORY_AND_SCOPE/PLAYER_FLOW/EXECUTION_RULES. 10 supervisors in phase order (Phase 0 Bootstrap & Project Skeletons ... Phase 9 Final Packaging). Swarm of 8 workers (lumen-0-1..lumen-0-8) mapped to supervisors. Status: phase1-done. [v2.3: swarm 8 -> 400; supervisors Phase 0/1 marked done; prompts verbatim from pack.]"
+    },
+    {
+      "name": "2_phase0_bootstrap",
+      "status": "completed",
+      "notes": "Unity (Meta Quest 3 + Windows) and Godot (Linux + Android) project skeletons built in workspace/lumen-forge/unity + godot with correct hierarchical folders; scaffold scripts + export_presets; git committed as v2.0. Vision-verified."
+    },
+    {
+      "name": "3_phase1_foundations_ui",
+      "status": "completed",
+      "notes": "Stylized title splash + fully custom main menu in both engines; Unity XR rig + locomotion framework (XR Interaction Toolkit, URP, OpenXR + Meta Quest features + hand tracking, verified in-APK via aapt); Godot splash/menu/player with LF_CAPTURE capture gate; Unity Linux64 + Android + Godot Linux64 + Android builds with vision PASS. Quest OpenXR config via Assets/Editor/LumenForge/LumenForgeQuest.cs (groq/no-xai keys confirmed). Committed as v2.2 (commit 7fc7375, tag v2.2)."
+    },
+    {
+      "name": "4_phase2_asset_descriptions",
+      "status": "planned",
+      "notes": "Full written specs for every major 3D asset (diagnostic probe, 4-6 crew, 5 anomaly tiers, 25-30 modules, props, dead star exterior/cinematics). Agents research real-world + sci-fi references ONLINE. HARNESS DOES THE RESEARCH AND WRITING (never the orchestrator). Specs land in workspace/lumen-forge/ per NAMING_AND_MANIFEST_GUIDE. Every asset needs a description ref (DESC_*) before Phase 3 modeling. [v2.3: 400-agent swarm registered (commit f01c3a6); prior Phase 2 run (run_id c3f4949669d0, 50 workers) aborted/checkpointed mid-run. 2026-09-18: Orchestrator #1 restart — fresh FULL production pipeline (no phase filter) with HARNESS_MAX_ATTEMPTS=5, HARNESS_MAX_WORKERS=4, run_id 1c336f85b63f; stale Phase 2 checkpoint backed up to /tmp/opencode/lumen-forge-runstate-bak-phase2.json and cleared, so the pipeline re-runs Phase 0->9 in order. Phase 2 re-enters pipeline in sequence after Phases 0-1. 400-swarm distribution: P0:25 P1:25 P2:50 P3:110 P4:30 P5:60 P6:35 P7:25(incl 5 beta testers) P8:20 P9:20.]"
+    },
+    {
+      "name": "5_phase3_3d_production",
+      "status": "planned",
+      "notes": "Build all assets from approved descriptions (multi-wave). Primitives banned. LODs required. Correct collision. Tools: Blender primary, FreeCAD, rfxgen, Surge-XT. Manifests for every batch. Vision-verified renders."
+    },
+    {
+      "name": "6_phase4_audio_vfx",
+      "status": "planned",
+      "notes": "Station ambients, dead-star exterior, probe sounds, anomaly effects, crew VO hooks, shift-cycle + pulse audio (A_Category_Name naming). rfxgen/Surge-XT."
+    },
+    {
+      "name": "7_phase5_systems_gameplay",
+      "status": "planned",
+      "notes": "Free exploration, diagnostic probe pickup/use, full anomaly escalation ladder (ANOMALY_MECHANICS.md), crew routines + data-driven dialogue (DIALOGUE_DATA_FORMAT.md), dead-star physics/effects (DEAD_STAR_PHYSICS_AND_EFFECTS.md), shift cycle -> Rest -> ending cinematic. Helper scripts per UNITY_HELPER_SCRIPTS_SPEC.md (StationShiftCycle, DiagnosticProbe, AnomalyBase, CrewRoutineController, ObservationDeckTrigger, RestCycleTrigger, SimpleDialogueInteractable, PerformanceGuard)."
+    },
+    {
+      "name": "8_phase6_scene_assembly",
+      "status": "planned",
+      "notes": "Full playable modular station in Unity + Godot with helper scripts wired. Godot parity per GODOT_PARITY_NOTES.md (same flow/beats, acceptable visual diffs). Quest 3 perf targets (72Hz min, 150-200k tris, <=100-120 draw calls, <1.2GB textures)."
+    },
+    {
+      "name": "9_phase7_visual_qa_beta",
+      "status": "planned",
+      "notes": "In-engine screenshots -> vision model required for every major deliverable. 5 Beta Tester agents (Groq vision qwen3.6/3.8) play the full loop. No black screens/camera failures. Visual QA Supervisor + both Orchestrators must sign off (VISUAL_QA_AND_BETA_RULES.md, HARD_ACCEPTANCE_GATES.md 14 gates)."
+    },
+    {
+      "name": "10_phase8_marketing",
+      "status": "planned",
+      "notes": "Market positioning, competitors, cinematic trailer assets, ads, banners, mock website (Marketing Supervisor prefers Groq)."
+    },
+    {
+      "name": "11_phase9_final_packaging",
+      "status": "planned",
+      "notes": "Installable Quest 3 build + Windows/Linux/Android packages. Complete organized library with manifests. All hard gates green."
+    }
+  ],
+  "updated": "2026-09-18T00:35:00.000000+00:00"
+}

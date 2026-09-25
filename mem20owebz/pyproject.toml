@@ -1,0 +1,19 @@
+[project]
+name = "mem20owebz"
+version = "0.1.0"
+description = "mem20 chat front-end + model gateway — native re-home of the Open WebUI + LiteLLM bridge stack"
+requires-python = ">=3.11"
+dependencies = [
+  "PyYAML",
+  "httpx",
+]
+
+[project.scripts]
+mem20owebz = "mem20owebz.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mem20owebz", "mem20owebz.*"]

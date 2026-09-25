@@ -1,7 +1,4 @@
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 A2A Tools Mixin for mem20 MCP Server
 
 Provides agent-to-agent communication tools so bots can:
@@ -13,9 +10,6 @@ Provides agent-to-agent communication tools so bots can:
 
 These are Hermes-level features, separate from mem20's thought processes.
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 
 import os
 import sys
@@ -167,124 +161,124 @@ class A2AToolsMixin:
             payload["params"]["contextId"] = context_id
 
         try:
-    async with aiohttp.ClientSession() as session:
-    async with session.post(
-    f"{url}/a2a",
-    json=payload,
-    timeout=aiohttp.ClientTimeout(total=timeout),
-    ) as resp:
-    if resp.status == 200:
-    data = await resp.json()
-    result = data.get("result", {})
-    Extract text from response
-    if isinstance(result, dict):
-    parts = result.get("parts", [])
-    text = " ".join(p.get("text", "") for p in parts if p.get("kind") == "text")
-    return f"**Response from {agent}:**\n\n{text}"
-    return f"**Response from {agent}:**\n\n{json.dumps(result, indent=2)}"
-    else:
-    error_text = await resp.text()
-    return f"Error calling {agent}: HTTP {resp.status}\n{error_text[:500]}"
-    except asyncio.TimeoutError:
-    return f"Timeout calling {agent} ({timeout}s)"
-    except Exception as e:
-    return f"Error calling {agent}: {str(e)}"
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{url}/a2a",
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=timeout),
+                ) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        result = data.get("result", {})
+                        # Extract text from response
+                        if isinstance(result, dict):
+                            parts = result.get("parts", [])
+                            text = " ".join(p.get("text", "") for p in parts if p.get("kind") == "text")
+                            return f"**Response from {agent}:**\n\n{text}"
+                        return f"**Response from {agent}:**\n\n{json.dumps(result, indent=2)}"
+                    else:
+                        error_text = await resp.text()
+                        return f"Error calling {agent}: HTTP {resp.status}\n{error_text[:500]}"
+        except asyncio.TimeoutError:
+            return f"Timeout calling {agent} ({timeout}s)"
+        except Exception as e:
+            return f"Error calling {agent}: {str(e)}"
 
     async def _a2a_discover(self, args: Dict) -> str:
-    """Fetch a peer agent's Agent Card."""
-    agent = args.get("agent", "")
-    url = self._get_peer_url(agent)
-    if not url:
-    return f"Error: Unknown agent '{agent}'."
+        """Fetch a peer agent's Agent Card."""
+        agent = args.get("agent", "")
+        url = self._get_peer_url(agent)
+        if not url:
+            return f"Error: Unknown agent '{agent}'."
 
         try:
-    async with aiohttp.ClientSession() as session:
-    async with session.get(
-    f"{url}/.well-known/agent-card.json",
-    timeout=aiohttp.ClientTimeout(total=30),
-    ) as resp:
-    if resp.status == 200:
-    card = await resp.json()
-    name = card.get("name", agent)
-    desc = card.get("description", "No description")
-    caps = card.get("capabilities", [])
-    output = f"**Agent Card: {name}**\n\n{desc}\n\n"
-    if caps:
-    output += f"**Capabilities:** {', '.join(caps)}\n"
-    return output
-    else:
-    return f"Error: {agent} returned HTTP {resp.status}"
-    except Exception as e:
-    return f"Error discovering {agent}: {str(e)}"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{url}/.well-known/agent-card.json",
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as resp:
+                    if resp.status == 200:
+                        card = await resp.json()
+                        name = card.get("name", agent)
+                        desc = card.get("description", "No description")
+                        caps = card.get("capabilities", [])
+                        output = f"**Agent Card: {name}**\n\n{desc}\n\n"
+                        if caps:
+                            output += f"**Capabilities:** {', '.join(caps)}\n"
+                        return output
+                    else:
+                        return f"Error: {agent} returned HTTP {resp.status}"
+        except Exception as e:
+            return f"Error discovering {agent}: {str(e)}"
 
     async def _a2a_history(self, args: Dict) -> str:
-    """Recall a persisted A2A conversation."""
-    context_id = args.get("context_id", "")
-    limit = args.get("limit", 20)
+        """Recall a persisted A2A conversation."""
+        context_id = args.get("context_id", "")
+        limit = args.get("limit", 20)
 
-    Look for conversation file
-    convo_dir = os.path.expanduser("~/.hermes/a2a_conversations")
-    convo_path = os.path.join(convo_dir, f"{context_id}.jsonl")
+        # Look for conversation file
+        convo_dir = os.path.expanduser("~/.hermes/a2a_conversations")
+        convo_path = os.path.join(convo_dir, f"{context_id}.jsonl")
 
-    if not os.path.exists(convo_path):
-    return f"No conversation found for context: {context_id}"
+        if not os.path.exists(convo_path):
+            return f"No conversation found for context: {context_id}"
 
         try:
-    messages = []
-    with open(convo_path) as f:
-    for line in f:
-    messages.append(json.loads(line.strip()))
+            messages = []
+            with open(convo_path) as f:
+                for line in f:
+                    messages.append(json.loads(line.strip()))
             
-    Apply limit
-    if len(messages) > limit:
-    messages = messages[-limit:]
+            # Apply limit
+            if len(messages) > limit:
+                messages = messages[-limit:]
             
-    output = f"**Conversation: {context_id}** ({len(messages)} messages)\n\n"
-    for msg in messages:
-    role = msg.get("role", "unknown")
-    parts = msg.get("parts", [])
-    text = " ".join(p.get("text", "") for p in parts if p.get("kind") == "text")
-    output += f"**{role}:** {text}\n\n"
-    return output
-    except Exception as e:
-    return f"Error reading conversation: {str(e)}"
+            output = f"**Conversation: {context_id}** ({len(messages)} messages)\n\n"
+            for msg in messages:
+                role = msg.get("role", "unknown")
+                parts = msg.get("parts", [])
+                text = " ".join(p.get("text", "") for p in parts if p.get("kind") == "text")
+                output += f"**{role}:** {text}\n\n"
+            return output
+        except Exception as e:
+            return f"Error reading conversation: {str(e)}"
 
     async def _a2a_orchestrate(self, args: Dict) -> str:
-    """Fan-out a task to multiple peers by capability."""
-    capability = args.get("capability", "")
-    message = args.get("message", "")
-    mode = args.get("mode", "parallel")
+        """Fan-out a task to multiple peers by capability."""
+        capability = args.get("capability", "")
+        message = args.get("message", "")
+        mode = args.get("mode", "parallel")
 
-    _, agents = self._get_a2a_config()
-    Filter peers by capability
-    targets = []
-    for name, info in agents.items():
-    caps = info.get("capabilities", [])
-    if capability in caps:
-    targets.append(name)
+        _, agents = self._get_a2a_config()
+        # Filter peers by capability
+        targets = []
+        for name, info in agents.items():
+            caps = info.get("capabilities", [])
+            if capability in caps:
+                targets.append(name)
 
-    if not targets:
-    return f"No peers found with capability: {capability}"
+        if not targets:
+            return f"No peers found with capability: {capability}"
 
-    output = f"**Orchestrating to {len(targets)} peers** (mode: {mode})\n\n"
-    output += f"Targets: {', '.join(targets)}\n"
-    output += f"Task: {message}\n\n"
+        output = f"**Orchestrating to {len(targets)} peers** (mode: {mode})\n\n"
+        output += f"Targets: {', '.join(targets)}\n"
+        output += f"Task: {message}\n\n"
 
-    if mode == "parallel":
-    Send to all in parallel
-    tasks = []
-    for agent in targets:
-    tasks.append(self._a2a_call({"agent": agent, "message": message}))
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    for agent, result in zip(targets, results):
-    if isinstance(result, Exception):
-    output += f"**{agent}:** ERROR - {result}\n\n"
-    else:
-    output += f"**{agent}:** {result}\n\n"
-    else:
-    Sequential
-    for agent in targets:
-    result = await self._a2a_call({"agent": agent, "message": message})
-    output += f"**{agent}:** {result}\n\n"
+        if mode == "parallel":
+            # Send to all in parallel
+            tasks = []
+            for agent in targets:
+                tasks.append(self._a2a_call({"agent": agent, "message": message}))
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for agent, result in zip(targets, results):
+                if isinstance(result, Exception):
+                    output += f"**{agent}:** ERROR - {result}\n\n"
+                else:
+                    output += f"**{agent}:** {result}\n\n"
+        else:
+            # Sequential
+            for agent in targets:
+                result = await self._a2a_call({"agent": agent, "message": message})
+                output += f"**{agent}:** {result}\n\n"
 
-    return output
+        return output

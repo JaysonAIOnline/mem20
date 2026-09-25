@@ -1,0 +1,28 @@
+# Escalation policy — braid m4 (godmode gate).
+# This is NOT reachable by any single token. Using it requires a SECOND,
+# human-gated escalation macaroon presented alongside the door token at write
+# time. Even then the NUCLEAR boundary holds: admin:wipe remains denied here,
+# so no two-token path can wipe the braid.
+
+name = "escalation"
+version = 1
+
+# Destructive ops become reachable ONLY with the second token + this snapshot.
+[[rules]]
+allow = true
+capability = "admin:destroy:*"
+
+[[rules]]
+allow = true
+capability = "admin:delete:*"
+
+[[rules]]
+allow = true
+capability = "admin:create:*"
+
+# Nuclear floor: even a fully-ratified escalation token cannot wipe the braid.
+[[rules]]
+allow = false
+capability = "admin:wipe:*"
+
+# Nothing else (default_deny).

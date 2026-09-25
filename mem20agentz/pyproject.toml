@@ -1,0 +1,20 @@
+[project]
+name = "mem20agentz"
+version = "0.1.0"
+description = "mem20 agent platform — all known agent features, built directly into mem20"
+requires-python = ">=3.11"
+dependencies = [
+  "PyYAML",
+  "aiohttp",
+]
+
+[project.scripts]
+mem20agentz = "mem20agentz.cli:main"
+mem20 = "mem20agentz.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mem20agentz", "mem20agentz.*"]

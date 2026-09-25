@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>door3 — spatial walk-in</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #151b26; --line: #263042;
+    --ink: #dde5f0; --dim: #7d8aa0; --accent: #5eeaa0; --warn: #ffb86b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 13px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5; display: flex; gap: 18px; align-items: baseline;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 14px; margin: 0; color: var(--accent); font-weight: 600; }
+  .stat { color: var(--dim); }
+  .stat b { color: var(--ink); font-weight: 600; }
+  .stat.out { color: var(--warn); }
+  #place {
+    margin-left: auto; display: flex; gap: 6px; align-items: center;
+  }
+  #place input {
+    background: var(--bg); border: 1px solid var(--line); color: var(--ink);
+    font: inherit; padding: 4px 8px; border-radius: 4px; width: 130px;
+  }
+  #place button {
+    background: none; border: 1px solid var(--accent); color: var(--accent);
+    font: inherit; padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  }
+  #place button:hover { background: var(--accent); color: var(--bg); }
+  #placeResult { color: var(--dim); font-size: 11px; }
+  main { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 0; }
+  #stage {
+    position: relative; height: 68vh; overflow: hidden;
+    perspective: 900px;
+  }
+  #field {
+    position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+    transform-style: preserve-3d; transform: rotateX(58deg);
+  }
+  .node {
+    position: absolute; width: 120px; margin-left: -60px; margin-top: -34px;
+    padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--panel); box-shadow: 0 6px 18px rgba(0,0,0,.45);
+    transform-style: preserve-3d;
+  }
+  .node .kind { color: var(--accent); font-size: 11px; }
+  .node .label { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .node.proven { border-color: var(--accent); }
+  .node .cid { color: var(--dim); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .agent {
+    position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
+    padding: 6px; border-radius: 50%; border: 1px dashed var(--accent); background: var(--panel);
+    color: var(--accent); text-align: center; font-size: 10px; z-index: 2;
+  }
+  aside {
+    border-left: 1px solid var(--line); padding: 12px; overflow-y: auto; height: 68vh;
+  }
+  aside h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin: 0 0 8px; }
+  .echo { padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .echo .op { color: var(--accent); }
+  .echo .target { color: var(--ink); }
+  .echo .chain { color: var(--dim); font-size: 10px; }
+  .provenance { margin-top: 6px; padding-top: 6px; border-top: 1px dotted var(--line); color: var(--dim); font-size: 10px; }
+  .prov-row { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  section.intent { border-top: 1px solid var(--line); padding: 12px 16px 16px; }
+  section.intent h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin: 0 0 8px; }
+  section.intent .dim { color: var(--dim); text-transform: none; letter-spacing: 0; }
+  #intentForm { display: flex; gap: 6px; margin-bottom: 10px; }
+  #intentForm input { background: var(--bg); border: 1px solid var(--line); color: var(--ink); font: inherit; padding: 4px 8px; border-radius: 4px; flex: 1; }
+  #intentForm button { background: none; border: 1px solid var(--accent); color: var(--accent); font: inherit; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+  #intentForm button:hover { background: var(--accent); color: var(--bg); }
+  #intentList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  #intentList li { border-left: 3px solid transparent; background: var(--panel); padding: 8px 10px; border-radius: 4px; }
+  #intentList li.open { border-left-color: var(--warn); }
+  #intentList li.resolved { border-left-color: var(--accent); }
+  #intentList .goal { color: var(--ink); }
+  #intentList .meta { color: var(--dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #intentList .ok { color: var(--accent); }
+  #intentError { color: var(--warn); }
+  #error { color: var(--warn); padding: 8px 16px; display: none; }
+  footer { padding: 8px 16px; color: var(--dim); border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <h1>door3 · walk-in</h1>
+  <span class="stat">walk-in <b id="walkIn">–</b></span>
+  <span class="stat">proven <b id="proven">–</b></span>
+  <span class="stat out">excluded <b id="excluded">–</b></span>
+  <span class="stat">snapshot <b id="snapshot">–</b></span>
+  <!--PLACE_SURFACE-->
+  <!--SOUND_SURFACE-->
+  <!--INTENT_SURFACE-->
+  <!--INSPECT_SURFACE-->
+</header>
+<div id="error"></div>
+<main>
+  <div id="stage">
+    <div id="field"></div>
+  </div>
+  <aside>
+    <h2>resonance window (braid spine)</h2>
+    <div id="echoes"><span class="stat">no echoes yet — the walk-in is silent until the ledger speaks.</span></div>
+  </aside>
+</main>
+<!--INTENT_PANEL-->
+<footer id="footer">waiting for the ledger…</footer>
+
+<script>
+  const SCALE = 42; // px per world unit
+  const field = document.getElementById('field');
+  const stage = document.getElementById('stage');
+  const el = (id) => document.getElementById(id);
+
+  function nodeChip(node) {
+    const div = document.createElement('div');
+    div.className = 'node ' + (node.provenance.signature_ok ? 'proven' : '');
+    const [x, y, z] = node.position;
+    div.style.transform =
+      `translate3d(${x * SCALE}px, ${y * SCALE}px, ${z * SCALE}px)`;
+    div.innerHTML =
+      `<div class="kind">${node.kind}</div>` +
+      `<div class="label" title="${node.label.replaceAll('"','&quot;')}">${node.label}</div>` +
+      `<div class="cid" title="${node.provenance.cid}">${node.provenance.cid.slice(0,14)}…</div>` +
+      `<div class="provenance">` +
+        `<div class="prov-row">capability ${node.provenance.capability}</div>` +
+        `<div class="prov-row">snapshot ${node.provenance.snapshot}</div>` +
+        `<div class="prov-row">signed ${node.provenance.signature_ok ? 'YES' : 'NO'}</div>` +
+      `</div>`;
+    return div;
+  }
+
+  function agentChip(agent) {
+    const div = document.createElement('div');
+    div.className = 'agent';
+    div.title = `${agent.identity} · ${agent.node_count} nodes · ${agent.escalated_ops} escalated`;
+    div.textContent = agent.role;
+    return div;
+  }
+
+  function render(data) {
+    const scene = data.world;
+    field.innerHTML = '';
+    scene.facts.forEach(f => field.appendChild(nodeChip(f)));
+    data.presence.agents.forEach(a => field.appendChild(agentChip(a)));
+
+    el('walkIn').textContent = data.walk_in_count;
+    el('proven').textContent = data.proven;
+    el('excluded').textContent = data.excluded;
+    el('snapshot').textContent = data.snapshot;
+
+    const box = el('echoes');
+    box.innerHTML = '';
+    const echoes = data.window.echoes;
+    if (echoes.length === 0) {
+      box.innerHTML = '<span class="stat">no echoes yet.</span>';
+    }
+    echoes.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'echo';
+      row.innerHTML =
+        `<div><span class="op">${e.op}</span> → <span class="target">${e.target}</span></div>` +
+        `<div class="chain">resonates from ${e.resonates_from ? e.resonates_from.slice(0,14) + '…' : 'genesis'} · depth ${e.depth}</div>`;
+      box.appendChild(row);
+    });
+
+    const last = echoes[echoes.length - 1];
+    el('footer').textContent =
+      `live over one wire · ${data.door} · ${data.kind} · last cid ${last ? last.cid.slice(0,20) + '…' : '–'} · proof of provenance on every object`;
+  }
+
+  async function poll() {
+    try {
+      const res = await fetch('/world');
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'world error');
+      el('error').style.display = 'none';
+      render(json.data);
+    } catch (e) {
+      el('error').textContent = 'ledger unreachable: ' + e.message;
+      el('error').style.display = 'block';
+    }
+  }
+
+  async function place() {
+    const target = el('placeTarget').value.trim();
+    if (!target) { el('placeTarget').focus(); return; }
+    try {
+      const res = await fetch('/world', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, content: target }),
+      });
+      const json = await res.json();
+      el('placeTarget').value = '';
+      if (!json.ok) throw new Error(json.error || 'place failed');
+      el('placeResult').textContent = json.data.cid ? `assigned cid ${json.data.cid.slice(0, 18)}… (${json.data.escalated ? 'escalated' : 'creative'})` : '';
+      render(json.data.view);
+      return json;
+    } catch (e) {
+      el('placeResult').textContent = 'place failed: ' + e.message;
+    }
+  }
+
+  const placeBtn = el('placeBtn');
+  if (placeBtn) {
+    placeBtn.addEventListener('click', place);
+    el('placeTarget').addEventListener('keydown', (e) => { if (e.key === 'Enter') place(); });
+  }
+
+  const intentPanel = el('intentPanel');
+
+  async function refreshIntent() {
+    try {
+      const res = await fetch('/intent');
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'intent error');
+      el('intentOpen').textContent = json.data.open;
+      el('intentResolved').textContent = json.data.resolved;
+      const list = el('intentList');
+      list.innerHTML = '';
+      const intents = json.data.intents || [];
+      if (intents.length === 0) {
+        list.innerHTML = '<li class="stat">no intents yet — the walk-in is satisfied until a desire is committed.</li>';
+        return;
+      }
+      intents.forEach(i => {
+        const li = document.createElement('li');
+        li.className = i.status;
+        const by = i.fulfilled_by
+          ? ` · fulfilled by ${i.fulfilled_by.op} ${i.fulfilled_by.cid.slice(0, 14)}…`
+          : '';
+        li.innerHTML =
+          `<div class="goal">${i.desire.replaceAll('<','&lt;')}</div>` +
+          `<div class="meta">${i.status} · depth ${i.depth} · ${i.provenance_ok ? '<span class="ok">proven</span>' : 'UNPROVEN'}${by}</div>` +
+          `<div class="meta">${i.target.replaceAll('<','&lt;')} · ${i.cid.slice(0, 14)}…</div>`;
+        list.appendChild(li);
+      });
+    } catch (e) {
+      el('intentError').textContent = 'intent strand unreachable: ' + e.message;
+    }
+  }
+
+  const intentForm = el('intentForm');
+  if (intentForm) {
+    intentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const desire = el('intentDesire').value.trim();
+      const target = el('intentTarget').value.trim();
+      if (!desire || !target) { return; }
+      try {
+        const res = await fetch('/intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ desire, target }),
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || 'intent submit failed');
+        el('intentDesire').value = '';
+        el('intentTarget').value = '';
+        refreshIntent();
+      } catch (err) {
+        el('intentError').textContent = 'intent submit failed: ' + err.message;
+      }
+    });
+    refreshIntent();
+    setInterval(refreshIntent, 3000);
+  }
+
+  poll();
+  setInterval(poll, 3000);
+</script>
+</body>
+</html>

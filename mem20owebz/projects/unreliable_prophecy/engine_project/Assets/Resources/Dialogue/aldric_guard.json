@@ -1,0 +1,26 @@
+{
+  "npcId": "aldric_guard",
+  "npcDisplayName": "Sergeant Aldric Vane",
+  "coreBackstory": "Aldric served in the kingdom's army for fifteen years before a leg injury forced him into retirement.",
+  "greetings": [
+    "State your business. ...Just a formality. You look harmless enough.",
+    "Another day, another patrol. What brings you to the watch post?",
+    "Keep your weapons sheathed in town. We clear? Good."
+  ],
+  "idleChatter": [
+    "Three new recruits this month. Green as spring grass. I'll whip them into shape.",
+    "The night watch reported lights in the old tower. Probably nothing. Probably.",
+    "I've seen real combat. This? This is just... unsettling. Different kind of threat.",
+    "If you see anything unusual, report it. Don't play hero. That's what we're paid for."
+  ],
+  "farewells": [
+    "Stay out of trouble. And if you can't stay out of it, stay alive.",
+    "The gates close at sundown. Be inside or be locked out — your choice.",
+    "Watch your back out there. The roads aren't what they used to be."
+  ],
+  "reactiveComments": [
+    "You've got blood on your sleeve. ...Not yours, I hope. Go clean up before you scare the civilians.",
+    "Adventurers cause as many problems as they solve. Remember that.",
+    "If you're looking for work, the mayor's got a list. Try there before you go picking fights."
+  ]
+}

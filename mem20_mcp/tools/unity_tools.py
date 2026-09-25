@@ -1,18 +1,17 @@
-"""OPTIONAL Unity integration (shipped as a separate, pluggable module).
+"""Forwarding module — see mem20_mcp._forward.
 
-Unity is NOT a required dependency. The build/test tools degrade gracefully: when
-Unity is not installed (or MEM20_UNITY_EXECUTABLE is unset / the default path is
-absent), they return an informative message instead of failing.
+Re-exports the canonical tools module unity_tools.py (its Mixin and registration) from the canonical tree (single source of truth) so the
+mem20_mcp package exposes the real, running implementation and never stale
+drift.
 """
-import mcp_types as mt
 
-import os
-import sys
-import json
-import re
-import asyncio
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from mem20_mcp._forward import load as _load
+
+_impl = _load('tools/unity_tools.py', 'tools.unity_tools')
 
 
-sys.path.insert(0, os.environ.get("MEM20_STORE_PATH", os.path.expanduser("~/.mem20/store")))
+def __getattr__(name):
+    return getattr(_impl, name)
+
+
+__all__ = [n for n in dir(_impl) if not n.startswith("_")]

@@ -1,0 +1,26 @@
+{
+  "npcId": "lyra_questgiver",
+  "npcDisplayName": "Commander Lyra Ashford",
+  "coreBackstory": "Lyra founded the local Adventurer's Guild chapter five years ago after leaving the capital under mysterious circumstances.",
+  "greetings": [
+    "You have the look of someone seeking purpose. Or perhaps just coin. Either way, I can help.",
+    "Welcome to the Guild. State your skills, and I'll state your options.",
+    "I've been expecting you. Not you specifically, but someone like you. The town needs capable hands."
+  ],
+  "idleChatter": [
+    "We've lost three scouts this month. Officially, they 'went missing.' Unofficially, I'm running out of explanations.",
+    "The supernatural activity is increasing. I've seen the patterns before. This is just the beginning.",
+    "An adventurer's life is not glory and gold. It's mud, blood, and difficult choices. Still interested?",
+    "I don't send people into danger lightly. Every mission I assign, I'd be willing to take myself."
+  ],
+  "farewells": [
+    "Remember: the mission matters more than the reward. Stay focused.",
+    "If you don't return, I'll send someone to find you. That's a promise.",
+    "Fortune favor you. You'll need it where you're going."
+  ],
+  "reactiveComments": [
+    "You've proven yourself capable. I have a... delicate matter that requires discretion.",
+    "The ruins are not a tourist destination. People die there. Prepared to be different?",
+    "I don't believe in fate, but I do believe in preparation. And right now, we're not prepared."
+  ]
+}

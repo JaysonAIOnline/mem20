@@ -1,0 +1,262 @@
+orchestrator:
+  id: enhanced-memory-validation
+  strategy: parallel
+  queue: orka:generated
+  memory:
+    decay:
+      enabled: true
+      default_short_term_hours: 0.025 # 1.5 minutes for demo
+      default_long_term_hours: 0.05 # 3 minutes for demo
+      check_interval_minutes: 1 # Check every minute for demo.
+      memory_type_rules:
+        long_term_events: [] # Empty
+        short_term_events: [
+            "debug",
+            "processing",
+            "start",
+            "progress",
+            "write",
+            # Add all agent class names that create events:
+            "OpenAIBinaryAgent",
+            "OpenAIAnswerBuilder",
+            "DuckDuckGoTool",
+            "MemoryWriterNode",
+            "MetaReport",
+            "RouterNode",
+          ]
+      importance_rules:
+        base_score: 0.4
+        event_type_boosts:
+          write: 0.3
+          success: 0.2
+          completion: 0.2
+          result: 0.15
+          final_answer: 0.25
+        agent_type_boosts:
+          memory: 0.2
+          openai-answer: 0.15
+    vector_search:
+      enabled: true
+      index_name: "orka_enhanced_memory"
+      vector_dim: 384
+      enable_hnsw: true
+      force_recreate_index: false
+      vector_params:
+        type: "FLOAT32"
+        distance_metric: "COSINE"
+        ef_construction: 200
+        m: 16
+  agents:
+    - memory_reader
+    - memory_validator
+    - answer_router
+    - final_summary
+
+agents:
+  # Step 1: Read memories using enhanced context-aware search
+  - id: memory_reader
+    type: memory
+    memory_preset: "episodic"  # Personal experiences and conversations (7 days)
+    queue: orka:memory_reader
+    config:
+      operation: read
+      namespace: user_queries
+      # Custom overrides (preset provides intelligent defaults for limit=8, similarity_threshold=0.6, 
+      # vector_weight=0.7, text_weight=0.3, enable_hybrid_search=true, ef_runtime=10, etc.)
+      limit: 5  # Override preset default of 8
+      memory_category_filter: stored
+    prompt: "{{ get_input() }}"
+
+  # Step 2: Validate memory quality using OpenAI
+  - id: memory_validator
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.2
+    queue: orka:memory_validator
+    prompt: |
+      You are a memory quality validator. Analyze the retrieved memories and determine if they provide valuable, accurate, and relevant information to answer the user's query.
+
+      User Query: {{ get_input() }}
+      Retrieved Memories: {{ safe_get(previous_outputs.get('memory_reader', {}), 'memories') }}
+
+      Evaluation Criteria:
+      1. Relevance: Do the memories directly relate to the user's query?
+      2. Completeness: Do the memories provide sufficient information to answer the query?
+      3. Accuracy: Do the memories appear to contain accurate information?
+      4. Recency: Are the memories recent enough to be still valid?
+
+      Return 'true' if the memories are VALUABLE and sufficient to answer the query.
+      Return 'false' if the memories are INSUFFICIENT or not valuable enough.
+      Answer with exactly 'true' or 'false' only.
+    depends_on:
+      - memory_reader
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number
+
+  # Step 3: Router to decide between memory-based answer or search fallback
+  - id: answer_router
+    type: router
+    params:
+      decision_key: memory_validator
+      routing_map:
+        "true":
+          - answer_builder
+          - memory_writer
+        "false":
+          - search_fallback
+          - search_answer_builder
+          - memory_writer
+    depends_on:
+      - memory_validator
+
+  # Step 3a: Build answer from valuable memories
+  - id: answer_builder
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.7
+    queue: orka:answer_builder
+    prompt: |
+      Based on the validated memories, provide a comprehensive answer to the user's query.
+
+      User Query: {{ get_input() }}
+      Validated Memories: {{ safe_get(previous_outputs.get('memory_reader', {}), 'memories') }}
+      Memory Validation: VALUABLE
+
+      Instructions:
+      - Use the information from the memories to construct your answer
+      - Be specific and cite relevant details from the memories
+      - If the memories are incomplete, acknowledge the limitations
+      - Provide a clear, well-structured response
+
+      Answer:
+    depends_on:
+      - answer_router
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number
+
+  # Step 3b: Fallback to internet search if memories are insufficient
+  - id: search_fallback
+    type: duckduckgo
+    queue: orka:search_fallback
+    prompt: "{{ get_input() }}"
+    depends_on:
+      - answer_router
+
+  # Step 4: Build answer from search results
+  - id: search_answer_builder
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.7
+    queue: orka:search_answer_builder
+    prompt: |
+      Based on the search results, provide a comprehensive answer to the user's query.
+
+      User Query: {{ get_input() }}
+      Search Results: {{ safe_get(previous_outputs.get('search_fallback', {}), 'result') }}
+      
+      Provide a detailed, informative response based on the search data.
+      Memory Validation: INSUFFICIENT
+
+      Instructions:
+      - Use the search results to construct your answer
+      - Synthesize information from multiple sources if available
+      - Provide a clear, accurate, and well-structured response
+      - Include relevant details and context
+
+      Answer:
+    depends_on:
+      - search_fallback
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number
+
+  # Step 5: Store the answer in short-term memory (1 minute expiration)
+  - id: memory_writer
+    type: memory
+    memory_preset: "episodic"  # Personal experiences and conversations (7 days)
+    queue: orka:memory_writer
+    config:
+      operation: write
+      namespace: short_term_answers
+      vector: true
+      key_template: "answer_{{ run_id }}_{{ step_index }}"
+    prompt: |
+      {
+        "type": "answer_record",
+        "query": {{ get_input() | tojson }},
+        "answer": {{ (safe_get(previous_outputs.get('answer_builder', {}), 'response') or safe_get(previous_outputs.get('search_answer_builder', {}), 'response')) | tojson }},
+        "source": {{ ('Retrieved from validated memories' if previous_outputs.get('answer_builder') else 'Generated from internet search') | tojson }},
+        "memory_valuable": {{ (previous_outputs.get('answer_builder') is not none) | tojson }}
+      }
+    metadata:
+      source: memory_validation_workflow
+      query: "{{ get_input() }}"
+      memory_was_valuable: "{{ 'true' if previous_outputs.get('answer_builder') else 'false' }}"
+      answer_source: "{{ 'memory' if previous_outputs.get('answer_builder') else 'search' }}"
+      expires_at: "{{ current_time }}"
+      confidence: 0.9
+      category: stored
+    depends_on:
+      - answer_router
+  
+  - id: final_summary
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.7
+    prompt: |
+      Answer the question: "{{ get_input() }}"
+      
+      {% set memory_result = get_agent_response('memory_reader') %}
+      {% set validation = get_agent_response('memory_validator') %}
+      {% set memory_answer = get_agent_response('answer_builder') %}
+      {% set search_answer = get_agent_response('search_answer_builder') %}
+      
+      {% if memory_answer %}
+      {{ memory_answer }}
+      {% elif search_answer %}
+      {{ search_answer }}
+      {% else %}
+      I need to process your question. Let me provide the best response I can based on the available information.
+      {% endif %}
+      
+      {% if memory_result %}
+      
+      Additional context from memory: {{ memory_result }}
+      {% endif %}
+      
+      Provide a complete, accurate response that directly addresses what the user is asking about.
+    depends_on:
+      - memory_writer
+    params:
+      structured_output:
+        enabled: true
+        mode: prompt
+        schema:
+          required: [response]
+          optional:
+            confidence: number

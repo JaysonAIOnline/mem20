@@ -1,0 +1,42 @@
+{
+  "name": "jairf-animation",
+  "description": "JAIRF animation roadmap (per 02_Animation_List.md). Standard humanoid avatar. Locomotion (idle/walk/run/sprint/jump/fall/climb/swim/crouch), generic combat (draw/sheathe/combo/heavy/block/hit forms/death/revive/dodge), class-specific (Warrior heavy/shield bash/charge; Mage cast/channel; Archer bow draw/hold/release), social & emotes, builder mode gestures, interaction (loot/door/talk/craft), enemy base set, NPC set. Tech: upper-body layers, optional root motion.",
+  "phases": [
+    {
+      "name": "1. Standard humanoid rig + locomotion set",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Generic combat animation set",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Class-specific sets (warrior/mage/archer)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Social, emotes + builder mode gestures",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Interaction animations (loot/door/NPC/craft)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Enemy + NPC base sets",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Tech validation: upper-body layers, root motion, avatar skeleton",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

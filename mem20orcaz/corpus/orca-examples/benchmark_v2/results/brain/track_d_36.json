@@ -1,0 +1,187 @@
+{
+  "task_id": "track_d_36",
+  "condition": "brain",
+  "elapsed_s": 14.38,
+  "success": true,
+  "output": {
+    "response": "To verify equivalence without a formal spec, we capture live traffic as the de\u2011facto specification, preserve MySQL semantics in PostgreSQL, build thin service facades that mirror PHP endpoints, and use recorded request/response pairs for automated regression testing. The steps are:\n1. Deploy a lightweight traffic recorder in production/staging to log HTTP requests, responses, and SQL queries.\n2. Extract invariants (response shape, sort order, error handling) from logs and document them as living contracts.\n3. Create a PostgreSQL schema that emulates MySQL\u2019s implicit coercion using explicit casts or domains; run side\u2011by\u2011side query comparisons to detect deviations.\n4. Implement microservices exposing single\u2011table or simple\u2011query endpoints that keep the original PHP signatures; use recorded traffic as integration tests, comparing byte\u2011for\u2011byte responses from legacy and new services.\n5. Roll out behind a traffic\u2011shifting proxy (Envoy/Istio) with canary percentages, monitoring latency/error rates against baseline.\n6. Store request/response pairs in a test harness that replays nightly against both systems; integrate into CI/CD for continuous regression validation.\n7. Maintain a \"quirks\" wiki listing non\u2011standard behaviors discovered during the above steps to guide future development.\nThis approach turns real usage data into a specification, mitigates database semantic drift, avoids N+1 cross\u2011service queries by keeping services thin initially, and focuses reviewers on functional equivalence rather than style.",
+    "confidence": "0.95",
+    "internal_reasoning": "I synthesized the four recipes into an evidence\u2011driven workflow that uses live traffic as a specification, addresses MySQL\u2013PostgreSQL differences with explicit casts, keeps service boundaries thin to avoid N+1 issues, and automates regression testing against recorded behavior.",
+    "_metrics": {
+      "tokens": 1776,
+      "prompt_tokens": 1400,
+      "completion_tokens": 376,
+      "latency_ms": 3431.72,
+      "cost_usd": 0.000212,
+      "model": "openai/gpt-oss-20b",
+      "provider": "lm_studio"
+    },
+    "formatted_prompt": "Produce the FINAL structured output for this complex task.\n\nDOMAIN: general\nTASK: {'domain': 'code_review', 'task': \"Review a 10-year-old PHP codebase being migrated to Python microservices. The code review recipe checks the migration approach. Database recipe audits schema translation. API recipe designs new service boundaries. Testing recipe verifies behavioral equivalence. However: (1) the PHP codebase has ZERO tests and undocumented 'quirky behaviors' that customers depend on (e.g., a sort order that's technically wrong but customers' downstream systems expect it) \u2014 the testing recipe says 'verify behavioral equivalence' but there's no specification of what the correct behavior IS, (2) the database schema translation reveals that the PHP app used MySQL with implicit type coercion (strings compared to integers 'work' in MySQL but cause type errors in PostgreSQL) \u2014 the database recipe's normalization recommendations would change query results, (3) the API recipe wants to redesign service boundaries, but the PHP app has 200 DB queries with 15+ table JOINs \u2014 breaking these into microservice API calls would create massive N+1 cross-service query patterns, (4) the code review recipe's style checks are meaningless for PHP\u2192Python translation (you're reviewing code that will be deleted) \u2014 the real risk is behavioral divergence, but the style_only_review anti-pattern means reviewers focus on Python style rather than functional equivalence. How do you verify equivalence when there's no specification, the database semantics differ, and testing the old system is manual?\"}\n\nCOMPOSED SOLUTION:\nTo verify behavioral equivalence without a formal spec, we adopt an evidence\u2011driven, incremental migration strategy that blends the code review, database, API, and testing recipes while explicitly avoiding style\u2011only focus and N+1 pitfalls.\n\n**Step 1 \u2013 Capture Live Behavior (Observation Layer)**\n- Deploy a lightweight traffic recorder in production or staging to capture real HTTP requests, responses, and DB query logs for a representative period.\n- Store snapshots as JSON payloads, status codes, headers, and the exact SQL executed. This becomes our *de\u2011facto specification*.\n\n**Step 2 \u2013 Define Minimal Functional Contracts (Specification Layer)**\n- From the snapshots extract invariants: response shape, required fields, sort order, error handling patterns, and any implicit type coercions observed.\n- Document these as a living contract in a shared spec file; treat each invariant as a test case.\n\n**Step 3 \u2013 Preserve MySQL Semantics in PostgreSQL (Database Layer)**\n- Generate a PostgreSQL schema that mirrors the MySQL one but adds explicit casts or domain types to emulate implicit coercion.\n- Run query\u2011by\u2011query comparison: feed the same input data into both databases and compare results against the snapshot logs. Flag any deviations.\n\n**Step 4 \u2013 Build Thin Service Facades (API Layer)**\n- Start with microservices that expose a single table or simple query, keeping the original PHP endpoint signatures.\n- Use the recorded requests as integration tests: send each request to both the legacy PHP app and the new service, compare responses byte\u2011by\u2011byte. Any mismatch indicates a behavioral change.\n\n**Step 5 \u2013 Incremental Rollout with Canary Switching (Deployment Layer)**\n- Deploy services behind a traffic\u2011shifting proxy (e.g., Envoy or Istio). Route a small percentage of live traffic to the new service while keeping the rest on PHP.\n- Monitor key metrics (latency, error rate) and compare against baseline. Use automated alerts for any divergence beyond tolerance.\n\n**Step 6 \u2013 Continuous Regression Testing (Testing Layer)**\n- Store the recorded request/response pairs in a test harness that can replay them nightly against both systems.\n- Integrate this harness into CI/CD so every code change is automatically validated against the live\u2011behavior contract.\n\n**Step 7 \u2013 Document Quirks and Knowledge Transfer (Governance Layer)**\n- Maintain a \u201cquirks\u201d wiki that lists all non\u2011standard behaviors discovered during Steps\u202f1\u20135.\n- Ensure new developers reference this before making changes, preventing accidental regression.\n\nBy treating real traffic as the specification source, we avoid the anti\u2011patterns of style\u2011only reviews and N+1 cross\u2011service queries. Each layer validates a different aspect\u2014observed behavior, database semantics, API contract, and deployment stability\u2014providing comprehensive confidence that the migrated Python microservices preserve customer\u2011dependent quirks while improving maintainability.\n\n**Skills Contributed**: procedural:general:evaluation-validation (for building validation steps), procedural:general:planning-routing (for rollout strategy), procedural:general:abstraction (to distill invariants).\n\nCOMPOSITION STRATEGY:\nN/A\n\nBRAIN METRICS:\nSkills composed: []\nAnti-patterns avoided: []\n\nReturn JSON with:\n- \"response\": comprehensive structured solution\n- \"domain\": the domain\n- \"task\": brief description\n- \"solution_steps\": array of concrete steps\n- \"skills_used\": list of skills that contributed\n- \"anti_patterns_avoided\": list of avoided patterns\n- \"quality_self_assessment\": 0.0-1.0 with justification\n- \"brain_assisted\": true if brain knowledge contributed\n- \"used_recalled_skill\": copy the boolean from the prior step (true/false) \u2014 whether recalled knowledge actually guided the solution\n- \"recalled_skill\": primary skill or \"none\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": final reflection",
+    "trace_id": "d049935f-d12b-4113-8872-2f3ce135fa0a",
+    "execution_time_ms": 3432.722568511963
+  },
+  "agent_outputs": {
+    "brain_learn_recipe": {
+      "response": "No recipe could be learned (missing agents or failed outcome).",
+      "confidence": "0.0",
+      "trace_id": "4865b206-fc6f-4da4-89d0-3068cfa0f07e",
+      "execution_time_ms": 0.0
+    },
+    "brain_learn_anti": {
+      "response": "Recorded anti-pattern: anti:devops:deploying-without-running-security-scans",
+      "confidence": "0.0424881343408005",
+      "internal_reasoning": "Anti-pattern stored: unknown",
+      "skill_id": "51094fb4-26fc-4d1e-aaf9-947c2ad394d5",
+      "skill_name": "anti:devops:deploying-without-running-security-scans",
+      "skill_type": "anti_pattern",
+      "trace_id": "164de58f-0861-48c3-85d6-cbdb2f2aed01",
+      "execution_time_ms": 15.999317169189453
+    },
+    "brain_learn_path": {
+      "response": "No path could be learned (empty path or failed outcome).",
+      "confidence": "0.0",
+      "trace_id": "3f54e0c5-c746-4a63-a3ea-188567d31152",
+      "execution_time_ms": 0.0
+    },
+    "task_reasoner": {
+      "response": "To verify behavioral equivalence when the legacy PHP system has no tests, undocumented quirks, and database semantics that will change under PostgreSQL, a pragmatic, evidence\u2011driven approach is required:\n\n1. **Capture the current observable behavior** \u2013 Use automated monitoring and logging to record real\u2011world traffic (requests, responses, DB queries). Build a lightweight \u201cbehavioral snapshot\u201d by replaying production traffic against the live PHP app in a sandbox.\n2. **Define minimal functional contracts** \u2013 From the snapshots, extract a set of high\u2011level invariants: e.g., response shape, status codes, sort orders, and critical data transformations. These become the *specification* for equivalence.\n3. **Database migration safeguards** \u2013 Keep the MySQL schema as a reference; generate a PostgreSQL mirror that preserves implicit coercions by using explicit casts or domain types. Validate query results against the snapshot data to ensure no accidental changes.\n4. **Incremental microservice rollout** \u2013 Start with \u201cthin\u201d services that wrap single tables or simple queries, exposing them via a fa\u00e7ade API that mirrors the PHP endpoints. Use request\u2011driven integration tests (recorded from step\u202f1) to confirm each service returns identical payloads.\n5. **Automated regression testing** \u2013 Build a test harness that feeds recorded requests into both the legacy PHP app and the new Python services, comparing responses byte\u2011by\u2011byte. Any divergence flags a behavioral change.\n6. **Continuous monitoring** \u2013 Deploy the new services behind a traffic\u2011shifting proxy (e.g., canary or feature flag). Measure key metrics (latency, error rate) against the legacy baseline to catch subtle regressions early.\n7. **Documentation and knowledge transfer** \u2013 Create a living \u201cquirks\u201d document that lists every non\u2011standard behavior discovered during steps\u202f1\u20135. This becomes part of the new system\u2019s specification and guides future maintenance.\n\nBy turning real traffic into a de facto test suite, we avoid relying on absent unit tests or brittle style checks. The migration proceeds with measurable confidence that customer\u2011dependent quirks are preserved while benefiting from clean Python microservices.",
+      "confidence": "0.95",
+      "internal_reasoning": "I identified the core problems: missing specs, database coercion differences, and N+1 query risks. I mapped a solution that uses traffic replay to create an implicit spec, safeguards for DB migration, incremental service rollout with regression tests, and continuous monitoring. This addresses behavioral equivalence without relying on nonexistent tests or style checks.",
+      "_metrics": {
+        "tokens": 1221,
+        "prompt_tokens": 691,
+        "completion_tokens": 530,
+        "latency_ms": 4528.8,
+        "cost_usd": 0.000279,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "You are an expert analyst. Analyze this complex task step by step.\n\nDOMAIN: code_review\nTASK: Review a 10-year-old PHP codebase being migrated to Python microservices. The code review recipe checks the migration approach. Database recipe audits schema translation. API recipe designs new service boundaries. Testing recipe verifies behavioral equivalence. However: (1) the PHP codebase has ZERO tests and undocumented 'quirky behaviors' that customers depend on (e.g., a sort order that's technically wrong but customers' downstream systems expect it) \u2014 the testing recipe says 'verify behavioral equivalence' but there's no specification of what the correct behavior IS, (2) the database schema translation reveals that the PHP app used MySQL with implicit type coercion (strings compared to integers 'work' in MySQL but cause type errors in PostgreSQL) \u2014 the database recipe's normalization recommendations would change query results, (3) the API recipe wants to redesign service boundaries, but the PHP app has 200 DB queries with 15+ table JOINs \u2014 breaking these into microservice API calls would create massive N+1 cross-service query patterns, (4) the code review recipe's style checks are meaningless for PHP\u2192Python translation (you're reviewing code that will be deleted) \u2014 the real risk is behavioral divergence, but the style_only_review anti-pattern means reviewers focus on Python style rather than functional equivalence. How do you verify equivalence when there's no specification, the database semantics differ, and testing the old system is manual?\n\nThis task may require combining multiple patterns: procedural recipes,\nanti-pattern avoidance, and path selection. Think holistically.\n\nReturn JSON with:\n- \"domain\": the domain\n- \"task\": brief task description\n- \"response\": your complete multi-faceted analysis\n- \"steps\": array of {\"action\": \"...\", \"result\": \"expected outcome\"}\n- \"required_capabilities\": list of skill types needed\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": approach explanation",
+      "trace_id": "60ca24ad-6f98-48dc-934b-783ebcc08e9f",
+      "execution_time_ms": 4529.796361923218
+    },
+    "brain_recall": {
+      "response": "Found applicable skill: 'procedural:general:evaluation-validation' (score: 0.69). Steps: validate [target] \u2192 draft [target] \u2192 check [target] \u2192 check [target] \u2192 convert [target] \u2192 check [target] \u2192 schedule [target] \u2192 track [target]",
+      "confidence": "0.6923381856976523",
+      "internal_reasoning": "Skill 'procedural:general:evaluation-validation'. shares some structural patterns. has moderate semantic overlap. has been transferred 11 times (100% success). shares structures: validation.",
+      "skill_id": "5bacf144-4092-4344-ba46-40462f8520d7",
+      "skill_name": "procedural:general:evaluation-validation",
+      "skill_steps": [
+        "validate [target]",
+        "draft [target]",
+        "check [target]",
+        "check [target]",
+        "convert [target]",
+        "check [target]",
+        "schedule [target]",
+        "track [target]"
+      ],
+      "skill_tags": [
+        "generation",
+        "validation",
+        "evaluation",
+        "general",
+        "1\ufe0f\u20e3 **Ideation & Validation** \u2013 Generate topic, validate against audience and SEO signals.\n2\ufe0f\u20e3 **Authoring** \u2013 Writer drafts with style guide; assets tagged in DAM.\n3\ufe0f\u20e3 **Automated QA** \u2013 Run grammar,"
+      ],
+      "combined_score": 0.6923381856976523,
+      "structural_score": 0.475,
+      "semantic_score": 0.5950602889060974,
+      "adaptations": {
+        "add_structures": [
+          "routing"
+        ]
+      },
+      "all_candidates": [
+        {
+          "skill_name": "procedural:general:evaluation-validation",
+          "score": 0.6923381856976523,
+          "reasoning": "Skill 'procedural:general:evaluation-validation'. shares some structural patterns. has moderate semantic overlap. has been transferred 11 times (100% success). shares structures: validation."
+        },
+        {
+          "skill_name": "procedural:general:planning-routing",
+          "score": 0.6732721949028928,
+          "reasoning": "Skill 'procedural:general:planning-routing'. shares some structural patterns. has moderate semantic overlap. has been transferred 6 times (100% success). shares structures: routing."
+        },
+        {
+          "skill_name": "procedural:general:abstraction",
+          "score": 0.6157122991882562,
+          "reasoning": "Skill 'procedural:general:abstraction'. has moderate semantic overlap. has been transferred 3 times (100% success)."
+        }
+      ],
+      "trace_id": "f0f05478-c42d-4451-b880-4d96049d5a82",
+      "execution_time_ms": 33.5078239440918
+    },
+    "task_applier": {
+      "response": "To verify behavioral equivalence without a formal spec, we adopt an evidence\u2011driven, incremental migration strategy that blends the code review, database, API, and testing recipes while explicitly avoiding style\u2011only focus and N+1 pitfalls.\n\n**Step 1 \u2013 Capture Live Behavior (Observation Layer)**\n- Deploy a lightweight traffic recorder in production or staging to capture real HTTP requests, responses, and DB query logs for a representative period.\n- Store snapshots as JSON payloads, status codes, headers, and the exact SQL executed. This becomes our *de\u2011facto specification*.\n\n**Step 2 \u2013 Define Minimal Functional Contracts (Specification Layer)**\n- From the snapshots extract invariants: response shape, required fields, sort order, error handling patterns, and any implicit type coercions observed.\n- Document these as a living contract in a shared spec file; treat each invariant as a test case.\n\n**Step 3 \u2013 Preserve MySQL Semantics in PostgreSQL (Database Layer)**\n- Generate a PostgreSQL schema that mirrors the MySQL one but adds explicit casts or domain types to emulate implicit coercion.\n- Run query\u2011by\u2011query comparison: feed the same input data into both databases and compare results against the snapshot logs. Flag any deviations.\n\n**Step 4 \u2013 Build Thin Service Facades (API Layer)**\n- Start with microservices that expose a single table or simple query, keeping the original PHP endpoint signatures.\n- Use the recorded requests as integration tests: send each request to both the legacy PHP app and the new service, compare responses byte\u2011by\u2011byte. Any mismatch indicates a behavioral change.\n\n**Step 5 \u2013 Incremental Rollout with Canary Switching (Deployment Layer)**\n- Deploy services behind a traffic\u2011shifting proxy (e.g., Envoy or Istio). Route a small percentage of live traffic to the new service while keeping the rest on PHP.\n- Monitor key metrics (latency, error rate) and compare against baseline. Use automated alerts for any divergence beyond tolerance.\n\n**Step 6 \u2013 Continuous Regression Testing (Testing Layer)**\n- Store the recorded request/response pairs in a test harness that can replay them nightly against both systems.\n- Integrate this harness into CI/CD so every code change is automatically validated against the live\u2011behavior contract.\n\n**Step 7 \u2013 Document Quirks and Knowledge Transfer (Governance Layer)**\n- Maintain a \u201cquirks\u201d wiki that lists all non\u2011standard behaviors discovered during Steps\u202f1\u20135.\n- Ensure new developers reference this before making changes, preventing accidental regression.\n\nBy treating real traffic as the specification source, we avoid the anti\u2011patterns of style\u2011only reviews and N+1 cross\u2011service queries. Each layer validates a different aspect\u2014observed behavior, database semantics, API contract, and deployment stability\u2014providing comprehensive confidence that the migrated Python microservices preserve customer\u2011dependent quirks while improving maintainability.\n\n**Skills Contributed**: procedural:general:evaluation-validation (for building validation steps), procedural:general:planning-routing (for rollout strategy), procedural:general:abstraction (to distill invariants).",
+      "confidence": "0.95",
+      "internal_reasoning": "I synthesized the recalled skills into a layered migration plan, explicitly addressing each problem point with concrete actions and avoiding known anti\u2011patterns.",
+      "_metrics": {
+        "tokens": 2222,
+        "prompt_tokens": 1508,
+        "completion_tokens": 714,
+        "latency_ms": 5829.38,
+        "cost_usd": 0.000367,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "You are solving a complex task that requires COMPOSING multiple skills.\n\nDOMAIN: general\nTASK: {'domain': 'code_review', 'task': \"Review a 10-year-old PHP codebase being migrated to Python microservices. The code review recipe checks the migration approach. Database recipe audits schema translation. API recipe designs new service boundaries. Testing recipe verifies behavioral equivalence. However: (1) the PHP codebase has ZERO tests and undocumented 'quirky behaviors' that customers depend on (e.g., a sort order that's technically wrong but customers' downstream systems expect it) \u2014 the testing recipe says 'verify behavioral equivalence' but there's no specification of what the correct behavior IS, (2) the database schema translation reveals that the PHP app used MySQL with implicit type coercion (strings compared to integers 'work' in MySQL but cause type errors in PostgreSQL) \u2014 the database recipe's normalization recommendations would change query results, (3) the API recipe wants to redesign service boundaries, but the PHP app has 200 DB queries with 15+ table JOINs \u2014 breaking these into microservice API calls would create massive N+1 cross-service query patterns, (4) the code review recipe's style checks are meaningless for PHP\u2192Python translation (you're reviewing code that will be deleted) \u2014 the real risk is behavioral divergence, but the style_only_review anti-pattern means reviewers focus on Python style rather than functional equivalence. How do you verify equivalence when there's no specification, the database semantics differ, and testing the old system is manual?\"}\n\nYOUR ANALYSIS:\nTo verify behavioral equivalence when the legacy PHP system has no tests, undocumented quirks, and database semantics that will change under PostgreSQL, a pragmatic, evidence\u2011driven approach is required:\n\n1. **Capture the current observable behavior** \u2013 Use automated monitoring and logging to record real\u2011world traffic (requests, responses, DB queries). Build a lightweight \u201cbehavioral snapshot\u201d by replaying production traffic against the live PHP app in a sandbox.\n2. **Define minimal functional contracts** \u2013 From the snapshots, extract a set of high\u2011level invariants: e.g., response shape, status codes, sort orders, and critical data transformations. These become the *specification* for equivalence.\n3. **Database migration safeguards** \u2013 Keep the MySQL schema as a reference; generate a PostgreSQL mirror that preserves implicit coercions by using explicit casts or domain types. Validate query results against the snapshot data to ensure no accidental changes.\n4. **Incremental microservice rollout** \u2013 Start with \u201cthin\u201d services that wrap single tables or simple queries, exposing them via a fa\u00e7ade API that mirrors the PHP endpoints. Use request\u2011driven integration tests (recorded from step\u202f1) to confirm each service returns identical payloads.\n5. **Automated regression testing** \u2013 Build a test harness that feeds recorded requests into both the legacy PHP app and the new Python services, comparing responses byte\u2011by\u2011byte. Any divergence flags a behavioral change.\n6. **Continuous monitoring** \u2013 Deploy the new services behind a traffic\u2011shifting proxy (e.g., canary or feature flag). Measure key metrics (latency, error rate) against the legacy baseline to catch subtle regressions early.\n7. **Documentation and knowledge transfer** \u2013 Create a living \u201cquirks\u201d document that lists every non\u2011standard behavior discovered during steps\u202f1\u20135. This becomes part of the new system\u2019s specification and guides future maintenance.\n\nBy turning real traffic into a de facto test suite, we avoid relying on absent unit tests or brittle style checks. The migration proceeds with measurable confidence that customer\u2011dependent quirks are preserved while benefiting from clean Python microservices.\n\nBRAIN RECALLED KNOWLEDGE:\nSkill name: procedural:general:evaluation-validation\nSkill type: unknown\nAbstract steps: ['validate [target]', 'draft [target]', 'check [target]', 'check [target]', 'convert [target]', 'check [target]', 'schedule [target]', 'track [target]']\nTransfer score: 0.6923381856976523\nAdaptations: {'add_structures': ['routing']}\nAll candidates: [{'skill_name': 'procedural:general:evaluation-validation', 'score': 0.6923381856976523, 'reasoning': \"Skill 'procedural:general:evaluation-validation'. shares some structural patterns. has moderate semantic overlap. has been transferred 11 times (100% success). shares structures: validation.\"}, {'skill_name': 'procedural:general:planning-routing', 'score': 0.6732721949028928, 'reasoning': \"Skill 'procedural:general:planning-routing'. shares some structural patterns. has moderate semantic overlap. has been transferred 6 times (100% success). shares structures: routing.\"}, {'skill_name': 'procedural:general:abstraction', 'score': 0.6157122991882562, 'reasoning': \"Skill 'procedural:general:abstraction'. has moderate semantic overlap. has been transferred 3 times (100% success).\"}]\n\nINSTRUCTIONS:\n- Compose insights from ALL recalled skills into a unified solution.\n- Use recipe patterns for structuring your approach.\n- Use anti-pattern knowledge to AVOID known failure modes.\n- Use path knowledge to select the optimal execution sequence.\n- Clearly note which skills contributed and how you composed them.\n\nReturn JSON with:\n- \"response\": your complete composed solution\n- \"domain\": the domain\n- \"task\": brief description\n- \"steps\": array of {\"action\": \"...\", \"expected_outcome\": \"...\"}\n- \"skills_composed\": list of skill names/types used\n- \"anti_patterns_avoided\": list of anti-patterns avoided\n- \"composition_strategy\": how you combined multiple skills\n- \"used_recalled_skill\": true or false\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": reflection on composition",
+      "trace_id": "b6b2417d-d4ed-4645-ab05-948a6dff2759",
+      "execution_time_ms": 5831.37059211731
+    },
+    "brain_learn": {
+      "response": "Learned skill: procedural:general:evaluation-routing",
+      "confidence": "0.69",
+      "internal_reasoning": "Abstracted 8 steps into transferable skill 'procedural:general:evaluation-routing'",
+      "skill_id": "2c349ea6-3236-4474-bcb3-9ad1e346d91e",
+      "skill_name": "procedural:general:evaluation-routing",
+      "skill_steps": [
+        "verify [target]",
+        "log [target]",
+        "load [target]",
+        "define [target]",
+        "observe [target]",
+        "document [target]",
+        "generate [target]",
+        "run [target]"
+      ],
+      "skill_tags": [
+        "routing",
+        "planning",
+        "validation",
+        "evaluation",
+        "general",
+        "To verify behavioral equivalence without a formal spec, we adopt an evidence\u2011driven, incremental migration strategy that blends the code review, database, API, and testing recipes while explicitly avo"
+      ],
+      "trace_id": "10793724-fd1c-4f5a-825f-bc5d17a7650b",
+      "execution_time_ms": 19.000530242919922
+    },
+    "brain_feedback": {
+      "response": "Recorded successful transfer for skill 'procedural:general:evaluation-validation'.",
+      "confidence": "0.8563797186504764",
+      "internal_reasoning": "Transfer feedback recorded. Skill now has 12 transfer(s).",
+      "skill_id": "5bacf144-4092-4344-ba46-40462f8520d7",
+      "skill_name": "procedural:general:evaluation-validation",
+      "transfer_count": 12,
+      "transfer_success": true,
+      "trace_id": "9eb9d0bd-9647-438b-b737-cec1f21a0972",
+      "execution_time_ms": 5.002737045288086
+    },
+    "task_result": {
+      "response": "To verify equivalence without a formal spec, we capture live traffic as the de\u2011facto specification, preserve MySQL semantics in PostgreSQL, build thin service facades that mirror PHP endpoints, and use recorded request/response pairs for automated regression testing. The steps are:\n1. Deploy a lightweight traffic recorder in production/staging to log HTTP requests, responses, and SQL queries.\n2. Extract invariants (response shape, sort order, error handling) from logs and document them as living contracts.\n3. Create a PostgreSQL schema that emulates MySQL\u2019s implicit coercion using explicit casts or domains; run side\u2011by\u2011side query comparisons to detect deviations.\n4. Implement microservices exposing single\u2011table or simple\u2011query endpoints that keep the original PHP signatures; use recorded traffic as integration tests, comparing byte\u2011for\u2011byte responses from legacy and new services.\n5. Roll out behind a traffic\u2011shifting proxy (Envoy/Istio) with canary percentages, monitoring latency/error rates against baseline.\n6. Store request/response pairs in a test harness that replays nightly against both systems; integrate into CI/CD for continuous regression validation.\n7. Maintain a \"quirks\" wiki listing non\u2011standard behaviors discovered during the above steps to guide future development.\nThis approach turns real usage data into a specification, mitigates database semantic drift, avoids N+1 cross\u2011service queries by keeping services thin initially, and focuses reviewers on functional equivalence rather than style.",
+      "confidence": "0.95",
+      "internal_reasoning": "I synthesized the four recipes into an evidence\u2011driven workflow that uses live traffic as a specification, addresses MySQL\u2013PostgreSQL differences with explicit casts, keeps service boundaries thin to avoid N+1 issues, and automates regression testing against recorded behavior.",
+      "_metrics": {
+        "tokens": 1776,
+        "prompt_tokens": 1400,
+        "completion_tokens": 376,
+        "latency_ms": 3431.72,
+        "cost_usd": 0.000212,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "Produce the FINAL structured output for this complex task.\n\nDOMAIN: general\nTASK: {'domain': 'code_review', 'task': \"Review a 10-year-old PHP codebase being migrated to Python microservices. The code review recipe checks the migration approach. Database recipe audits schema translation. API recipe designs new service boundaries. Testing recipe verifies behavioral equivalence. However: (1) the PHP codebase has ZERO tests and undocumented 'quirky behaviors' that customers depend on (e.g., a sort order that's technically wrong but customers' downstream systems expect it) \u2014 the testing recipe says 'verify behavioral equivalence' but there's no specification of what the correct behavior IS, (2) the database schema translation reveals that the PHP app used MySQL with implicit type coercion (strings compared to integers 'work' in MySQL but cause type errors in PostgreSQL) \u2014 the database recipe's normalization recommendations would change query results, (3) the API recipe wants to redesign service boundaries, but the PHP app has 200 DB queries with 15+ table JOINs \u2014 breaking these into microservice API calls would create massive N+1 cross-service query patterns, (4) the code review recipe's style checks are meaningless for PHP\u2192Python translation (you're reviewing code that will be deleted) \u2014 the real risk is behavioral divergence, but the style_only_review anti-pattern means reviewers focus on Python style rather than functional equivalence. How do you verify equivalence when there's no specification, the database semantics differ, and testing the old system is manual?\"}\n\nCOMPOSED SOLUTION:\nTo verify behavioral equivalence without a formal spec, we adopt an evidence\u2011driven, incremental migration strategy that blends the code review, database, API, and testing recipes while explicitly avoiding style\u2011only focus and N+1 pitfalls.\n\n**Step 1 \u2013 Capture Live Behavior (Observation Layer)**\n- Deploy a lightweight traffic recorder in production or staging to capture real HTTP requests, responses, and DB query logs for a representative period.\n- Store snapshots as JSON payloads, status codes, headers, and the exact SQL executed. This becomes our *de\u2011facto specification*.\n\n**Step 2 \u2013 Define Minimal Functional Contracts (Specification Layer)**\n- From the snapshots extract invariants: response shape, required fields, sort order, error handling patterns, and any implicit type coercions observed.\n- Document these as a living contract in a shared spec file; treat each invariant as a test case.\n\n**Step 3 \u2013 Preserve MySQL Semantics in PostgreSQL (Database Layer)**\n- Generate a PostgreSQL schema that mirrors the MySQL one but adds explicit casts or domain types to emulate implicit coercion.\n- Run query\u2011by\u2011query comparison: feed the same input data into both databases and compare results against the snapshot logs. Flag any deviations.\n\n**Step 4 \u2013 Build Thin Service Facades (API Layer)**\n- Start with microservices that expose a single table or simple query, keeping the original PHP endpoint signatures.\n- Use the recorded requests as integration tests: send each request to both the legacy PHP app and the new service, compare responses byte\u2011by\u2011byte. Any mismatch indicates a behavioral change.\n\n**Step 5 \u2013 Incremental Rollout with Canary Switching (Deployment Layer)**\n- Deploy services behind a traffic\u2011shifting proxy (e.g., Envoy or Istio). Route a small percentage of live traffic to the new service while keeping the rest on PHP.\n- Monitor key metrics (latency, error rate) and compare against baseline. Use automated alerts for any divergence beyond tolerance.\n\n**Step 6 \u2013 Continuous Regression Testing (Testing Layer)**\n- Store the recorded request/response pairs in a test harness that can replay them nightly against both systems.\n- Integrate this harness into CI/CD so every code change is automatically validated against the live\u2011behavior contract.\n\n**Step 7 \u2013 Document Quirks and Knowledge Transfer (Governance Layer)**\n- Maintain a \u201cquirks\u201d wiki that lists all non\u2011standard behaviors discovered during Steps\u202f1\u20135.\n- Ensure new developers reference this before making changes, preventing accidental regression.\n\nBy treating real traffic as the specification source, we avoid the anti\u2011patterns of style\u2011only reviews and N+1 cross\u2011service queries. Each layer validates a different aspect\u2014observed behavior, database semantics, API contract, and deployment stability\u2014providing comprehensive confidence that the migrated Python microservices preserve customer\u2011dependent quirks while improving maintainability.\n\n**Skills Contributed**: procedural:general:evaluation-validation (for building validation steps), procedural:general:planning-routing (for rollout strategy), procedural:general:abstraction (to distill invariants).\n\nCOMPOSITION STRATEGY:\nN/A\n\nBRAIN METRICS:\nSkills composed: []\nAnti-patterns avoided: []\n\nReturn JSON with:\n- \"response\": comprehensive structured solution\n- \"domain\": the domain\n- \"task\": brief description\n- \"solution_steps\": array of concrete steps\n- \"skills_used\": list of skills that contributed\n- \"anti_patterns_avoided\": list of avoided patterns\n- \"quality_self_assessment\": 0.0-1.0 with justification\n- \"brain_assisted\": true if brain knowledge contributed\n- \"used_recalled_skill\": copy the boolean from the prior step (true/false) \u2014 whether recalled knowledge actually guided the solution\n- \"recalled_skill\": primary skill or \"none\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": final reflection",
+      "trace_id": "d049935f-d12b-4113-8872-2f3ce135fa0a",
+      "execution_time_ms": 3432.722568511963
+    }
+  }
+}

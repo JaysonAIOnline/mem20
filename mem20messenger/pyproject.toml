@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20messenger"
+version = "1.0.0"
+description = "mem20 native messenger: FastAPI accounts, WebSocket bot proxy, 24-bot roster on :8000"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+]
+
+[tool.setuptools]
+packages = ["mem20messenger"]

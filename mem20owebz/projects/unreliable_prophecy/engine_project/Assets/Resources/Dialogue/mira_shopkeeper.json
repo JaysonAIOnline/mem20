@@ -1,0 +1,26 @@
+{
+  "npcId": "mira_shopkeeper",
+  "npcDisplayName": "Mira Thornwood",
+  "coreBackstory": "Mira ran a successful shop in the capital before political unrest drove her to this quieter town.",
+  "greetings": [
+    "Welcome, welcome! Mira's Sundries — if I don't have it, it probably doesn't exist.",
+    "Ah, just the person I hoped to see. Got something special in the back...",
+    "Come in, come in! Mind the step — I keep meaning to fix that."
+  ],
+  "idleChatter": [
+    "You know, this town's grown on me. Quiet, honest folk. Well, mostly honest.",
+    "I heard the mill's been acting up again. Old Bertram says it's haunted. I say it's just old.",
+    "Business has been steady. Not booming, but steady keeps the lights on, eh?",
+    "That shipment from the capital? Took a bandit tax, it did. Had to mark up the spices."
+  ],
+  "farewells": [
+    "Safe travels! And remember — if you find anything interesting on your journeys, you know where to bring it.",
+    "Come back soon! I'll have new stock by next week, assuming the roads stay clear.",
+    "Take care of yourself out there. Not everything can be bought back once it's lost."
+  ],
+  "reactiveComments": [
+    "You look like you've been through the wringer. Sit down, I'll fetch some water.",
+    "Adventurers... always buying potions, never selling me the ingredients. Story of my life.",
+    "If you're heading to the old ruins, take extra torches. Trust me on this one."
+  ]
+}

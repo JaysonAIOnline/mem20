@@ -1,0 +1,95 @@
+# mem20 A2A peer fleet — one card per peer on the local mesh.
+# Schema consumed by mem20crewz.a2a.A2AClient (a2a_agents top-level).
+a2a_agents:
+  mem20-host:
+    url: http://localhost:9901
+    timeout: 60
+    capabilities: [orchestrate, gateway, delegation, messaging]
+  coder:
+    url: http://localhost:9902
+    timeout: 90
+    capabilities: [code, coding, engineering, debugging]
+  research:
+    url: http://localhost:9903
+    timeout: 120
+    capabilities: [research, web, papers, deep-research]
+  analyst:
+    url: http://localhost:9904
+    timeout: 60
+    capabilities: [analysis, data, reporting, competitive-intel]
+  business:
+    url: http://localhost:9905
+    timeout: 60
+    capabilities: [business, finance, strategy, operations]
+  ceo:
+    url: http://localhost:9906
+    timeout: 60
+    capabilities: [management, strategy, leadership, product]
+  coach:
+    url: http://localhost:9907
+    timeout: 60
+    capabilities: [coaching, growth, planning]
+  shrink:
+    url: http://localhost:9908
+    timeout: 60
+    capabilities: [psychology, therapy, mental-health, empathy]
+  advertising:
+    url: http://localhost:9909
+    timeout: 60
+    capabilities: [marketing, advertising, content]
+  webdev:
+    url: http://localhost:9910
+    timeout: 90
+    capabilities: [web, html, css, js, frontend]
+  gamemaster:
+    url: http://localhost:9911
+    timeout: 90
+    capabilities: [games, rpg, narrative, game-design]
+  qamaster:
+    url: http://localhost:9912
+    timeout: 90
+    capabilities: [qa, testing, test-plans, quality]
+  cloud:
+    url: http://localhost:9913
+    timeout: 120
+    capabilities: [cloud, devops, infra, kubernetes, docker]
+  github:
+    url: http://localhost:9914
+    timeout: 60
+    capabilities: [github, vcs, git, prs, issues]
+  radar:
+    url: http://localhost:9915
+    timeout: 120
+    capabilities: [monitoring, competitive-intel, news, alerts]
+  skillresearcher:
+    url: http://localhost:9916
+    timeout: 120
+    capabilities: [research, skills, tooling]
+  betatesting:
+    url: http://localhost:9917
+    timeout: 90
+    capabilities: [qa, beta, dogfood, bug-hunting]
+  kickstarter:
+    url: http://localhost:9918
+    timeout: 60
+    capabilities: [funding, crowdfunding, marketing]
+  unito:
+    url: http://localhost:9919
+    timeout: 90
+    capabilities: [unity, game-dev, csharp]
+  blendie:
+    url: http://localhost:9920
+    timeout: 90
+    capabilities: [blender, 3d, modeling, assets]
+  mem20:
+    url: http://localhost:9921
+    timeout: 120
+    capabilities: [core, substrate, memory, cognitive, fleet]
+  mem20-bot:
+    url: http://localhost:9922
+    timeout: 90
+    capabilities: [general, assistant, autonomy]
+  ucg:
+    url: http://localhost:8781
+    timeout: 30
+    capabilities: [capability-graph, capability-query, capability-register, capability-compose]

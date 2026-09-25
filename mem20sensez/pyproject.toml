@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20sensez"
+version = "0.1.0"
+description = "mem30 Phase 1 sense-organs: Capability Gap Mapper (RM-200), Dynamic Phase Replanner (RM-199), Personal Workflow Twin, Execution Digital Twin"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+fs-sense = "mem20sensez.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mem20sensez*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

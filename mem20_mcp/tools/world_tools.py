@@ -1,17 +1,17 @@
-import os
-import sys
-import json
-import re
-import subprocess
-import tempfile
-import base64
-import asyncio
-import hashlib
-import shutil
-import glob
-import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+"""Forwarding module — see mem20_mcp._forward.
+
+Re-exports the canonical tools module world_tools.py (its Mixin and registration) from the canonical tree (single source of truth) so the
+mem20_mcp package exposes the real, running implementation and never stale
+drift.
+"""
+
+from mem20_mcp._forward import load as _load
+
+_impl = _load('tools/world_tools.py', 'tools.world_tools')
 
 
-sys.path.insert(0, os.environ.get("MEM20_STORE_PATH", os.path.expanduser("~/.mem20/store")))
+def __getattr__(name):
+    return getattr(_impl, name)
+
+
+__all__ = [n for n in dir(_impl) if not n.startswith("_")]

@@ -1,0 +1,32 @@
+{
+  "name": "jairf-quests",
+  "description": "JAIRF quest & content framework roadmap (per 07_Quest_Content_Framework.md). Quest types: talk/kill/collect/reach/escort/craft/deliver/multi-stage/daily/world events/player-created. Data structure: ID, localized title/desc, giver, objectives, rewards, prerequisites, failure, flags. Dialogue: node-based/branching, conditions, voice hooks, emote triggers. World pillars: main story spine, regional side, exploration rewards, social/guild, builder showcases/housing, seasonal. Authoring: data-driven, feedback-rich, clear messaging, minimal backtracking, solo + group.",
+  "phases": [
+    {
+      "name": "1. Quest type taxonomy + data schema (SO_Quest)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Dialogue system core (nodes, conditions, voice/emote hooks)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. World content pillars (story, side, exploration, guild, builder, seasonal)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Authoring guidelines + agent rules (data-driven, messaging, pacing)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Player-created quest hooks + validation",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

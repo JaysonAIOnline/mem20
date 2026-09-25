@@ -1,0 +1,47 @@
+{
+  "name": "jairf-builder-constraints",
+  "description": "JAIRF builder system constraints roadmap (per 06_Builder_System_Constraints.md). Design goals: meaningful persistent content, protect performance/fairness, approachable-but-deep tool. Technical: piece/poly/draw-call/texture limits, snap grids (0.25/0.5/1m), rotation increments, height/ground-snap, overlap/collision rules, static physics. Safety: no path/quest blocking, no open-world combat advantage (arena-flag), ownership/permissions, versioning/rollback, moderation, auto-validation before publish. Persistence: server-side draft/published + version history. Performance safeguards: distance culling/LOD, in-builder budget warnings, server rejection. Future: scripted interactions, galleries, contests.",
+  "phases": [
+    {
+      "name": "1. Budget limits (pieces, polys/draw calls, texture memory)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Placement rules (snap grid, rotation, height, overlap/collision)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Gameplay & safety rules (path/quest protection, arena flags)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Ownership, permissions + versioning/rollback",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Moderation hooks + auto-validation before publish",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Persistence: server save, draft/published, version history",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Performance safeguards (culling, LOD, in-UI warnings, server rejection)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "8. Future hooks: scripted interactions, galleries, contests",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

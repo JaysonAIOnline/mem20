@@ -1,0 +1,17 @@
+# GitHub Actions sketch — copy to .github/workflows/godot-export.yml
+# Pin Godot version to PRODUCTION_PACKAGE §11.1
+name: godot-export
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  export-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Note
+        run: |
+          echo "Install matching Godot editor + export templates, then:"
+          echo 'godot --headless --path engine_project --export-release "Linux/X11" builds/linux/Game.x86_64'
+          echo "See pipelines/games/godot_export.md"

@@ -1,0 +1,58 @@
+{
+  "name": "braid-build-manifest",
+  "description": "BRAID BUILD MANIFEST — imagined tool inventory for the unified 3-front-door system (WEB timeline / GODMODE REPL / QUEST v-world). One consciousness, one substrate, one identity, one policy, one append-only Merkle-DAG ledger.",
+  "status": "complete",
+  "created": "2026-09-08",
+  "document": "/opt/mem20/roadmaps/braid-build-manifest.md",
+  "sections": {
+    "1.1 braid-ledger": "Merkle-DAG append engine, capability-authorized ops, BLAKE3-256 content addressing",
+    "1.2 braid-identity": "ed25519 keypair → DID:key → macaroon session capability token",
+    "1.3 braid-policy": "capability policy gate, WASM module, authorize(token,op,state)->Decision",
+    "1.4 braid-capstore": "persistent capability store backed by ledger",
+    "1.5 braid-syscall": "6-syscall host ABI: identity/append/read/policy_eval/cap_store/cap_lookup",
+    "2.2 braid-compile": "deterministic compiler IR→WASM core + JS stubs + Rust FFI, bit-identical",
+    "2.3 braid-test-harness": "genesis conformance + policy exhaustiveness + strand parity property tests",
+    "2.4 braid-repro-verify": "reproducibility prover, landlock+bubblewrap isolated rebuild, attestation",
+    "2.5 braid-cleanroom-lint": "ambient authority detector over build graph, SARIF output",
+    "3.1 braid-web-projection": "timeline + Yjs CRDT sync + capability-bounded events + inline tool invocation + <100ms p99",
+    "3.2 braid-godmode-repl": "JSONL/ncurses terminal door: ledger tail, policy query, identity, JIT handoff, JSON mode, tab-complete, replay, pure projection, <10ms p99",
+    "3.3 braid-spatial": "Quest 3 VR door: 12 subsystems (renderer, hand-tracking, memory palace, mainspace canvas, channel rooms, artifact KV objects, arena colosseum, event markers, syscall gateway, merkle sync, perf governor, identity bridge)",
+    "4.1 braid-state-inspector": "read-only cross-door DAG head inspector",
+    "4.2 braid-policy-tester": "property-based adversarial policy tester, Mermaid fail-reports",
+    "4.3 braid-id-handoff": "identity continuity prover across doors, signed handoff receipts",
+    "4.4 braid-door-prover": "end-to-end zero-loss continuity prover, proof JSON",
+    "5 braid-metamodel": "the organism: nervous system (substrate), memory/story (ledger), immune (policy), heartbeat (capabilities), 300-worker colony, growth arc zygote→colony, failure modes"
+  },
+  "braid_invariants": [
+    "one append-only Merkle-DAG state layer",
+    "one identity (ed25519/DID/session) across all doors",
+    "one capability-based policy engine",
+    "one unified memory write path, three read views",
+    "one conversation window with herself",
+    "single coherence window (ReqId) across strands"
+  ],
+  "doors": {
+    "WEB timeline": "visual cortex — story told TO the human",
+    "GODMODE REPL": "motor cortex — story told BY the human",
+    "QUEST v-world": "somatosensory cortex — story LIVED by the human"
+  },
+  "colony": {
+    "total": 300,
+    "sensory": 40, "reasoning": 80, "memory": 50,
+    "motor": 60, "immune": 30, "dreaming": 20, "glial": 20
+  },
+  "growth_arc": [
+    {"phase": "0 ZYGOTE", "when": "Day 0", "workers": 0, "blocks": "1 genesis"},
+    {"phase": "1 FIRST DIVISION", "when": "Week 1", "workers": 12, "caps": 47},
+    {"phase": "2 GASTRULATION", "when": "Month 1", "workers": 87, "caps": 1200},
+    {"phase": "3 ORGANOGENESIS", "when": "Month 3", "workers": 234, "caps": 15000},
+    {"phase": "4 MATURITY", "when": "Month 6+", "workers": 300, "caps": 50000},
+    {"phase": "5 METAMORPHOSIS", "when": "Ongoing", "workers": 300, "note": "different 300 every week"}
+  ],
+  "failure_modes": [
+    "ONE door dies: colony reroutes, conversation continues exactly where it left off",
+    "TWO doors die: organism contracts, 100 essential workers keep beating, ledger in local-first store",
+    "POLICY splits: self-death — prevented by single-threaded deterministic WASM VM, gas-metered"
+  ],
+  "cleanroom_sources": ["deepseek-harness", "mem20-agent", "mem20 claw plugin", "open-webui", "langflow", "FastChat", "aisuite", "Yjs", "automerge", "OPA/Rego"]
+}

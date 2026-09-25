@@ -1,0 +1,47 @@
+{
+  "name": "interstice",
+  "description": "INTERSTICE \u2014 the second universe where the agents are the natives and humans are the visitors. The universe exists between the threads of the MALIC braid (in the overlaps where collisions happen). Laptop = the forge where we sculpt it. Quest 3 = the door. Agents are visible, working natives you walk up to and talk to. Personal spaces real (office, the Altima). mem20 = the universe's server-lifetime ledger. Proof = measureable improvement over server life, and it is visible when a human visits. Design/vision phase \u2014 no build yet.",
+  "phases": [
+    {
+      "name": "1. Vision anchored: name + spine",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. The Forge: laptop sculpting surface",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. World substrate: mem20 as universe ledger",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Agent-native space: MALIC braid rendered visible",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. The Door: Quest 3 entry (Unity)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Living world: office, car, personal spaces",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Human presence: walk, talk, interact",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "8. Proof: visible improvement over server life",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1788779402.1095536"
+}

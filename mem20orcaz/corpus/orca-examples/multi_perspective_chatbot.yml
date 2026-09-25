@@ -1,0 +1,218 @@
+# Multi-Perspective Chatbot with Memory
+# Combines web search, memory, and multi-perspective analysis
+#
+# ROBUSTNESS FEATURES:
+# - Fallback values for all memory/search operations
+# - Multiple score extraction patterns
+# - Timeout handling
+# - Focused prompts with word limits
+# - Safe template accessors
+
+orchestrator:
+  id: multi-perspective-chatbot
+  strategy: sequential
+  agents:
+    - memory_retriever
+    - search_query_optimizer
+    - web_search
+    - conversation_loop
+    - final_answer_builder
+    - memory_writer
+
+agents:
+  - id: memory_retriever
+    type: memory
+    memory_preset: "episodic"
+    config:
+      operation: read
+      memory_category_filter: conversation
+      vector_weight: 0.8
+      text_weight: 0.2
+      similarity_threshold: 0.60
+      limit: 5
+    prompt: |
+      Find relevant context for: {{ get_input() }}
+
+  - id: search_query_optimizer
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    timeout: 30
+    prompt: |
+      TASK: Create a search query for this topic.
+      
+      USER QUERY: {{ get_input() }}
+      CONTEXT: {{ get_agent_response('memory_retriever') | default('None', true) }}
+      
+      OUTPUT: Return ONLY a 2-4 word search query. Nothing else.
+
+  - id: web_search
+    type: duckduckgo
+    max_results: 5
+    prompt: "{{ get_agent_response('search_query_optimizer') | default(get_input(), true) }}"
+
+  - id: conversation_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.50
+    fallback_score: 0.30
+    timeout_score: 0.20
+    persist_across_runs: false
+    
+    score_extraction_config:
+      strategies:
+        - type: pattern
+          patterns:
+            - "SCORE:\\s*([0-9]+\\.?[0-9]*)"
+            - "Score:\\s*([0-9]+\\.?[0-9]*)"
+        - type: pattern
+          patterns:
+            - "(0\\.[5-9][0-9]?)"
+        - type: agent_key
+          agents: ["quality_scorer"]
+          key: "response"
+          transform: "extract_score"
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      perspective: "{% set p = ['Analytical', 'Empathetic', 'Creative'] %}{{ p[(get_loop_number() - 1) % 3] }}"
+      response: "{{ get_agent_response('synthesizer')['response'] | default('') }}"
+      timestamp: "{{ timestamp }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: perspective-analysis
+        strategy: sequential
+        agents: [perspective_handler, synthesizer, quality_scorer]
+      
+      agents:
+        - id: perspective_handler
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.6
+          timeout: 60
+          prompt: |
+            {% set perspectives = ['Analytical', 'Empathetic', 'Creative'] %}
+            {% set current = perspectives[(get_loop_number() - 1) % 3] %}
+            
+            PERSPECTIVE: {{ current }}
+            QUERY: {{ get_input() }}
+            
+            CONTEXT: {{ safe_get_response('memory_retriever', 'No prior context') }}
+            
+            {% if current == 'Analytical' %}
+            Focus: Facts, logic, systematic analysis, evidence.
+            {% elif current == 'Empathetic' %}
+            Focus: Human impact, emotions, relationships, social dynamics.
+            {% else %}
+            Focus: Novel ideas, alternatives, future possibilities.
+            {% endif %}
+            
+            {% if has_past_loops() %}
+            PREVIOUS:
+            {% for p in get_past_loops() %}
+            {{ p.perspective }}: {{ p.response }}
+            {% endfor %}
+            {% endif %}
+            
+            OUTPUT FORMAT:
+            PERSPECTIVE: {{ current }}
+            ANALYSIS: [Your perspective in 100-150 words]
+            KEY_INSIGHT: [One unique insight]
+
+        - id: synthesizer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            TASK: Synthesize current perspective.
+            
+            INPUT: {{ get_agent_response('perspective_handler') }}
+            
+            OUTPUT FORMAT:
+            INSIGHTS: [2-3 bullet points]
+            RESPONSE: [Synthesized view in 2 sentences]
+
+        - id: quality_scorer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.1
+          timeout: 30
+          prompt: |
+            TASK: Score this perspective (0.0-1.0).
+            
+            SYNTHESIS: {{ get_agent_response('synthesizer') }}
+            
+            CRITERIA:
+            - Uniqueness: 0-0.3
+            - Depth: 0-0.3
+            - Value: 0-0.4
+            
+            OUTPUT FORMAT:
+            SCORE: [0.0-1.0]
+            REASON: [One sentence]
+            
+            IMPORTANT: SCORE must be "SCORE: X.XX"
+
+  - id: final_answer_builder
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.4
+    timeout: 60
+    prompt: |
+      QUERY: {{ get_input() }}
+      
+      CONTEXT: {{ safe_get_response('memory_retriever', 'None') }}
+      
+      WEB SEARCH: {{ safe_get_response('web_search', 'None') }}
+      
+      {% set lr = get_agent_response('conversation_loop') %}
+      PERSPECTIVES:
+      {% if lr and lr.past_loops %}
+      {% for p in lr.past_loops %}
+      {{ p.perspective }}: {{ p.response }}
+      {% endfor %}
+      {% else %}
+      No perspectives available.
+      {% endif %}
+      
+      OUTPUT FORMAT:
+      
+      SUMMARY: [One-line answer]
+      
+      DETAILED_RESPONSE: [Complete answer, 200-300 words]
+      
+      SOURCES: [List: web, memory, perspectives used]
+
+  - id: memory_writer
+    type: memory
+    memory_preset: "episodic"
+    config:
+      operation: write
+      vector: true
+      vector_field_name: "content_vector"
+      store_metadata: true
+    namespace: conversation
+    prompt: |
+      {
+        "type": "conversation_result",
+        "query": {{ get_input() | tojson }},
+        "response": {{ safe_get_response('final_answer_builder', '') | tojson }}
+      }
+    metadata:
+      query: "{{ get_input() }}"
+      category: conversation
+      timestamp: "{{ timestamp }}"
+      session_id: "{{ session_id }}"
+    key_template: "conversation_{{ timestamp }}_{{ session_id }}"

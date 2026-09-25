@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20-orchestration"
+version = "0.1.0"
+description = "Blender operator orchestration: query the real bpy.ops catalog and validate op sequences before they reach a live Blender session."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "blender", "bpy", "orchestration", "validation"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+mem20-orchestration = "mem20_orchestration.cli:main"
+
+[tool.setuptools]
+packages = ["mem20_orchestration"]
+
+[tool.setuptools.package-data]
+mem20_orchestration = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

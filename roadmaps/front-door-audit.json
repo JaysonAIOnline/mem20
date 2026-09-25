@@ -1,0 +1,78 @@
+{
+  "name": "front-door-audit",
+  "description": "FRONT DOOR AUDIT (2026-09-08): every frontend, every port, every entry point across the ecosystem — live AND planned. All systems are being merged into ONE unified system. Three front doors: (1) the REAL one, (2) opencode GODMODE entrance (full creative access), (3) Quest 3 3D v-world. mem20 is the substrate AND includes HERSELF in the merge.",
+  "created": "2026-09-08",
+  "live_ports": [
+    {"port": 22, "proto": "ssh", "owner": "sshd", "surface": "system shell"}
+  ,
+    {"port": 11434, "proto": "http", "owner": "ollama", "surface": "local model inference"},
+    {"port": 3000, "proto": "http", "owner": "docker jayson (openwebui)", "surface": "chat web UI"},
+    {"port": 4000, "proto": "http", "owner": "docker jayson-bridge", "surface": "bridge server"},
+    {"port": 8880, "proto": "http", "owner": "docker jayson-tts", "surface": "text-to-speech"},
+    {"port": 3001, "proto": "http", "owner": "tt3d-nim-ui", "surface": "3D UI server"},
+    {"port": 3002, "proto": "http", "owner": "mem20-office", "surface": "3D office frontend"},
+    {"port": 4200, "proto": "http", "owner": "interstice", "surface": "INTERSTICE visual guide"},
+    {"port": 8000, "proto": "http", "owner": "uvicorn web backend (messenger/webgateway)", "surface": "messenger backend"},
+    {"port": 8642, "proto": "http", "owner": "mem20 gateway", "surface": "messenger gateway control"},
+    {"port": 9119, "proto": "http", "owner": "mem20 dashboard", "surface": "agent dashboard"},
+    {"port": "9900-9923", "proto": "http/a2a", "owner": "mem20 profile listeners", "surface": "per-agent SSE/A2A endpoints"}
+  ],
+  "live_mem20_profiles": ["advertising","analyst","assistant","betatesting","blendie","business","ceo","cloud","coach","coder","gamemaster","github","jayson","kickstarter","mem20-bot","mem20","qamaster","radar","research","shrink","skillresearcher","unito","webdev"],
+  "live_entry_points": [
+    {"id": "openwebui", "kind": "web chat UI", "port": 3000, "state": "live"},
+    {"id": "mem20-dashboard", "kind": "web dashboard", "port": 9119, "state": "live"},
+    {"id": "mem20-office", "kind": "3D web frontend", "port": 3002, "state": "live"},
+    {"id": "interstice", "kind": "visual guide page", "port": 4200, "state": "live"},
+    {"id": "tt3d-nim-ui", "kind": "3D UI server", "port": 3001, "state": "live"},
+    {"id": "mem20-gateway", "kind": "messaging bridge", "port": 8642, "state": "live"},
+    {"id": "mem20-profile-listeners", "kind": "per-agent a2a/sse", "ports": "9900-9923", "state": "live"},
+    {"id": "mem20-cli-tui", "kind": "terminal", "surface": "/root/.local/bin/mem20", "state": "live"},
+    {"id": "mem20-mcp", "kind": "tool surface", "owner": "mem20 mcp serve", "state": "live"},
+    {"id": "messenger-backend", "kind": "backend service", "port": 8000, "state": "live"},
+    {"id": "kanban-web-ui", "kind": "web ui (kanban-mcp)", "state": "live/embedded"},
+    {"id": "mem20-dashboard", "kind": "web dashboard (dashboard/dist)", "state": "built"},
+    {"id": "jupyter-lab", "kind": "notebook server", "surface": "/root/.local/bin/jupyter-lab", "state": "available"},
+    {"id": "mem20-docker", "kind": "container api :8080 (health)", "state": "compose-only"}
+  ],
+  "planned_feature_doors": [
+    "everything-is-a-plugin workspace web UI (deepseek-harness one-command web)",
+    "backend-agnostic agent control center (OpenHands Agent Canvas)",
+    "visual workflow canvas -> compiles to REST API + MCP server (langflow)",
+    "prompt/skill library exposed as an MCP server (prompts.chat pattern)",
+    "channels: shared real-time team timelines as memory surfaces (open-webui)",
+    "artifact KV-store API (journals/trackers/leaderboards) (open-webui)",
+    "calendar-as-context + notes<->chat memory surfaces (open-webui)",
+    "Elo capability arena — head-to-head from live runs (FastChat pattern)",
+    "fresh generated eval tasks, anti-memorization (arc-task-gen pattern)",
+    "single-binary agent OS: SSO, multi-tenancy, audit, BPMN workflows, REST+Swagger (openagent)",
+    "local daemon + sandboxed artifact preview + drives 26 agent CLIs (open-design)",
+    "DESIGN.md brand design systems as artifact type",
+    "AG-UI protocol + generative UI tiers (CopilotKit)",
+    "shared state layer read/written by agent AND UI in real-time (CopilotKit)",
+    "self-resetting playground for safe experiments (openagent)",
+    "usage dashboards: heatmaps, live activity/error monitoring (openagent)",
+    "one-click self-host distribution",
+    "IAM/SSO admin surface, auth-as-MCP (casdoor pattern)",
+    "tool-policy approval console (RequireApprovalPolicy) (aisuite)",
+    "process-surviving agent state w/ resume (aisuite)",
+    "chat channels/group timelines",
+    "model/provider router admin (aisuite <provider>:<model>)",
+    "voice/TTS surface (jayson-tts live; whisper.cpp/NeMo ref)"
+  ],
+  "three_front_doors": {
+    "door_1": "THE REAL ONE — primary human surface (office/forge/dashboard/web)",
+    "door_2": "opencode GODMODE entrance — full creative access terminal/agent",
+    "door_3": "Quest 3 3D v-world — INTERSTICE immersive, agents visible as natives"
+  },
+  "merge_directive": "ALL systems in this audit (mem20 profiles/gateway/dashboard/office, openwebui, messenger, bridge, tts, tt3d-ui, interstice, kanban, AGS, mem20-docker, and every planned feature door) merge into ONE unified system that INCLUDES mem20 HERSELF as the substrate. Every feature found in the audit is retained. Reachable through exactly 3 front doors.",
+  "refs": [
+    "/opt/mem20/roadmaps/hypo-map-1.json",
+    "/opt/mem20/roadmaps/malic.json",
+    "/opt/mem20/roadmaps/ags_os.json",
+    "/opt/mem20/roadmaps/interstice.json",
+    "/opt/mem20/roadmaps/front-door-audit.json",
+    "/root/notebooks/research/mem20_takeover.ipynb",
+    "/root/notebooks/research/mem20_takeover_biglist.json",
+    "/root/notebooks/research/malice.ipynb"
+  ]
+}

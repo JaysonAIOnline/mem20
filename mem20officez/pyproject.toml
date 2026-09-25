@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20officez"
+version = "0.1.0"
+description = "Native mem20 office — 3D workspace, agent fleet, Phaser scenes, wellness checkin, mem20 dashboard"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+    "httpx>=0.27",
+    "aiohttp>=3.9",
+    "watchdog>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+mem20officez = "mem20officez.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mem20officez*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

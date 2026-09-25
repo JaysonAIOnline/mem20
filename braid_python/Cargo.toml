@@ -1,0 +1,29 @@
+[package]
+name = "braid_python"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+name = "braid_python"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py311"] }
+braid_core = { path = "../braid/braid_core" }
+braid_wire = { path = "../braid/braid_wire" }
+braid_ui_bridge = { path = "../braid/braid_ui_bridge" }
+braid_drive = { path = "../braid/braid_drive" }
+braid_her = { path = "../braid/braid_her" }
+braid_sonic = { path = "../braid/braid_sonic" }
+braid_keys = { path = "../braid/braid_keys" }
+braid_cli = { path = "../braid/braid_cli" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+rand = "0.8"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+chrono = { version = "0.4", features = ["serde"] }
+pythonize = "0.22"

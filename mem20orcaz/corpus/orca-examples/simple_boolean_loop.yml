@@ -1,0 +1,136 @@
+# Simple Boolean Scoring Loop
+# A minimal, robust example showing boolean-based loop termination
+#
+# ROBUSTNESS FEATURES:
+# - Explicit SCORE format requirement
+# - Multiple score extraction patterns
+# - Fallback and timeout scores
+# - Low temperature for evaluator (0.1)
+# - Realistic threshold for local LLMs
+
+orchestrator:
+  id: simple-boolean-loop
+  strategy: sequential
+  agents:
+    - quality_loop
+
+agents:
+  - id: quality_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.40
+    fallback_score: 0.25
+    timeout_score: 0.15
+    persist_across_runs: false
+    
+    # Boolean scoring configuration - simplified for reliable convergence
+    scoring:
+      preset: lenient
+      context: loop_convergence
+      # Reduced weights focused on improvement over absolute quality
+      custom_weights:
+        improvement.better_than_previous: 0.50
+        convergence.within_tolerance: 0.30
+        stability.consistent_direction: 0.20
+    
+    # Robust score extraction with multiple fallback patterns
+    score_extraction_config:
+      strategies:
+        - type: pattern
+          patterns:
+            - "SCORE:\\s*([0-9]+\\.?[0-9]*)"
+            - "Score:\\s*([0-9]+\\.?[0-9]*)"
+            - "QUALITY_SCORE:\\s*([0-9]+\\.?[0-9]*)"
+        - type: pattern
+          patterns:
+            - "(0\\.[5-9][0-9]?)"
+            - "(1\\.0)"
+        - type: agent_key
+          agents: ["boolean_evaluator"]
+          key: "response"
+          transform: "extract_score"
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: internal
+        strategy: sequential
+        agents: [analyzer, boolean_evaluator]
+      
+      agents:
+        # Generate analysis
+        - id: analyzer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.5
+          timeout: 60
+          prompt: |
+            TASK: Analyze this topic with clear structure.
+            TOPIC: {{ get_input() }}
+            
+            {% if get_loop_number() > 1 %}
+            FEEDBACK FROM LOOP {{ get_loop_number() - 1 }}:
+            {% if has_past_loops() %}
+            {% set last = get_past_loops()[-1] %}
+            Score: {{ last.score }} (target: 0.40)
+            Improvements needed: {{ last.improvements | default('Add more depth and structure') }}
+            {% endif %}
+            
+            Focus on improving the weak areas identified above.
+            {% endif %}
+            
+            REQUIRED FORMAT:
+            
+            ## KEY INSIGHTS
+            1. [First key insight with evidence]
+            2. [Second key insight with evidence]
+            3. [Third key insight with evidence]
+            
+            ## ANALYSIS
+            [Thorough analysis paragraph covering the main aspects]
+            
+            ## IMPLICATIONS
+            [What this means and why it matters]
+            
+            ## CONCLUSION
+            [Clear, actionable conclusion]
+            
+            Aim for 250-350 words total.
+          params:
+            structured_output:
+              enabled: true
+              mode: prompt
+              schema:
+                required: [response]
+                optional:
+                  confidence: number
+        
+        # Evaluate using loop_validator node
+        - id: boolean_evaluator
+          type: loop_validator
+          llm_model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          scoring_preset: lenient
+          scoring_context: quality
+          evaluation_target: analyzer
+          temperature: 0.1
+          timeout: 60
+
+# Usage:
+#   orka run simple_boolean_loop.yml "Analyze the impact of AI on healthcare"
+#
+# Expected behavior:
+#   Loop 1: Initial analysis, score ~0.4-0.6
+#   Loop 2: Improved based on feedback, score ~0.5-0.7
+#   Loop 3: Refined analysis, score ≥0.5 → exits
+#
+# If threshold not met after max_loops, uses best attempt.

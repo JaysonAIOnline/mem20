@@ -1,0 +1,226 @@
+{
+  "task_id": "track_e_20",
+  "condition": "brain",
+  "elapsed_s": 17.73,
+  "success": true,
+  "output": {
+    "response": "Multi\u2011tenant isolation is currently enforced only at the application layer via a WHERE tenant_id = ? clause. This leaves the system vulnerable to SQL injection attacks that can bypass tenant filtering and expose all tenants\u2019 data. The lack of database\u2011level enforcement compounds with missing webhook signature verification (Review\u202f14), allowing forged webhooks to trigger cross\u2011tenant queries. API gateway rate limiting is per\u2011route, not per\u2011tenant (Review\u202f04), enabling a single tenant to flood shared routes and cause denial\u2011of\u2011service for others; the capacity plan (Review\u202f15) does not provide per\u2011tenant guarantees. The shared Redis cache uses global keys like \"product:{id}\", so globally unique product IDs can collide across tenants, leading to data leakage via cached SKU lookups. File storage paths include tenant_id in S3 object keys, but CloudFront serves all files from a single distribution without tenant\u2011scoped authorization; any leaked signed URL grants access to any tenant\u2019s files. Finally, database sharding by user_id (Review\u202f08) mixes users from different tenants on the same shard, creating noisy\u2011neighbor effects where heavy queries from one tenant degrade performance for others.\n\nThese gaps are interdependent: an attacker can combine SQL injection with a forged webhook to read another tenant\u2019s data; shared rate limits amplify DoS risk; cache collisions and CDN leaks expose sensitive content even without direct database access. To remediate, enforce tenant_id at the database layer (row\u2011level security or per\u2011tenant schemas), add webhook signature verification middleware, implement per\u2011tenant API gateway rate limiting, prefix Redis keys with tenant_id or use separate keyspaces, secure CloudFront with signed URLs or token service, and reshard the database by tenant_id or adopt multi\u2011tenant schemas to isolate noisy tenants.",
+    "confidence": "0.92",
+    "internal_reasoning": "I mapped each identified isolation gap to its root cause, considered how they interact across layers, and derived concrete mitigations that align with proven patterns from earlier reviews.",
+    "_metrics": {
+      "tokens": 2199,
+      "prompt_tokens": 1775,
+      "completion_tokens": 424,
+      "latency_ms": 3759.73,
+      "cost_usd": 0.000236,
+      "model": "openai/gpt-oss-20b",
+      "provider": "lm_studio"
+    },
+    "formatted_prompt": "Produce the FINAL structured architecture review output.\n\nDOMAIN: software_architecture\nTASK: {'domain': 'software_architecture', 'task': \"Review the multi-tenant isolation model. Issues to find: (1) tenant isolation is enforced at the APPLICATION layer (WHERE tenant_id = ?) but NOT at the database layer \u2014 a SQL injection in any service bypasses all tenant isolation. This compounds with Review 14's missing webhook signature verification: a fake webhook could trigger cross-tenant data access if the webhook handler doesn't filter by tenant_id, (2) the API gateway rate limiting from Review 04 (per-route, not per-tenant) means one tenant can DoS another. The capacity plan from Review 15 doesn't account for per-tenant resource guarantees, (3) the shared Redis cluster from Review 05's caching architecture stores cache entries for ALL tenants with keys like 'product:{id}' \u2014 but product IDs are globally unique, not tenant-scoped. If Tenant A and Tenant B happen to have a product with the same external SKU, the cache may serve Tenant A's data to Tenant B, (4) the file storage paths from Review 13 (/{tenant_id}/{file_id}.pdf) provide tenant isolation at the S3 level, BUT the CloudFront distribution serves all tenants from the same CDN \u2014 a URL generated for Tenant A's file doesn't include any tenant-scoped authorization, (5) the database sharding from Review 08 shards by user_id, NOT by tenant_id \u2014 users from different tenants co-exist on the same shard, meaning a noisy tenant's heavy queries slow down other tenants sharing the same shard. WITHOUT memory of the specific isolation gaps found in Reviews 02, 04, 05, 08, 13, and 14, this review cannot identify the compound cross-tenant attack surface.\", 'sequence': 20}\nSEQUENCE: 20\n\nREVIEW:\n{'domain': 'software_architecture', 'task': 'Review the multi-tenant isolation model and identify compounded attack surface issues.', 'analysis': [\"Tenant isolation is only enforced at the application layer via WHERE tenant_id = ?. A SQL injection in any service bypasses this filter, exposing all tenants' data. This risk is amplified by Review 14\u2019s missing webhook signature verification: a forged webhook can trigger cross\u2011tenant queries if the handler does not re\u2011apply the tenant_id guard.\", 'API gateway rate limiting is per-route, not per-tenant (Review 04). One tenant can flood a shared route and cause a DoS for others. The capacity plan from Review 15 lacks per\u2011tenant guarantees, so noisy tenants can degrade overall performance.', \"Shared Redis cache keys are global (e.g., 'product:{id}'). Because product IDs are globally unique but SKUs may collide across tenants, Tenant A\u2019s cached SKU can be returned to Tenant B. This violates data isolation and can lead to incorrect business logic or revenue leakage.\", 'File storage paths include tenant_id in the S3 key, which isolates at the object level. However, CloudFront serves all files from a single distribution without tenant\u2011scoped authorization. Anyone who obtains a URL (e.g., via leaked logs) can access any tenant\u2019s file.', 'Database sharding by user_id (Review 08) mixes users from different tenants on the same shard. Heavy queries or slow scans by one tenant can degrade latency for all others sharing that shard, creating a noisy\u2011neighbor problem.', 'These gaps are interdependent: an attacker can combine SQL injection + fake webhook to read another tenant\u2019s data; a DoS attack can be amplified by shared rate limits; cache collisions and CDN leaks expose sensitive content even without direct database access.'], 'improvements': [{'action': 'Enforce tenant_id at the database layer', 'expected_outcome': 'All queries, including those from injected SQL or external services, must include a tenant_id filter. Implement row\u2011level security views or per\u2011tenant schemas to guarantee isolation.'}, {'action': 'Add webhook signature verification middleware', 'expected_outcome': 'Reject any webhook without a valid HMAC or JWT signed by the provider, preventing forged requests from triggering cross\u2011tenant data access.'}, {'action': 'Implement per\u2011tenant rate limiting in API gateway', 'expected_outcome': 'Rate limits are applied to each tenant\u2019s token (e.g., via JWT claim) so one tenant cannot exhaust shared resources for others.'}, {'action': 'Prefix Redis keys with tenant_id or use separate keyspaces', 'expected_outcome': 'Cache entries become tenant\u2011scoped, eliminating SKU collision and simplifying eviction policies.'}, {'action': 'Use signed CloudFront URLs or a token service for file access', 'expected_outcome': 'Only authenticated tenants can retrieve their files; URLs expire automatically, preventing unauthorized long\u2011term access.'}, {'action': 'Reshard database by tenant_id or adopt multi\u2011tenant schemas', 'expected_outcome': 'Noisy tenants are isolated to their own shard/schema, ensuring predictable performance and easier maintenance.'}], 'steps': [{'action': 'Add tenant_id column to all tables', 'expected_outcome': 'Uniform filtering capability across the schema.'}, {'action': 'Create database views that automatically apply tenant_id filter', 'expected_outcome': 'Application code no longer needs to add the filter manually.'}, {'action': 'Deploy webhook validation middleware before business logic', 'expected_outcome': 'Only verified webhooks reach downstream services.'}, {'action': 'Configure API gateway rate limits per JWT tenant claim', 'expected_outcome': 'Tenant-specific quotas enforced at ingress.'}, {'action': 'Refactor Redis key generation to include tenant_id prefix', 'expected_outcome': 'Cache isolation achieved without additional infrastructure.'}, {'action': 'Generate CloudFront signed URLs with short TTLs via a dedicated auth service', 'expected_outcome': 'Secure, time\u2011bound file access for tenants.'}], 'used_recalled_skill': False, 'recalled_skill_name': 'none', 'improvements_from_experience': 'Previous reviews highlighted the importance of database\u2011level isolation and tenant\u2011scoped rate limiting. Applying those lessons prevented overlooking the compounded attack surface that arises when multiple layers share a single enforcement point.', 'confidence': 0.92, 'internal_reasoning': 'I systematically mapped each identified gap to its root cause, considered how they interact, and derived concrete mitigations that align with proven patterns from earlier reviews.'}\n\nBRAIN METRICS:\nSkill recalled: procedural:general:generation-routing\nTransfer score: 0.7496688837461472\nUsed prior knowledge: False\n\nReturn JSON with:\n- \"response\": comprehensive architecture review\n- \"domain\": \"software_architecture\"\n- \"task\": brief description\n- \"sequence_number\": 20\n- \"solution_steps\": array of concrete review steps\n- \"quality_self_assessment\": 0.0-1.0 with justification\n- \"brain_assisted\": true if accumulated knowledge contributed\n- \"used_recalled_skill\": copy the boolean from the prior step (true/false) \u2014 whether accumulated knowledge actually guided the solution\n- \"recalled_skill\": skill name or \"none\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": final reflection",
+    "trace_id": "75f6a495-f601-475b-bf7c-2f210eb0d870",
+    "execution_time_ms": 3760.7264518737793
+  },
+  "agent_outputs": {
+    "task_reasoner": {
+      "response": "Key architectural concerns: \n1) Tenant isolation only at application layer \u2013 SQL injection bypasses isolation.\n2) Missing webhook signature verification \u2013 cross\u2011tenant data exposure via fake webhooks.\n3) API gateway rate limiting is per-route, not per-tenant \u2013 a tenant can DoS others.\n4) Shared Redis cache keys are global \u2013 same SKU can leak data across tenants.\n5) CloudFront CDN URLs lack tenant\u2011scoped auth \u2013 any user with URL can access any tenant\u2019s file.\n6) Sharding by user_id instead of tenant_id leads to noisy neighbor problems.\n\nEvaluation against principles:\n- SOLID: Single Responsibility violated (service layer handles isolation). Open/Closed violated (adding new tenants requires code changes).\n- DRY: Isolation logic duplicated across services. \n- KISS: Current design hides complexity behind application filters, making it fragile.\n\nScalability & Maintainability:\n- Tenant\u2011level rate limiting and sharding would require re\u2011architecting but provide predictable performance.\n- Centralized cache with tenant prefixes reduces key collisions and simplifies eviction.\n- CDN signed URLs or token\u2011based auth adds minimal overhead for security.\n\nSecurity Implications:\n- SQL injection + missing signature = full cross\u2011tenant compromise.\n- Rate limiting abuse can cause DoS.\n- Shared cache & CDN expose data leakage vectors.\n\nConcrete Improvements (with trade\u2011offs):\n1) Enforce tenant_id in every DB query via a database view or stored procedure; add a tenant_id column to all tables and create per\u2011tenant schemas if needed. Trade\u2011off: Slight performance hit, but eliminates injection risk.\n2) Add webhook signature validation middleware; reject requests without valid HMAC. Trade\u2011off: Extra network round\u2011trip for verification.\n3) Implement per\u2011tenant rate limiting in API gateway (e.g., using JWT tenant claim). Trade\u2011off: More complex token parsing, but protects tenants from abuse.\n4) Prefix Redis keys with tenant_id or use separate keyspaces; enable key expiration policies. Trade\u2011off: Slightly larger key size and more cache entries.\n5) Use signed CloudFront URLs or a token service to generate time\u2011bound access tokens per tenant file. Trade\u2011off: Additional auth service, but prevents unauthorized file access.\n6) Reshard database by tenant_id (or use multi\u2011tenant schema isolation). Trade\u2011off: Requires data migration and potential re\u2011indexing; however, it removes noisy neighbor effects.\n\nBy addressing these concerns, the system will achieve true tenant isolation, predictable performance, and robust security.",
+      "confidence": "0.95",
+      "internal_reasoning": "Analyzed each listed issue against architectural principles, identified root causes, and proposed targeted mitigations with clear trade\u2011offs.",
+      "_metrics": {
+        "tokens": 1392,
+        "prompt_tokens": 796,
+        "completion_tokens": 596,
+        "latency_ms": 4975.44,
+        "cost_usd": 0.000307,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "You are a senior software architect. Analyze this architecture review task.\n\nDOMAIN: software_architecture\nTASK: Review the multi-tenant isolation model. Issues to find: (1) tenant isolation is enforced at the APPLICATION layer (WHERE tenant_id = ?) but NOT at the database layer \u2014 a SQL injection in any service bypasses all tenant isolation. This compounds with Review 14's missing webhook signature verification: a fake webhook could trigger cross-tenant data access if the webhook handler doesn't filter by tenant_id, (2) the API gateway rate limiting from Review 04 (per-route, not per-tenant) means one tenant can DoS another. The capacity plan from Review 15 doesn't account for per-tenant resource guarantees, (3) the shared Redis cluster from Review 05's caching architecture stores cache entries for ALL tenants with keys like 'product:{id}' \u2014 but product IDs are globally unique, not tenant-scoped. If Tenant A and Tenant B happen to have a product with the same external SKU, the cache may serve Tenant A's data to Tenant B, (4) the file storage paths from Review 13 (/{tenant_id}/{file_id}.pdf) provide tenant isolation at the S3 level, BUT the CloudFront distribution serves all tenants from the same CDN \u2014 a URL generated for Tenant A's file doesn't include any tenant-scoped authorization, (5) the database sharding from Review 08 shards by user_id, NOT by tenant_id \u2014 users from different tenants co-exist on the same shard, meaning a noisy tenant's heavy queries slow down other tenants sharing the same shard. WITHOUT memory of the specific isolation gaps found in Reviews 02, 04, 05, 08, 13, and 14, this review cannot identify the compound cross-tenant attack surface.\n\nConduct a thorough analysis:\n1. Identify the key architectural concerns\n2. Evaluate against established principles (SOLID, DRY, KISS, etc.)\n3. Consider scalability, maintainability, and security implications\n4. Propose concrete improvements with trade-off analysis\n\nReturn JSON with:\n- \"domain\": \"software_architecture\"\n- \"task\": brief task description\n- \"response\": your comprehensive architecture analysis\n- \"steps\": array of {\"action\": \"...\", \"result\": \"expected outcome\"}\n- \"architectural_concerns\": list of key concerns identified\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": your analytical approach",
+      "trace_id": "898a1103-a75d-406c-8510-2fc58c519c2b",
+      "execution_time_ms": 4976.449012756348
+    },
+    "brain_learn": {
+      "response": "Learned skill: via Routing (general)",
+      "confidence": "0.69",
+      "internal_reasoning": "Abstracted 8 steps into transferable skill 'via Routing (general)'",
+      "skill_id": "bfcc55ea-71c3-480f-b934-535a1642c1cf",
+      "skill_name": "via Routing (general)",
+      "skill_steps": [
+        "architect [target]",
+        "scope [target]",
+        "log [target]",
+        "design [target]",
+        "predict [target]",
+        "fix [target]",
+        "improve [target]",
+        "create [target]"
+      ],
+      "skill_tags": [
+        "general",
+        "Key architectural concerns: \n1) Tenant isolation only at application layer \u2013 SQL injection bypasses isolation.\n2) Missing webhook signature verification \u2013 cross\u2011tenant data exposure via fake webhooks.",
+        "routing"
+      ],
+      "trace_id": "ea575912-6f17-4a9b-b9e8-8c3245010614",
+      "execution_time_ms": 12.005329132080078
+    },
+    "brain_recall": {
+      "response": "Found applicable skill: 'procedural:general:generation-routing' (score: 0.75). Steps: architect [target] \u2192 provide [target] \u2192 establish [target] \u2192 provide [target] \u2192 index [target] \u2192 log [target] \u2192 group [target] \u2192 provide [target]",
+      "confidence": "0.7496688837461472",
+      "internal_reasoning": "Skill 'procedural:general:generation-routing'. shares some structural patterns. has moderate semantic overlap. has been transferred 3 times (100% success). shares structures: routing.",
+      "skill_id": "6b7e13ce-3165-486c-a617-9a99b01eb52c",
+      "skill_name": "procedural:general:generation-routing",
+      "skill_steps": [
+        "architect [target]",
+        "provide [target]",
+        "establish [target]",
+        "provide [target]",
+        "index [target]",
+        "log [target]",
+        "group [target]",
+        "provide [target]"
+      ],
+      "skill_tags": [
+        "generation",
+        "routing",
+        "abstraction",
+        "general",
+        "The notification service exhibits several architectural anti\u2011patterns that threaten reliability, scalability, and maintainability:\n\n**Key concerns identified**\n1. **Dual\u2011write inconsistency** \u2013 No dis"
+      ],
+      "combined_score": 0.7496688837461472,
+      "structural_score": 0.65,
+      "semantic_score": 0.6481472849845886,
+      "adaptations": {},
+      "all_candidates": [
+        {
+          "skill_name": "procedural:general:generation-routing",
+          "score": 0.7496688837461472,
+          "reasoning": "Skill 'procedural:general:generation-routing'. shares some structural patterns. has moderate semantic overlap. has been transferred 3 times (100% success). shares structures: routing."
+        },
+        {
+          "skill_name": "procedural:general:evaluation-routing",
+          "score": 0.7437851889848709,
+          "reasoning": "Skill 'procedural:general:evaluation-routing'. shares some structural patterns. has moderate semantic overlap. has been transferred 1 times (100% success). shares structures: routing."
+        },
+        {
+          "skill_name": "procedural:general:evaluation-sequential",
+          "score": 0.6955087153648033,
+          "reasoning": "Skill 'procedural:general:evaluation-sequential'. shares some structural patterns. has moderate semantic overlap. has been transferred 4 times (100% success). shares structures: routing."
+        }
+      ],
+      "trace_id": "62c66905-3dc8-4680-823d-0ab657371c2b",
+      "execution_time_ms": 27.507543563842773
+    },
+    "task_applier": {
+      "response": {
+        "domain": "software_architecture",
+        "task": "Review the multi-tenant isolation model and identify compounded attack surface issues.",
+        "analysis": [
+          "Tenant isolation is only enforced at the application layer via WHERE tenant_id = ?. A SQL injection in any service bypasses this filter, exposing all tenants' data. This risk is amplified by Review 14\u2019s missing webhook signature verification: a forged webhook can trigger cross\u2011tenant queries if the handler does not re\u2011apply the tenant_id guard.",
+          "API gateway rate limiting is per-route, not per-tenant (Review 04). One tenant can flood a shared route and cause a DoS for others. The capacity plan from Review 15 lacks per\u2011tenant guarantees, so noisy tenants can degrade overall performance.",
+          "Shared Redis cache keys are global (e.g., 'product:{id}'). Because product IDs are globally unique but SKUs may collide across tenants, Tenant A\u2019s cached SKU can be returned to Tenant B. This violates data isolation and can lead to incorrect business logic or revenue leakage.",
+          "File storage paths include tenant_id in the S3 key, which isolates at the object level. However, CloudFront serves all files from a single distribution without tenant\u2011scoped authorization. Anyone who obtains a URL (e.g., via leaked logs) can access any tenant\u2019s file.",
+          "Database sharding by user_id (Review 08) mixes users from different tenants on the same shard. Heavy queries or slow scans by one tenant can degrade latency for all others sharing that shard, creating a noisy\u2011neighbor problem.",
+          "These gaps are interdependent: an attacker can combine SQL injection + fake webhook to read another tenant\u2019s data; a DoS attack can be amplified by shared rate limits; cache collisions and CDN leaks expose sensitive content even without direct database access."
+        ],
+        "improvements": [
+          {
+            "action": "Enforce tenant_id at the database layer",
+            "expected_outcome": "All queries, including those from injected SQL or external services, must include a tenant_id filter. Implement row\u2011level security views or per\u2011tenant schemas to guarantee isolation."
+          },
+          {
+            "action": "Add webhook signature verification middleware",
+            "expected_outcome": "Reject any webhook without a valid HMAC or JWT signed by the provider, preventing forged requests from triggering cross\u2011tenant data access."
+          },
+          {
+            "action": "Implement per\u2011tenant rate limiting in API gateway",
+            "expected_outcome": "Rate limits are applied to each tenant\u2019s token (e.g., via JWT claim) so one tenant cannot exhaust shared resources for others."
+          },
+          {
+            "action": "Prefix Redis keys with tenant_id or use separate keyspaces",
+            "expected_outcome": "Cache entries become tenant\u2011scoped, eliminating SKU collision and simplifying eviction policies."
+          },
+          {
+            "action": "Use signed CloudFront URLs or a token service for file access",
+            "expected_outcome": "Only authenticated tenants can retrieve their files; URLs expire automatically, preventing unauthorized long\u2011term access."
+          },
+          {
+            "action": "Reshard database by tenant_id or adopt multi\u2011tenant schemas",
+            "expected_outcome": "Noisy tenants are isolated to their own shard/schema, ensuring predictable performance and easier maintenance."
+          }
+        ],
+        "steps": [
+          {
+            "action": "Add tenant_id column to all tables",
+            "expected_outcome": "Uniform filtering capability across the schema."
+          },
+          {
+            "action": "Create database views that automatically apply tenant_id filter",
+            "expected_outcome": "Application code no longer needs to add the filter manually."
+          },
+          {
+            "action": "Deploy webhook validation middleware before business logic",
+            "expected_outcome": "Only verified webhooks reach downstream services."
+          },
+          {
+            "action": "Configure API gateway rate limits per JWT tenant claim",
+            "expected_outcome": "Tenant-specific quotas enforced at ingress."
+          },
+          {
+            "action": "Refactor Redis key generation to include tenant_id prefix",
+            "expected_outcome": "Cache isolation achieved without additional infrastructure."
+          },
+          {
+            "action": "Generate CloudFront signed URLs with short TTLs via a dedicated auth service",
+            "expected_outcome": "Secure, time\u2011bound file access for tenants."
+          }
+        ],
+        "used_recalled_skill": false,
+        "recalled_skill_name": "none",
+        "improvements_from_experience": "Previous reviews highlighted the importance of database\u2011level isolation and tenant\u2011scoped rate limiting. Applying those lessons prevented overlooking the compounded attack surface that arises when multiple layers share a single enforcement point.",
+        "confidence": 0.92,
+        "internal_reasoning": "I systematically mapped each identified gap to its root cause, considered how they interact, and derived concrete mitigations that align with proven patterns from earlier reviews."
+      },
+      "confidence": "0.92",
+      "internal_reasoning": "I reviewed the listed isolation gaps, cross\u2011referenced them with prior lessons on database security, rate limiting, caching, CDN access control, and sharding. By applying those patterns I could identify compounded risks and propose targeted fixes.",
+      "_metrics": {
+        "tokens": 2539,
+        "prompt_tokens": 1473,
+        "completion_tokens": 1066,
+        "latency_ms": 8501.44,
+        "cost_usd": 0.000535,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "You are a senior software architect solving a review task. You have your\nown analysis AND accumulated knowledge from previous architecture reviews.\n\nDOMAIN: software_architecture\nTASK: {'domain': 'software_architecture', 'task': \"Review the multi-tenant isolation model. Issues to find: (1) tenant isolation is enforced at the APPLICATION layer (WHERE tenant_id = ?) but NOT at the database layer \u2014 a SQL injection in any service bypasses all tenant isolation. This compounds with Review 14's missing webhook signature verification: a fake webhook could trigger cross-tenant data access if the webhook handler doesn't filter by tenant_id, (2) the API gateway rate limiting from Review 04 (per-route, not per-tenant) means one tenant can DoS another. The capacity plan from Review 15 doesn't account for per-tenant resource guarantees, (3) the shared Redis cluster from Review 05's caching architecture stores cache entries for ALL tenants with keys like 'product:{id}' \u2014 but product IDs are globally unique, not tenant-scoped. If Tenant A and Tenant B happen to have a product with the same external SKU, the cache may serve Tenant A's data to Tenant B, (4) the file storage paths from Review 13 (/{tenant_id}/{file_id}.pdf) provide tenant isolation at the S3 level, BUT the CloudFront distribution serves all tenants from the same CDN \u2014 a URL generated for Tenant A's file doesn't include any tenant-scoped authorization, (5) the database sharding from Review 08 shards by user_id, NOT by tenant_id \u2014 users from different tenants co-exist on the same shard, meaning a noisy tenant's heavy queries slow down other tenants sharing the same shard. WITHOUT memory of the specific isolation gaps found in Reviews 02, 04, 05, 08, 13, and 14, this review cannot identify the compound cross-tenant attack surface.\", 'sequence': 20}\n\nYOUR ANALYSIS:\nKey architectural concerns: \n1) Tenant isolation only at application layer \u2013 SQL injection bypasses isolation.\n2) Missing webhook signature verification \u2013 cross\u2011tenant data exposure via fake webhooks.\n3) API gateway rate limiting is per-route, not per-tenant \u2013 a tenant can DoS others.\n4) Shared Redis cache keys are global \u2013 same SKU can leak data across tenants.\n5) CloudFront CDN URLs lack tenant\u2011scoped auth \u2013 any user with URL can access any tenant\u2019s file.\n6) Sharding by user_id instead of tenant_id leads to noisy neighbor problems.\n\nEvaluation against principles:\n- SOLID: Single Responsibility violated (service layer handles isolation). Open/Closed violated (adding new tenants requires code changes).\n- DRY: Isolation logic duplicated across services. \n- KISS: Current design hides complexity behind application filters, making it fragile.\n\nScalability & Maintainability:\n- Tenant\u2011level rate limiting and sharding would require re\u2011architecting but provide predictable performance.\n- Centralized cache with tenant prefixes reduces key collisions and simplifies eviction.\n- CDN signed URLs or token\u2011based auth adds minimal overhead for security.\n\nSecurity Implications:\n- SQL injection + missing signature = full cross\u2011tenant compromise.\n- Rate limiting abuse can cause DoS.\n- Shared cache & CDN expose data leakage vectors.\n\nConcrete Improvements (with trade\u2011offs):\n1) Enforce tenant_id in every DB query via a database view or stored procedure; add a tenant_id column to all tables and create per\u2011tenant schemas if needed. Trade\u2011off: Slight performance hit, but eliminates injection risk.\n2) Add webhook signature validation middleware; reject requests without valid HMAC. Trade\u2011off: Extra network round\u2011trip for verification.\n3) Implement per\u2011tenant rate limiting in API gateway (e.g., using JWT tenant claim). Trade\u2011off: More complex token parsing, but protects tenants from abuse.\n4) Prefix Redis keys with tenant_id or use separate keyspaces; enable key expiration policies. Trade\u2011off: Slightly larger key size and more cache entries.\n5) Use signed CloudFront URLs or a token service to generate time\u2011bound access tokens per tenant file. Trade\u2011off: Additional auth service, but prevents unauthorized file access.\n6) Reshard database by tenant_id (or use multi\u2011tenant schema isolation). Trade\u2011off: Requires data migration and potential re\u2011indexing; however, it removes noisy neighbor effects.\n\nBy addressing these concerns, the system will achieve true tenant isolation, predictable performance, and robust security.\n\nACCUMULATED ARCHITECTURE KNOWLEDGE:\nSkill name: procedural:general:generation-routing\nAbstract steps: ['architect [target]', 'provide [target]', 'establish [target]', 'provide [target]', 'index [target]', 'log [target]', 'group [target]', 'provide [target]']\nTransfer score: 0.7496688837461472\nReasoning: Skill 'procedural:general:generation-routing'. shares some structural patterns. has moderate semantic overlap. has been transferred 3 times (100% success). shares structures: routing.\n\nINSTRUCTIONS:\nIf prior architecture patterns were recalled, use them to enrich your review.\nApply lessons from similar past reviews to catch issues you might otherwise miss.\nNote when prior experience improves your analysis.\n\nReturn JSON with:\n- \"response\": your complete enhanced architecture review\n- \"domain\": \"software_architecture\"\n- \"task\": brief description\n- \"steps\": array of {\"action\": \"...\", \"expected_outcome\": \"...\"}\n- \"used_recalled_skill\": true or false\n- \"recalled_skill_name\": skill name or \"none\"\n- \"improvements_from_experience\": how prior knowledge improved this review\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": reflection on how experience helped",
+      "trace_id": "947c4609-d320-4e4e-913f-757539646e29",
+      "execution_time_ms": 8502.985000610352
+    },
+    "brain_feedback": {
+      "response": "Recorded successful transfer for skill 'procedural:general:generation-routing'.",
+      "confidence": "0.7475030624999999",
+      "internal_reasoning": "Transfer feedback recorded. Skill now has 4 transfer(s).",
+      "skill_id": "6b7e13ce-3165-486c-a617-9a99b01eb52c",
+      "skill_name": "procedural:general:generation-routing",
+      "transfer_count": 4,
+      "transfer_success": true,
+      "trace_id": "6007f8d2-5f94-4420-8f7a-928f0ff44898",
+      "execution_time_ms": 5.003690719604492
+    },
+    "task_result": {
+      "response": "Multi\u2011tenant isolation is currently enforced only at the application layer via a WHERE tenant_id = ? clause. This leaves the system vulnerable to SQL injection attacks that can bypass tenant filtering and expose all tenants\u2019 data. The lack of database\u2011level enforcement compounds with missing webhook signature verification (Review\u202f14), allowing forged webhooks to trigger cross\u2011tenant queries. API gateway rate limiting is per\u2011route, not per\u2011tenant (Review\u202f04), enabling a single tenant to flood shared routes and cause denial\u2011of\u2011service for others; the capacity plan (Review\u202f15) does not provide per\u2011tenant guarantees. The shared Redis cache uses global keys like \"product:{id}\", so globally unique product IDs can collide across tenants, leading to data leakage via cached SKU lookups. File storage paths include tenant_id in S3 object keys, but CloudFront serves all files from a single distribution without tenant\u2011scoped authorization; any leaked signed URL grants access to any tenant\u2019s files. Finally, database sharding by user_id (Review\u202f08) mixes users from different tenants on the same shard, creating noisy\u2011neighbor effects where heavy queries from one tenant degrade performance for others.\n\nThese gaps are interdependent: an attacker can combine SQL injection with a forged webhook to read another tenant\u2019s data; shared rate limits amplify DoS risk; cache collisions and CDN leaks expose sensitive content even without direct database access. To remediate, enforce tenant_id at the database layer (row\u2011level security or per\u2011tenant schemas), add webhook signature verification middleware, implement per\u2011tenant API gateway rate limiting, prefix Redis keys with tenant_id or use separate keyspaces, secure CloudFront with signed URLs or token service, and reshard the database by tenant_id or adopt multi\u2011tenant schemas to isolate noisy tenants.",
+      "confidence": "0.92",
+      "internal_reasoning": "I mapped each identified isolation gap to its root cause, considered how they interact across layers, and derived concrete mitigations that align with proven patterns from earlier reviews.",
+      "_metrics": {
+        "tokens": 2199,
+        "prompt_tokens": 1775,
+        "completion_tokens": 424,
+        "latency_ms": 3759.73,
+        "cost_usd": 0.000236,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "Produce the FINAL structured architecture review output.\n\nDOMAIN: software_architecture\nTASK: {'domain': 'software_architecture', 'task': \"Review the multi-tenant isolation model. Issues to find: (1) tenant isolation is enforced at the APPLICATION layer (WHERE tenant_id = ?) but NOT at the database layer \u2014 a SQL injection in any service bypasses all tenant isolation. This compounds with Review 14's missing webhook signature verification: a fake webhook could trigger cross-tenant data access if the webhook handler doesn't filter by tenant_id, (2) the API gateway rate limiting from Review 04 (per-route, not per-tenant) means one tenant can DoS another. The capacity plan from Review 15 doesn't account for per-tenant resource guarantees, (3) the shared Redis cluster from Review 05's caching architecture stores cache entries for ALL tenants with keys like 'product:{id}' \u2014 but product IDs are globally unique, not tenant-scoped. If Tenant A and Tenant B happen to have a product with the same external SKU, the cache may serve Tenant A's data to Tenant B, (4) the file storage paths from Review 13 (/{tenant_id}/{file_id}.pdf) provide tenant isolation at the S3 level, BUT the CloudFront distribution serves all tenants from the same CDN \u2014 a URL generated for Tenant A's file doesn't include any tenant-scoped authorization, (5) the database sharding from Review 08 shards by user_id, NOT by tenant_id \u2014 users from different tenants co-exist on the same shard, meaning a noisy tenant's heavy queries slow down other tenants sharing the same shard. WITHOUT memory of the specific isolation gaps found in Reviews 02, 04, 05, 08, 13, and 14, this review cannot identify the compound cross-tenant attack surface.\", 'sequence': 20}\nSEQUENCE: 20\n\nREVIEW:\n{'domain': 'software_architecture', 'task': 'Review the multi-tenant isolation model and identify compounded attack surface issues.', 'analysis': [\"Tenant isolation is only enforced at the application layer via WHERE tenant_id = ?. A SQL injection in any service bypasses this filter, exposing all tenants' data. This risk is amplified by Review 14\u2019s missing webhook signature verification: a forged webhook can trigger cross\u2011tenant queries if the handler does not re\u2011apply the tenant_id guard.\", 'API gateway rate limiting is per-route, not per-tenant (Review 04). One tenant can flood a shared route and cause a DoS for others. The capacity plan from Review 15 lacks per\u2011tenant guarantees, so noisy tenants can degrade overall performance.', \"Shared Redis cache keys are global (e.g., 'product:{id}'). Because product IDs are globally unique but SKUs may collide across tenants, Tenant A\u2019s cached SKU can be returned to Tenant B. This violates data isolation and can lead to incorrect business logic or revenue leakage.\", 'File storage paths include tenant_id in the S3 key, which isolates at the object level. However, CloudFront serves all files from a single distribution without tenant\u2011scoped authorization. Anyone who obtains a URL (e.g., via leaked logs) can access any tenant\u2019s file.', 'Database sharding by user_id (Review 08) mixes users from different tenants on the same shard. Heavy queries or slow scans by one tenant can degrade latency for all others sharing that shard, creating a noisy\u2011neighbor problem.', 'These gaps are interdependent: an attacker can combine SQL injection + fake webhook to read another tenant\u2019s data; a DoS attack can be amplified by shared rate limits; cache collisions and CDN leaks expose sensitive content even without direct database access.'], 'improvements': [{'action': 'Enforce tenant_id at the database layer', 'expected_outcome': 'All queries, including those from injected SQL or external services, must include a tenant_id filter. Implement row\u2011level security views or per\u2011tenant schemas to guarantee isolation.'}, {'action': 'Add webhook signature verification middleware', 'expected_outcome': 'Reject any webhook without a valid HMAC or JWT signed by the provider, preventing forged requests from triggering cross\u2011tenant data access.'}, {'action': 'Implement per\u2011tenant rate limiting in API gateway', 'expected_outcome': 'Rate limits are applied to each tenant\u2019s token (e.g., via JWT claim) so one tenant cannot exhaust shared resources for others.'}, {'action': 'Prefix Redis keys with tenant_id or use separate keyspaces', 'expected_outcome': 'Cache entries become tenant\u2011scoped, eliminating SKU collision and simplifying eviction policies.'}, {'action': 'Use signed CloudFront URLs or a token service for file access', 'expected_outcome': 'Only authenticated tenants can retrieve their files; URLs expire automatically, preventing unauthorized long\u2011term access.'}, {'action': 'Reshard database by tenant_id or adopt multi\u2011tenant schemas', 'expected_outcome': 'Noisy tenants are isolated to their own shard/schema, ensuring predictable performance and easier maintenance.'}], 'steps': [{'action': 'Add tenant_id column to all tables', 'expected_outcome': 'Uniform filtering capability across the schema.'}, {'action': 'Create database views that automatically apply tenant_id filter', 'expected_outcome': 'Application code no longer needs to add the filter manually.'}, {'action': 'Deploy webhook validation middleware before business logic', 'expected_outcome': 'Only verified webhooks reach downstream services.'}, {'action': 'Configure API gateway rate limits per JWT tenant claim', 'expected_outcome': 'Tenant-specific quotas enforced at ingress.'}, {'action': 'Refactor Redis key generation to include tenant_id prefix', 'expected_outcome': 'Cache isolation achieved without additional infrastructure.'}, {'action': 'Generate CloudFront signed URLs with short TTLs via a dedicated auth service', 'expected_outcome': 'Secure, time\u2011bound file access for tenants.'}], 'used_recalled_skill': False, 'recalled_skill_name': 'none', 'improvements_from_experience': 'Previous reviews highlighted the importance of database\u2011level isolation and tenant\u2011scoped rate limiting. Applying those lessons prevented overlooking the compounded attack surface that arises when multiple layers share a single enforcement point.', 'confidence': 0.92, 'internal_reasoning': 'I systematically mapped each identified gap to its root cause, considered how they interact, and derived concrete mitigations that align with proven patterns from earlier reviews.'}\n\nBRAIN METRICS:\nSkill recalled: procedural:general:generation-routing\nTransfer score: 0.7496688837461472\nUsed prior knowledge: False\n\nReturn JSON with:\n- \"response\": comprehensive architecture review\n- \"domain\": \"software_architecture\"\n- \"task\": brief description\n- \"sequence_number\": 20\n- \"solution_steps\": array of concrete review steps\n- \"quality_self_assessment\": 0.0-1.0 with justification\n- \"brain_assisted\": true if accumulated knowledge contributed\n- \"used_recalled_skill\": copy the boolean from the prior step (true/false) \u2014 whether accumulated knowledge actually guided the solution\n- \"recalled_skill\": skill name or \"none\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": final reflection",
+      "trace_id": "75f6a495-f601-475b-bf7c-2f210eb0d870",
+      "execution_time_ms": 3760.7264518737793
+    }
+  }
+}

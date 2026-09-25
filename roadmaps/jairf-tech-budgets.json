@@ -1,0 +1,32 @@
+{
+  "name": "jairf-tech-budgets",
+  "description": "JAIRF technical budgets & naming roadmap (per 05_Technical_Budgets_Naming.md). Poly budgets LOD0-3 per asset type (player 15-25k, boss 20-35k, enemy 8-15k, weapon 3-8k, builder piece 0.5-3k, prop 2-6k, tree 3-8k). Texture budgets (2K hero/1K normal/512-1K modular, atlasing, ASTC/DXT/BC). Performance targets: 60 FPS mid-range PC, draw call control, limited dynamic lights, particle soft caps, network interest management. Naming: SM_/SK_/M_/T_/PF_/A_/SFX_/MUS_/AMB_/UI_/SO_.",
+  "phases": [
+    {
+      "name": "1. Poly budget table adoption (LOD0-3 per asset type)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Texture budgets + compression strategy",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Performance targets (FPS, draw calls, lights, particles, network)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Naming conventions for all asset families",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Enforcement tooling: CI validation + agent build rules",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

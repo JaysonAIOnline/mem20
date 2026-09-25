@@ -1,0 +1,53 @@
+{
+  "project": "unreliable_prophecy",
+  "version": "0.5.0",
+  "unity_version": "6000.0.52f1",
+  "render_pipeline": "URP",
+  "color_space": "Linear",
+  "scripting_backend": "IL2CPP",
+  "api_compatibility": "NET_Standard_2_1",
+  "target_platforms": ["Windows", "Linux"],
+  "build_path_windows": "Builds/Windows/v0.5.0_VerticalSlice",
+  "build_path_linux": "Builds/Linux/v0.5.0_VerticalSlice",
+  "scenes_in_build": [
+    "Assets/Scenes/Boot.unity",
+    "Assets/Scenes/MainMenu.unity",
+    "Assets/Scenes/Quietvale.unity",
+    "Assets/Scenes/BureaucracyHills.unity",
+    "Assets/Scenes/Forest.unity",
+    "Assets/Scenes/CityOfForms.unity",
+    "Assets/Scenes/Archives.unity",
+    "Assets/Scenes/Ruins.unity",
+    "Assets/Scenes/FinalZone.unity",
+    "Assets/Scenes/CombatTest.unity"
+  ],
+  "player_settings": {
+    "default_screen_width": 1920,
+    "default_screen_height": 1080,
+    "fullscreen_mode": "FullscreenWindow",
+    "resizable_window": true,
+    "run_in_background": true,
+    "display_resolution_dialog": "HiddenByDefault"
+  },
+  "quality_settings": {
+    "default_quality": "High",
+    "vsync_count": 0,
+    "texture_quality": "FullRes",
+    "anisotropic_textures": "Enabled",
+    "anti_aliasing": 4
+  },
+  "input_system": {
+    "backend": "InputSystem",
+    "actions_asset": "Assets/Input/UP_InputActions.inputactions"
+  },
+  "physics": {
+    "gravity": [0, -9.81, 0],
+    "default_solver_iterations": 6,
+    "default_solver_velocity_iterations": 1
+  },
+  "batch_commands": {
+    "windows": "unity -batchmode -projectPath . -executeMethod BuildProject.BuildWindows -quit",
+    "linux": "unity -batchmode -projectPath . -executeMethod BuildProject.BuildLinux -quit",
+    "both": "unity -batchmode -projectPath . -executeMethod BuildProject.BuildBoth -quit"
+  }
+}

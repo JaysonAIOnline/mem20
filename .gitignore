@@ -70,3 +70,10 @@ htmlcov/
 
 # Blender/Unity cache
 *.blend*
+
+# Rust build artifacts
+**/target/
+**/Cargo.lock
+
+# Node
+node_modules/

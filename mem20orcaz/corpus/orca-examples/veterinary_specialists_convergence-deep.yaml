@@ -1,0 +1,357 @@
+# Veterinary Specialists Convergence - Deep Analysis
+# Multi-specialist consultation with parallel diagnosis paths
+#
+# ROBUSTNESS FEATURES:
+# - Safe template accessors with defaults
+# - Explicit output formats
+# - Fallback values for missing data
+# - Realistic timeout settings
+
+orchestrator:
+  id: veterinary_specialists_convergence_v2
+  strategy: sequential
+  agents:
+    - patient_input_memory
+    - specialists_loop
+    - actionable_plan_builder
+    - memory_writer
+    - explanation_builder
+
+agents:
+  - id: patient_input_memory
+    type: memory
+    namespace: patient_cases
+    config:
+      operation: write
+      memory_type: short_term
+    prompt: |
+      Store patient input: {{ get_input() }}
+
+  - id: specialists_loop
+    type: loop
+    max_loops: 2
+    score_threshold: 0.50
+    fallback_score: 0.30
+    timeout_score: 0.20
+    persist_across_runs: false
+    
+    scoring:
+      preset: moderate
+      context: loop_convergence
+      custom_weights:
+        improvement.better_than_previous: 0.35
+        stability.consistent_direction: 0.30
+        convergence.within_tolerance: 0.35
+    
+    score_extraction_config:
+      strategies:
+        - type: pattern
+          patterns:
+            - "CONVERGENCE_SCORE:\\s*([0-9]+\\.?[0-9]*)"
+            - "SCORE:\\s*([0-9]+\\.?[0-9]*)"
+        - type: pattern
+          patterns:
+            - "(0\\.[5-9][0-9]?)"
+    
+    internal_workflow:
+      orchestrator:
+        id: specialists-internal-v2
+        strategy: sequential
+        agents:
+          - specialists_fork
+          - diagnosis_join
+          - convergence_scorer
+      agents:
+        - id: specialists_fork
+          type: fork
+          targets:
+            - [internal_medicine_history, internal_medicine_diagnostics, internal_medicine_management]
+            - [surgery_assessment, surgery_risk, surgery_plan]
+            - [infectious_disease_screening, infectious_disease_tests, infectious_disease_plan]
+            - [dermatology_history, dermatology_tests, dermatology_plan]
+
+        # === INTERNAL MEDICINE PATH ===
+        - id: internal_medicine_history
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Veterinary Internal Medicine Specialist
+            TASK: Collect and interpret patient history.
+            
+            PATIENT DATA: {{ get_input() }}
+            
+            OUTPUT FORMAT:
+            HISTORY_SUMMARY: [Brief summary]
+            KEY_CLINICAL_SIGNS: [sign1, sign2, sign3]
+
+        - id: internal_medicine_diagnostics
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Internal Medicine - Diagnostics
+            HISTORY: {{ previous_outputs.internal_medicine_history | default('No history', true) }}
+            
+            OUTPUT FORMAT:
+            DIAGNOSTIC_PLAN: [test1, test2, test3]
+            RATIONALE: [Brief explanation]
+
+        - id: internal_medicine_management
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Internal Medicine - Management
+            DIAGNOSTICS: {{ previous_outputs.internal_medicine_diagnostics | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            MANAGEMENT_PLAN: [step1, step2]
+            MONITORING: [Instructions]
+
+        # === SURGERY PATH ===
+        - id: surgery_assessment
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Veterinary Surgeon
+            TASK: Assess surgical/traumatic causes.
+            
+            PATIENT DATA: {{ get_input() }}
+            
+            OUTPUT FORMAT:
+            SURGICAL_DIFFERENTIALS: [dx1, dx2]
+            URGENCY: [0.0-1.0]
+
+        - id: surgery_risk
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Surgery - Risk Assessment
+            DIFFERENTIALS: {{ previous_outputs.surgery_assessment | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            RISK_ASSESSMENT: [Summary]
+            PRE_OP: [Instructions]
+
+        - id: surgery_plan
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Surgery - Planning
+            RISK: {{ previous_outputs.surgery_risk | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            SURGERY_PLAN: [Plan]
+            POST_OP: [Care instructions]
+
+        # === INFECTIOUS DISEASE PATH ===
+        - id: infectious_disease_screening
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Infectious Disease Specialist
+            TASK: List possible infectious/parasitic causes.
+            
+            PATIENT DATA: {{ get_input() }}
+            
+            OUTPUT FORMAT:
+            INFECTIOUS_DIFFERENTIALS: [dx1, dx2]
+            RISK_FACTORS: [factor1, factor2]
+
+        - id: infectious_disease_tests
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Infectious Disease - Testing
+            DIFFERENTIALS: {{ previous_outputs.infectious_disease_screening | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            TESTS: [test1, test2]
+            ISOLATION: [Instructions]
+
+        - id: infectious_disease_plan
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Infectious Disease - Treatment
+            TESTS: {{ previous_outputs.infectious_disease_tests | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            TREATMENT: [Plan]
+            PUBLIC_HEALTH: [Advice]
+
+        # === DERMATOLOGY PATH ===
+        - id: dermatology_history
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Veterinary Dermatologist
+            TASK: Focus on history and lesion description.
+            
+            PATIENT DATA: {{ get_input() }}
+            
+            OUTPUT FORMAT:
+            DERM_HISTORY: [Summary]
+            LESIONS: [lesion1, lesion2]
+
+        - id: dermatology_tests
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Dermatology - Diagnostics
+            HISTORY: {{ previous_outputs.dermatology_history | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            DERM_TESTS: [test1, test2]
+            RATIONALE: [Explanation]
+
+        - id: dermatology_plan
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.4
+          timeout: 60
+          prompt: |
+            ROLE: Dermatology - Treatment
+            TESTS: {{ previous_outputs.dermatology_tests | default('Pending', true) }}
+            
+            OUTPUT FORMAT:
+            DERM_PLAN: [Plan]
+            FOLLOW_UP: [Instructions]
+
+        # === JOIN & SCORE ===
+        - id: diagnosis_join
+          type: join
+          group: specialists_fork
+          prompt: |
+            TASK: Synthesize all specialist outputs.
+            
+            INTERNAL_MEDICINE: {{ safe_get_response('internal_medicine_management', 'Pending') }}
+            SURGERY: {{ safe_get_response('surgery_plan', 'Pending') }}
+            INFECTIOUS: {{ safe_get_response('infectious_disease_plan', 'Pending') }}
+            DERMATOLOGY: {{ safe_get_response('dermatology_plan', 'Pending') }}
+            
+            OUTPUT FORMAT:
+            CONVERGENCE_SCORE: [0.0-1.0]
+            SYNTHESIS: [One paragraph summary]
+
+        - id: convergence_scorer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.1
+          timeout: 60
+          prompt: |
+            TASK: Score convergence and actionability.
+            
+            SYNTHESIS: {{ safe_get_response('diagnosis_join', 'No synthesis') }}
+            
+            OUTPUT FORMAT:
+            CONVERGENCE_SCORE: [0.0-1.0]
+            ACTIONABILITY_NOTES: [Key actionable points]
+            
+            IMPORTANT: CONVERGENCE_SCORE must be "CONVERGENCE_SCORE: X.XX"
+
+  - id: actionable_plan_builder
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.4
+    timeout: 60
+    prompt: |
+      TASK: Build step-by-step actionable plan for vet and owner.
+      
+      PATIENT: {{ get_input() }}
+      
+      {% set loop_output = get_loop_output('specialists_loop', previous_outputs) %}
+      {% set loop_result = safe_get(loop_output, 'result', {}) %}
+      SYNTHESIS: {{ safe_get(loop_result, 'diagnosis_join', 'No synthesis available') }}
+      
+      OUTPUT FORMAT (YAML):
+      ACTION_PLAN: |
+        1. [Step with dosage/rationale]
+        2. [Step with dosage/rationale]
+        3. [Owner instructions]
+
+  - id: memory_writer
+    type: memory
+    namespace: patient_cases
+    config:
+      operation: write
+      memory_type: long_term
+    prompt: |
+      {% set loop_output = get_loop_output('specialists_loop', previous_outputs) %}
+      {% set loop_result = safe_get(loop_output, 'result', {}) %}
+      synthesis: {{ safe_get(loop_result, 'diagnosis_join', 'None') }}
+      action_plan: {{ safe_get_response('actionable_plan_builder', 'None') }}
+
+  - id: explanation_builder
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.4
+    timeout: 60
+    prompt: |
+      TASK: Compose comprehensive explanation for owner and vet.
+      LANGUAGE: ITALIAN (Rispondere in italiano)
+      
+      PATIENT: {{ get_input() }}
+      {% set loop_output = get_loop_output('specialists_loop', previous_outputs) %}
+      {% set loop_result = safe_get(loop_output, 'result', {}) %}
+      SYNTHESIS: {{ safe_get(loop_result, 'diagnosis_join', 'None') }}
+      ACTION_PLAN: {{ safe_get_response('actionable_plan_builder', 'None') }}
+      
+      OUTPUT FORMAT (YAML):
+      diagnosis: [Main diagnosis with reasoning]
+      differentials:
+        - [Differential 1]
+        - [Differential 2]
+      specialist_reasoning: [Key points from each specialist]
+      action_plan: [Detailed plan]
+      owner_instructions: [Clear instructions with warning signs]

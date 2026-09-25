@@ -1,0 +1,42 @@
+{
+  "name": "jairf-audio",
+  "description": "JAIRF audio roadmap (per Audio_Assets_List_by_Quarter.md). Per-quarter SFX + music via rFXGen/ElevenLabs/Suno or similar. Naming: SFX_/MUS_/AMB_ prefixes. Assets per quarter: Q1 UI/movement/combat/starter-zone/music; Q2 multiplayer-social/enemies/zones/economy/music; Q3 class combat/builder/crafting/immersion/music; Q4 hero sounds/biome ambience/advanced UI/music. Includes recommended folder structure (UI, Player/Movement+Combat, Enemies, Environment, Builder, Crafting, Music, Multiplayer).",
+  "phases": [
+    {
+      "name": "1. Audio toolchain + folder structure + naming conventions",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Q1 audio set: UI, movement, basic combat, starter zone, music",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Q2 audio set: multiplayer, enemies, new zones, economy, music",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Q3 audio set: class combat, builder/UGC, crafting, immersion, music",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Q4 audio set: hero sounds, biomes, advanced UI, music",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Unity integration: Audio Mixer buses, ducking, spatial audio, settings",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. QA + polish across quarters",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

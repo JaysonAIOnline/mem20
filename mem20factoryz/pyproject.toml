@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20factoryz"
+version = "0.1.0"
+description = "Native mem20 GameFactory-3A absorption — procgen, asset synthesis, level generation, narrative, playtesting"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+mem20factoryz = "mem20factoryz.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mem20factoryz*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

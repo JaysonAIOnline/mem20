@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20gamez"
+version = "0.1.0"
+description = "Native mem20 OpenGame absorption — Game agents, environments, reward shaping, curriculum, multi-agent, replay"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+    "numpy>=1.26",
+    "torch>=2.1",
+    "aiohttp>=3.9",
+]
+
+[project.optional-dependencies]
+gym = [
+    "gymnasium>=0.29",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+mem20gamez = "mem20gamez.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mem20gamez*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

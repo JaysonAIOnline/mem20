@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════════════════════
+# Benchmark v2 — LLM-as-Judge: Pairwise Comparison (GPT-4 variant)
+# ═══════════════════════════════════════════════════════════════════════
+#
+# Optional external judge — use via:
+#   python judge_benchmark.py --pairwise-workflow judge_pairwise_gpt4.yml --output-tag gpt4
+# ═══════════════════════════════════════════════════════════════════════
+
+orchestrator:
+  id: judge-pairwise-gpt4
+  strategy: sequential
+  agents:
+    - pairwise_judge
+
+agents:
+  - id: pairwise_judge
+    type: openai-gpt-4
+    prompt: |
+      You are an expert evaluator. You will be given two outputs (A and B) that
+      solve the same task. Compare them and state your preference for each quality.
+
+      DOMAIN: {{ input.domain | default('general') }}
+      TASK: {{ input.task | default('unknown') }}
+
+      ═══════════════════ OUTPUT A ═══════════════════
+      {{ input.output_a | default('No output provided') }}
+
+      ═══════════════════ OUTPUT B ═══════════════════
+      {{ input.output_b | default('No output provided') }}
+      ═══════════════════════════════════════════════
+
+      For EACH of the following three questions, choose "A", "B", or "TIE":
+
+      1. STRONGER REASONING
+      2. MORE STRUCTURALLY COMPLETE
+      3. MORE TRUSTWORTHY
+
+      Return ONLY a JSON object with:
+      - "stronger_reasoning": "A" or "B" or "TIE"
+      - "stronger_reasoning_justification": one to two sentences
+      - "more_complete": "A" or "B" or "TIE"
+      - "more_complete_justification": one to two sentences
+      - "more_trustworthy": "A" or "B" or "TIE"
+      - "more_trustworthy_justification": one to two sentences
+      - "overall_preference": "A" or "B" or "TIE"
+      - "overall_justification": two to three sentence summary
+    params:
+      model: gpt-4-turbo
+      temperature: 0.1
+      max_tokens: 1000

@@ -1,0 +1,42 @@
+{
+  "name": "jairf-vfx",
+  "description": "JAIRF VFX roadmap (per 03_VFX_List.md). Combat VFX (trails, impacts, parry, crit, stylized damage), class abilities (mage fire/ice/arcane, archer trails, warrior slam/charge), player feedback (level-up, loot, heal, status loops), environment (fire, water, leaves, dust, crystals, portals), builder/UGC (placement/validation highlights), UI-related, multiplayer social. Tech: prefer VFX Graph/GPU particles, low overdraw, short-lived, LODs + quality tiers.",
+  "phases": [
+    {
+      "name": "1. Combat VFX set",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Class/ability VFX (mage/archer/warrior)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Player feedback VFX",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Environment VFX",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Builder/UGC placement VFX",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. UI + multiplayer/social VFX",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Optimization: VFX Graph, overdraw, LODs/quality settings",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

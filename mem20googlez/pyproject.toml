@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20googlez"
+version = "0.2.0"
+description = "Real local Google ADK-style agents, tools, runners, sessions, memory, flows, and serving"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+    "httpx>=0.27",
+    "pydantic>=2.8",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+mem20googlez = "mem20googlez.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mem20googlez*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+ignore = ["BLE001"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["mem20googlez/tests"]
+markers = [
+    "real: calls the configured local model endpoint",
+]

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20verify"
+version = "0.1.0"
+description = "mem20 verification toolkit — prove claims by execution: systemd persistence sweep, per-package test runs, pre-existing-failure separation, outage breaker contract, data-integrity round-trip, and AST linters for defect classes that actually shipped."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "verification", "systemd", "testing", "audit"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+mem20verify = "mem20verify.cli:main"
+
+[tool.setuptools]
+packages = ["mem20verify"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

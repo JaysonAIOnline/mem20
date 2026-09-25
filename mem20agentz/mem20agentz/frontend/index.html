@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mem20</title>
+<style>
+:root{
+  --ui-bg-0:#0b0d11; --ui-bg-1:#11141a; --ui-bg-2:#171b23; --ui-bg-3:#1e2430;
+  --ui-bg-4:#252c3a;
+  --ui-hover:#212836; --ui-active:#2a3345;
+  --ui-text:#e7ecf3; --ui-text-dim:#9aa5b4; --ui-text-faint:#616b7d;
+  --ui-border:#232a37; --ui-border-strong:#323c4e;
+  --ui-accent:#7c9bff; --ui-accent-strong:#a9bcff; --ui-accent-dim:#3a4a7a;
+  --ui-green:#5fe2a0; --ui-yellow:#f2cd6d; --ui-red:#ff7a7a; --ui-cyan:#6cd8e0;
+  --ui-radius:10px;
+  --ui-font:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;
+  --ui-sans:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--ui-bg-0); color:var(--ui-text);
+  font-family:var(--ui-sans); font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+code,kbd,.mono{font-family:var(--ui-font)}
+a{color:var(--ui-accent);text-decoration:none}
+a:hover{color:var(--ui-accent-strong)}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:232px 1fr;grid-template-rows:1fr;height:100vh}
+.sidebar{
+  background:var(--ui-bg-1); border-right:1px solid var(--ui-border);
+  display:flex;flex-direction:column;padding:14px 10px;gap:2px;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:9px;padding:4px 8px 14px}
+.brand .logo{
+  width:26px;height:26px;border-radius:7px;flex:none;
+  background:linear-gradient(135deg,var(--ui-accent),var(--ui-accent-dim));
+  display:grid;place-items:center;font-family:var(--ui-font);font-weight:700;font-size:13px;color:#0b0d11;
+}
+.brand .name{font-weight:700;letter-spacing:.04em}
+.brand .sub{font-size:10px;color:var(--ui-text-faint);font-family:var(--ui-font)}
+.nav{display:flex;flex-direction:column;gap:1px}
+.nav button{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:transparent;border:0;border-radius:8px;color:var(--ui-text-dim);
+  padding:8px 10px;cursor:pointer;font-size:13px;font-family:inherit;
+}
+.nav button .ic{width:16px;flex:none;display:grid;place-items:center;color:var(--ui-text-faint)}
+.nav button .dot{width:7px;height:7px;border-radius:50%;background:var(--ui-bg-4);flex:none}
+.nav button:hover{background:var(--ui-hover);color:var(--ui-text)}
+.nav button.active{background:var(--ui-active);color:var(--ui-text)}
+.nav button.active .ic{color:var(--ui-accent)}
+.nav button.active .dot{background:var(--ui-accent)}
+.nav .sep{height:1px;background:var(--ui-border);margin:8px 6px}
+.sidebar-foot{margin-top:auto;padding-top:12px;font-size:10px;color:var(--ui-text-faint);font-family:var(--ui-font)}
+.sidebar-foot .row{display:flex;justify-content:space-between;padding:2px 8px}
+
+.main{display:flex;flex-direction:column;min-width:0;background:var(--ui-bg-0)}
+.topbar{
+  height:48px;flex:none;display:flex;align-items:center;gap:14px;
+  padding:0 18px;border-bottom:1px solid var(--ui-border);background:var(--ui-bg-1);
+}
+.topbar h1{font-size:14px;font-weight:650;margin:0;letter-spacing:.02em}
+.topbar .crumb{color:var(--ui-text-faint);font-size:12px;font-family:var(--ui-font)}
+.topbar .spacer{flex:1}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ui-border-strong);
+  border-radius:999px;padding:3px 10px;font-size:11px;font-family:var(--ui-font);color:var(--ui-text-dim);
+}
+.pill b{color:var(--ui-text)}
+.dot-live{width:7px;height:7px;border-radius:50%;background:var(--ui-green);box-shadow:0 0 6px var(--ui-green)}
+.dot-idle{width:7px;height:7px;border-radius:50%;background:var(--ui-yellow);box-shadow:0 0 6px var(--ui-yellow)}
+.dot-down{width:7px;height:7px;border-radius:50%;background:var(--ui-red)}
+
+#page{flex:1;overflow-y:auto;padding:20px 22px 40px}
+#page::-webkit-scrollbar{width:10px}
+#page::-webkit-scrollbar-thumb{background:var(--ui-bg-4);border-radius:6px;border:2px solid var(--ui-bg-0)}
+
+/* ---------- primitives ---------- */
+.row{display:flex;gap:12px;align-items:center}
+.wrap{flex-wrap:wrap}
+.col{display:flex;flex-direction:column;gap:8px}
+.grow{flex:1;min-width:0}
+.muted{color:var(--ui-text-dim)}
+.faint{color:var(--ui-text-faint)}
+.right{text-align:right}
+.mono{font-family:var(--ui-font)}
+
+.card{
+  background:var(--ui-bg-1);border:1px solid var(--ui-border);border-radius:var(--ui-radius);
+  padding:14px 16px;
+}
+.card h3{margin:0 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ui-text-dim);font-weight:650}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){.g3,.g4{grid-template-columns:1fr}}
+.kpi{display:flex;flex-direction:column;gap:4px}
+.kpi .v{font-size:26px;font-weight:700;font-family:var(--ui-font);line-height:1}
+.kpi .l{font-size:11px;color:var(--ui-text-dim);text-transform:uppercase;letter-spacing:.07em}
+
+button.btn{
+  background:var(--ui-bg-3);border:1px solid var(--ui-border-strong);color:var(--ui-text);
+  border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-family:inherit;
+}
+button.btn:hover{background:var(--ui-active)}
+button.btn.primary{background:var(--ui-accent-dim);border-color:var(--ui-accent);color:#eef}
+button.btn.primary:hover{background:#47578c}
+button.btn.danger{color:var(--ui-red);border-color:#5a2730}
+button.btn.danger:hover{background:#2a1420}
+button.btn.sm{padding:3px 8px;font-size:11px}
+button.btn:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{
+  background:var(--ui-bg-2);border:1px solid var(--ui-border-strong);color:var(--ui-text);
+  border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;width:100%;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ui-accent)}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--ui-text-dim);letter-spacing:.04em}
+.chk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ui-text-dim)}
+.chk input{width:auto}
+
+.tag{
+  display:inline-block;font-size:10px;font-family:var(--ui-font);color:var(--ui-text-dim);
+  background:var(--ui-bg-3);border:1px solid var(--ui-border);border-radius:6px;padding:1px 7px;
+}
+.tag.g{color:var(--ui-green);border-color:#1f4b38}
+.tag.y{color:var(--ui-yellow);border-color:#4d3f1f}
+.tag.r{color:var(--ui-red);border-color:#5a2730}
+.tag.c{color:var(--ui-cyan);border-color:#1e4750}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ui-text-faint);padding:6px 8px;border-bottom:1px solid var(--ui-border)}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--ui-border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+
+/* ---------- kanban ---------- */
+.boards{display:flex;flex-direction:column;gap:16px}
+.board-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.column{background:var(--ui-bg-2);border:1px solid var(--ui-border);border-radius:var(--ui-radius);padding:10px;min-height:120px}
+.column h4{margin:0 0 8px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ui-text-dim)}
+.column h4 span{color:var(--ui-text-faint);font-family:var(--ui-font)}
+.ccard{
+  background:var(--ui-bg-1);border:1px solid var(--ui-border);border-left:3px solid var(--ui-accent);
+  border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:12.5px;
+}
+.ccard .cid{font-family:var(--ui-font);font-size:10px;color:var(--ui-text-faint)}
+.ccard .who{font-size:11px;color:var(--ui-text-dim);font-family:var(--ui-font)}
+
+/* ---------- run log ---------- */
+.log{
+  background:#07090d;border:1px solid var(--ui-border);border-radius:8px;
+  padding:10px 12px;font-family:var(--ui-font);font-size:11.5px;color:var(--ui-text-dim);
+  white-space:pre-wrap;word-break:break-word;max-height:260px;overflow-y:auto;
+}
+.log .lno{color:#39404f;margin-right:10px;user-select:none}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:50}
+.toast{
+  background:var(--ui-bg-3);border:1px solid var(--ui-border-strong);border-left:3px solid var(--ui-accent);
+  border-radius:8px;padding:9px 14px;font-size:12px;max-width:340px;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);animation:tin .18s ease-out;
+}
+.toast.err{border-left-color:var(--ui-red)}
+.toast.ok{border-left-color:var(--ui-green)}
+@keyframes tin{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+
+.empty{padding:26px;text-align:center;color:var(--ui-text-faint);border:1px dashed var(--ui-border-strong);border-radius:var(--ui-radius)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--ui-bg-4);border-top-color:var(--ui-accent);border-radius:50%;animation:rot .7s linear infinite;vertical-align:-2px}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+#ready-note{position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<div id="office" class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">m</div>
+      <div>
+        <div class="name">mem20</div>
+        <div class="sub" id="ver">command center</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button type="button" data-nav="office" id="t-office"><span class="dot"></span>Overview</button>
+      <button type="button" data-nav="kanban" id="t-kanban"><span class="dot"></span>Kanban</button>
+      <button type="button" data-nav="production" id="t-production"><span class="dot"></span>Production</button>
+      <div class="sep"></div>
+      <button type="button" data-nav="crewz" id="t-crewz"><span class="dot"></span>Crews</button>
+      <button type="button" data-nav="gamez" id="t-gamez"><span class="dot"></span>Gamez</button>
+      <button type="button" data-nav="fleet" id="t-fleet"><span class="dot"></span>Fleet</button>
+      <div class="sep"></div>
+      <button type="button" data-nav="systems" id="t-systems"><span class="dot"></span>Systems</button>
+      <button type="button" data-nav="ledger" id="t-ledger"><span class="dot"></span>Ledger</button>
+      <button type="button" data-nav="cron" id="t-cron"><span class="dot"></span>Cron</button>
+      <button type="button" data-nav="webhooks" id="t-webhooks"><span class="dot"></span>Webhooks</button>
+      <div class="sep"></div>
+      <button type="button" data-nav="chat" id="t-chat"><span class="dot"></span>Chat</button>
+      <button type="button" data-nav="settings" id="t-settings"><span class="dot"></span>Settings</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="row"><span>service</span><b data-f="svc">mem office</b></div>
+      <div class="row"><span>started</span><b data-f="up">--</b></div>
+      <div class="row"><span>status</span><b id="statusPill">--</b></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">Overview</h1>
+      <span class="crumb" id="pageCrumb">/office</span>
+      <span class="spacer"></span>
+      <span class="pill" id="pausePill" title="toggle paused">paused: <b>off</b></span>
+      <span class="pill" id="clock">--:--:--</span>
+    </header>
+    <main id="page"></main>
+  </div>
+</div>
+
+<div id="ready-note">mem20 client ready.</div>
+
+<script>
+window.MEM20_VERSION = "@VERSION@";
+window.MEM20_STARTED = @STARTED_UNIX@;
+window.MEM20_READY = "mem20 client ready.";
+</script>
+
+<script>
+"use strict";
+
+/* ============================================================ shell ==== */
+var $ = function (sel) { return document.querySelector(sel); };
+var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+var ESC = {};
+var entityMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+ESC = function (s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return entityMap[c]; });
+};
+function fmtTs(epoch) {
+  if (!epoch) return "";
+  var d = new Date(epoch * 1000);
+  function p(n) { return (n < 10 ? "0" : "") + n; }
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " +
+         p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+}
+function uptime() {
+  var s = Math.floor(Date.now() / 1000) - window.MEM20_STARTED;
+  if (!s || s < 0) return "--";
+  var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h + "h " + m + "m";
+}
+function api(path, opts) {
+  opts = opts || {};
+  var init = { method: opts.method || "GET", headers: { "Accept": "application/json" } };
+  if (opts.body !== undefined) {
+    init.method = "POST";
+    init.headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(opts.body);
+  }
+  return fetch(path, init).then(function (r) {
+    return r.json().catch(function () { return { ok: false, error: "bad json (" + r.status + ")" }; });
+  }).catch(function (e) {
+    return { ok: false, error: "network error: " + e.message };
+  });
+}
+function toast(msg, kind) {
+  var t = document.createElement("div");
+  t.className = "toast" + (kind === "err" ? " err" : kind === "ok" ? " ok" : "");
+  t.textContent = msg;
+  $("#toasts").appendChild(t);
+  setTimeout(function () { t.style.opacity = "0"; setTimeout(function () { t.remove(); }, 250); }, 4000);
+}
+function flashErr(res) { toast(res && res.error ? res.error : "request failed", "err"); }
+function statusDot(s) {
+  if (s === true || s === "active" || s === "running" || s === "live") return '<span class="dot-live"></span>';
+  if (s === false || s === "down" || s === "inactive" || s === "stopped" || s === "failed") return '<span class="dot-down"></span>';
+  return '<span class="dot-idle" style="background:var(--ui-text-faint);box-shadow:none"></span>';
+}
+function pillFor(s) {
+  if (s === "running") return '<span class="tag y">running</span>';
+  if (s === "done" || s === "completed" || s === "active" || s === "success") return '<span class="tag g">done</span>';
+  if (s === "failed" || s === "blocked" || s === "down" || s === "inactive") return '<span class="tag r">' + ESC(s) + "</span>";
+  if (s === "planned") return '<span class="tag c">planned</span>';
+  return '<span class="tag">' + ESC(s || "?") + "</span>";
+}
+function logLines(lines) {
+  if (!lines || !lines.length) return '<div class="empty">no output yet</div>';
+  var out = "";
+  lines.forEach(function (ln, i) {
+    out += '<span class="lno">' + (i + 1) + "</span>" + ESC(ln) + "\n";
+  });
+  return '<div class="log">' + out + "</div>";
+}
+
+/* ============================================================ nav ====== */
+var NAV = [
+  { id: "office", label: "Overview", crumb: "/office" },
+  { id: "kanban", label: "Kanban", crumb: "/kanban" },
+  { id: "production", label: "Production", crumb: "/production" },
+  { id: "crewz", label: "Crews", crumb: "/crewz" },
+  { id: "gamez", label: "Gamez", crumb: "/gamez" },
+  { id: "fleet", label: "Fleet", crumb: "/fleet" },
+  { id: "systems", label: "Systems", crumb: "/systems" },
+  { id: "ledger", label: "Ledger", crumb: "/ledger" },
+  { id: "cron", label: "Cron", crumb: "/cron" },
+  { id: "webhooks", label: "Webhooks", crumb: "/webhooks" },
+  { id: "chat", label: "Chat", crumb: "/chat" },
+  { id: "settings", label: "Settings", crumb: "/settings" },
+];
+var PAGES = {
+  office:    { title: "Overview",   render: renderOffice,    poll: 15000 },
+  kanban:    { title: "Kanban",     render: renderKanban,    poll: 20000 },
+  production:{ title: "Production", render: renderProduction,poll: 20000 },
+  crewz:     { title: "Crews",      render: renderCrewz,     poll: 5000 },
+  gamez:     { title: "Gamez",      render: renderGamez,     poll: 6000 },
+  fleet:     { title: "Fleet",      render: renderFleet,     poll: 20000 },
+  systems:   { title: "Systems",    render: renderSystems,   poll: 15000 },
+  ledger:    { title: "Ledger",     render: renderLedger,    poll: 10000 },
+  cron:      { title: "Cron",       render: renderCron,      poll: 30000 },
+  webhooks:  { title: "Webhooks",   render: renderWebhooks,  poll: 0 },
+  chat:      { title: "Chat",       render: renderChat,      poll: 0 },
+  settings:  { title: "Settings",   render: renderSettings,  poll: 30000 },
+};
+var current = "office";
+var timer = null;
+
+function buildNav() {
+  $("#nav").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button[data-nav]");
+    if (b) location.hash = "#/" + b.getAttribute("data-nav");
+  });
+}
+function route() {
+  var h = (location.hash || "#/office").replace(/^#\//, "").split("?")[0];
+  if (h.indexOf("fleet/") === 0) return h;
+  return PAGES[h] ? h : "office";
+}
+function clockTick() {
+  var d = new Date();
+  function p(n) { return (n < 10 ? "0" : "") + n; }
+  $("#clock").textContent = p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  $('[data-f="up"]').textContent = uptime();
+  $('[data-f="svc"]').textContent = "mem office";
+}
+function show() {
+  var id = route();
+  if (id === current && $("#page").dataset.rendered === "y") return;
+  current = id;
+  var navKey = id.indexOf("fleet/") === 0 ? "fleet" : id;
+  $$("#nav button").forEach(function (b) {
+    b.classList.toggle("active", b.getAttribute("data-nav") === navKey);
+  });
+  if (id.indexOf("fleet/") === 0) {
+    var nm = id.split("/")[1];
+    $("#pageTitle").textContent = "Fleet";
+    $("#pageCrumb").textContent = "/fleet/" + nm;
+    $("#page").dataset.rendered = "y";
+    if (timer) { clearTimeout(timer); timer = null; }
+    renderFleetDeep(nm);
+    return;
+  }
+  $("#pageTitle").textContent = PAGES[id].title;
+  $("#pageCrumb").textContent = PAGES[id].crumb;
+  $("#page").dataset.rendered = "y";
+  if (timer) { clearTimeout(timer); timer = null; }
+  PAGES[id].render();
+  if (PAGES[id].poll) {
+    timer = setTimeout(function () {
+      if (route() === id) PAGES[id].render();
+    }, PAGES[id].poll);
+  }
+}
+function busy(fn) {
+  var p = $("#page");
+  p.classList.add("busy");
+  var r = fn();
+  if (r && typeof r.finally === "function") r.finally(function () { p.classList.remove("busy"); });
+  else p.classList.remove("busy");
+  return r;
+}
+
+/* ====================================================== overview ======= */
+function renderOffice() {
+  busy(Promise.all([api("/office"), api("/kanban"), api("/sessions")]).then(function (rs) {
+    var b = rs[0], k = rs[1], s = rs[2];
+    var st = b.status || {};
+    var prod = st.production;
+    var boards = (k.boards && k.boards.length) ? k.boards.length : 0;
+    var cards = 0;
+    (k.boards || []).forEach(function (bo) { cards += (bo.cards || []).length; });
+    var sess = (s.sessions && s.sessions.length) ? s.sessions.length : 0;
+    var cronJobs = (b.cron || []).length;
+    var ledgerN = (b.ledger || []).length;
+    $("#page").innerHTML =
+      '<div class="grid g4">' +
+      '  <div class="card kpi"><div class="v" style="color:var(--ui-text)">' + (prod ? "LIVE" : "off") + "</div><div class=\"l\">production " + statusDot(prod) + "</div></div>" +
+      '  <div class="card kpi"><div class="v">' + boards + "</div><div class=\"l\">boards / " + cards + " cards</div></div>" +
+      '  <div class="card kpi"><div class="v">' + sess + "</div><div class=\"l\">sessions</div></div>" +
+      '  <div class="card kpi"><div class="v">' + cronJobs + "</div><div class=\"l\">cron jobs /" + ledgerN + " ledger</div></div>" +
+      "</div>" +
+      '<div class="grid g2" style="margin-top:14px">' +
+      '  <div class="card"><h3>ledger (recent)</h3><div id="ledMini"></div></div>' +
+      '  <div class="card"><h3>cron schedule</h3><div id="cronMini"></div></div>' +
+      "</div>" +
+      '<div class="card" style="margin-top:14px"><h3>production phases</h3><div id="phasesMini"></div></div>';
+    var led = (b.ledger || []).slice(-10).reverse();
+    $("#ledMini").innerHTML = led.length
+      ? '<table class="tbl">' + led.map(function (e) {
+          return "<tr><td>" + ESC(e.ts || "") + "</td><td class=\"faint\">" + ESC(e.tag || "") + "</td><td>" + ESC(String(e.content || e.text || "").slice(0, 90)) + "</td></tr>";
+        }).join("") + "</table>"
+      : '<div class="empty">no ledger entries yet</div>';
+    $("#cronMini").innerHTML = (b.cron || []).length
+      ? '<table class="tbl">' + b.cron.map(function (j) {
+          return "<tr><td><b>" + ESC(j.name) + "</b></td><td class=\"mono\">" + ESC(j.schedule || "") + "</td><td>" + pillFor(j.last_status) + "</td></tr>";
+        }).join("") + "</table>"
+      : '<div class="empty">no cron jobs configured</div>';
+    var phases = (b.projects && b.projects.length) ? b.projects[0].phases
+                : (st.phases) ? st.phases : [];
+    $("#phasesMini").innerHTML = (phases && phases.length)
+      ? '<table class="tbl">' + phases.map(function (ph) {
+          return "<tr><td>" + ESC(ph.id || ph.name || "") + "</td><td>" + ESC(ph.name || "") + "</td><td>" + pillFor(ph.status || ph.state) + "</td><td class=\"faint\">" + ESC(ph.detail || "") + "</td></tr>";
+        }).join("") + "</table>"
+      : '<div class="empty">no production phases recorded</div>';
+    // 404-proof live liveness pill
+    api("/status").then(function (s2) {
+      var on = s2.status !== undefined && s2.status !== false;
+      $("#statusPill").innerHTML = (on ? '<span class="dot-live"></span>' : '<span class="dot-idle"></span>') + ESC(s2.service || "mem office");
+    }).catch(function () { $("#statusPill").textContent = "offline"; });
+  })).catch(flashErr);
+}
+
+/* ======================================================== kanban ======= */
+var KANBAN_ORDER = ["backlog", "in-progress", "review", "done", "Queue", "In Progress", "Review", "Done"];
+function kanbanCols(board) {
+  var statuses = [];
+  (board.cards || []).forEach(function (c) { if (statuses.indexOf(c.status) < 0) statuses.push(c.status); });
+  statuses.sort(function (a, b) {
+    var ia = KANBAN_ORDER.indexOf(a), ib = KANBAN_ORDER.indexOf(b);
+    if (ia < 0) ia = 99; if (ib < 0) ib = 99;
+    return ia - ib;
+  });
+  return statuses.length ? statuses : ["backlog"];
+}
+function renderKanban() {
+  busy(api("/kanban").then(function (k) {
+    if (!k.ok) throw new Error(k.error || "ledger down");
+    $("#page").innerHTML =
+      '<div class="row wrap" style="margin-bottom:14px">' +
+      '  <div class="card grow"><h3>create board</h3><div class="row wrap">' +
+      '    <input id="nbName" placeholder="board name" style="max-width:200px">' +
+      '    <input id="nbCols" placeholder="columns (comma separated, optional)" style="max-width:280px">' +
+      '    <button class="btn primary" id="kCreate">create</button>' +
+      "  </div></div>" +
+      '  <div class="card grow"><h3>add card</h3><div class="row wrap">' +
+      '    <select id="kcBoard" style="max-width:160px"></select>' +
+      '    <input id="kcTitle" placeholder="card title" style="max-width:240px">' +
+      '    <input id="kcAsg" placeholder="assignee" style="max-width:120px">' +
+      '    <button class="btn primary" id="kAdd">add</button>' +
+      "  </div></div>" +
+      "</div>" +
+      '<div id="kanbanBoards"></div>';
+    var sel = $("#kcBoard");
+    (k.boards || []).forEach(function (b) {
+      var o = document.createElement("option");
+      o.value = b.name; o.textContent = b.name; sel.appendChild(o);
+    });
+    if (!k.boards.length) $("#kanbanBoards").outerHTML = '<div class="empty">no boards yet — create one above</div>';
+    else $("#kanbanBoards").innerHTML = k.boards.map(function (b) {
+      var cols = kanbanCols(b);
+      var colsHtml = cols.map(function (col) {
+        var cs = (b.cards || []).filter(function (c) { return c.status === col; });
+        return '<div class="column" data-col="' + ESC(col) + '"><h4>' + ESC(col) + ' <span>(' + cs.length + ")</span></h4>" +
+          cs.map(function (c) {
+            return '<div class="ccard"><div class="row wrap" style="gap:6px"><b class="grow">' + ESC(c.title) + "</b>" +
+              (c.assignee ? '<span class="tag">' + ESC(c.assignee) + "</span>" : "") +
+              "</div><div class=\"row\"><span class=\"cid grow\">" + ESC(c.id || "") + "</span>" +
+              '<select class="mv" data-mv data-board="' + ESC(b.name) + '" data-id="' + ESC(c.id) + '" style="width:auto;font-size:10px;padding:2px 6px">' +
+              cols.map(function (cc) { return '<option' + (cc === col ? " selected" : "") + ">" + ESC(cc) + "</option>"; }).join("") +
+              "</select></div></div>";
+          }).join("") || '<div class="empty" style="border:none;padding:12px;font-size:11px">empty</div>' +
+          "</div>";
+      }).join("");
+      return '<div class="board-h"><h2 style="margin:0;font-size:15px">' + ESC(b.name) + "</h2>" +
+             '<button class="btn danger sm" data-del data-board="' + ESC(b.name) + '">delete</button></div>' +
+             '<div class="columns">' + colsHtml + "</div>";
+    }).join("");
+  })).then(bindKanban).catch(flashErr);
+}
+function bindKanban() {
+  var create = $("#kCreate");
+  if (create) create.addEventListener("click", function () {
+    var name = $("#nbName").value.trim();
+    var cols = $("#nbCols").value.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!name) return toast("board name required", "err");
+    api("/kanban/boards", { body: { name: name, columns: cols.length ? cols : undefined } })
+      .then(function (r) { toast(r.ok ? "board created" : r.error, r.ok ? "ok" : "err"); renderKanban(); })
+      .catch(flashErr);
+  });
+  var add = $("#kAdd");
+  if (add) add.addEventListener("click", function () {
+    var board = $("#kcBoard").value, title = $("#kcTitle").value.trim(), asg = $("#kcAsg").value.trim();
+    if (!board || !title) return toast("board and title required", "err");
+    api("/kanban/tasks", { body: { board: board, title: title, assignee: asg } })
+      .then(function (r) { toast(r.ok ? "card added" : r.error, r.ok ? "ok" : "err"); renderKanban(); })
+      .catch(flashErr);
+  });
+  $$("#page .mv").forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      api("/kanban/move", { body: { board: sel.dataset.board, task_id: sel.dataset.id, target: sel.value } })
+        .then(function (r) { if (r.ok) renderKanban(); else flashErr(r); })
+        .catch(flashErr);
+    });
+  });
+  $$("#page [data-del]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!confirm("delete board " + b.dataset.board + "?")) return;
+      api("/kanban/boards/delete", { body: { name: b.dataset.board } })
+        .then(function (r) { toast(r.ok ? "deleted" : r.error, r.ok ? "ok" : "err"); renderKanban(); })
+        .catch(flashErr);
+    });
+  });
+}
+
+/* ====================================================== production ===== */
+function renderProduction() {
+  busy(Promise.all([api("/production"), api("/specs")]).then(function (rs) {
+    var p = rs[0], sp = rs[1];
+    var specs = (sp.specs || []);
+    var runs = p.builds || [];
+    $("#page").innerHTML =
+      '<div class="grid g2">' +
+      '  <div class="card"><h3>status</h3>' +
+      '    <div class="row"><b>' + ESC(p.status) + "</b>" + statusDot(p.status) + "<span class=\"mono faint\">" + ESC(p.message || p.detail || "") + "</span></div>" +
+      '    <div class="row" style="margin-top:8px"><span class="faint">builds recorded:</span><b class="mono">' + runs.length + "</b></div>" +
+      "  </div>" +
+      '  <div class="card"><h3>launchable specs</h3>' +
+      (specs.length ? specs.map(function (s) {
+        return '<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--ui-border)">' +
+          "<div><b>" + ESC(s.name) + '</b><div class="faint mono" style="font-size:10px">phases: ' + ESC((s.phases || []).join(" → ")) + "</div></div>" +
+          '<button class="btn primary sm" data-run data-name="' + ESC(s.name) + '">run</button></div>';
+      }).join("") : '<div class="empty">no pipeline specs found</div>') +
+      "  </div></div>" +
+      '<div class="card" style="margin-top:14px"><h3>pipeline phases</h3><div id="prodPhases"></div></div>';
+    $("#prodPhases").innerHTML = (p.phases && p.phases.length)
+      ? '<table class="tbl">' + p.phases.map(function (ph) {
+          return "<tr><td><b>" + ESC(ph.id || ph.phase || "") + "</b></td><td>" + ESC(ph.name || "") + "</td><td>" + pillFor(ph.status) + "</td><td class=\"faint\">" + ESC(ph.detail || ph.seconds || "") + "</td></tr>";
+        }).join("") + "</table>"
+      : '<div class="empty">no pipeline state</div>';
+    $$("#page [data-run]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        b.disabled = true; b.textContent = "running...";
+        api("/production/run", { body: { name: b.dataset.name } })
+          .then(function (r) {
+            if (r.ok === true && r.result) toast("launched: " + String(r.result), "ok");
+            else toast(r.error || "launched (background)", r.ok === false ? "err" : "ok");
+            renderProduction();
+          })
+          .catch(function (e) { flashErr(e); renderProduction(); });
+      });
+    });
+  })).catch(flashErr);
+}
+
+/* ========================================================== crewz ======= */
+function renderCrewz() {
+  busy(api("/crewz").then(function (c) {
+    if (!c.ok) throw new Error(c.error || "crewz down");
+    $("#page").innerHTML =
+      '<div class="card" style="margin-bottom:14px"><h3>launch crew (mem20crewz)</h3>' +
+      '  <div class="row wrap" style="gap:10px">' +
+      '    <label class="f grow" style="min-width:240px">topic<input id="czTopic" value="mem20 command center"></label>' +
+      '    <label class="f" style="min-width:150px">backend' +
+      '      <select id="czReal"><option value="1">real (loads model weights, slow)</option><option value="0">demo (deterministic, instant)</option></select></label>' +
+      '    <div style="align-self:flex-end"><button class="btn primary" id="czRun">run crew</button></div>' +
+      "  </div>" +
+      '  <div class="faint" style="font-size:10.5px;margin-top:6px">runs as <span class="mono">python -m mem20crewz demo [--real] --topic "&lt;topic&gt;"</span> from /opt/mem20; outputs stream to the run log.</div>' +
+      "</div>" +
+      '<div class="grid g2">' +
+      '  <div class="card"><h3>roadmaps <span class="faint">(' + (c.roadmaps.length) + ")</span></h3><div id=\"czRoads\"></div></div>" +
+      '  <div class="card"><h3>a2a peers</h3><div id="czPeers"></div></div>' +
+      "</div>" +
+      '<div class="card" style="margin-top:14px"><h3>runs</h3><div id="czRuns"></div></div>';
+    $("#czRoads").innerHTML = c.roadmaps.length
+      ? c.roadmaps.map(function (r) {
+          var st = r.statuses || {};
+          return '<div style="padding:8px 0;border-bottom:1px solid var(--ui-border)">' +
+            '<div class="row wrap"><b class="grow">' + ESC(r.name) + "</b>" +
+            '<span class="faint mono" style="font-size:10px">' + fmtTs(r.updated) + "</span></div>" +
+            '<div class="row wrap" style="gap:6px;margin-top:4px">' +
+            ["planned", "in_progress", "completed", "blocked"].map(function (s) {
+              return (st[s] ? '<span class="tag' + (s === "in_progress" ? " y" : s === "completed" ? " g" : s === "blocked" ? " r" : " c") + '">' + s.replace("_", " ") + ": " + st[s] + "</span>" : "");
+            }).join("") + "</div>" +
+            (r.phases.length ? '<div class="faint mono" style="font-size:10px;margin-top:3px">' +
+              r.phases.slice(-4).map(function (e) { return e.phase + "=" + (e.status || "planned"); }).join(" · ") + "</div>" : "") +
+            "</div>";
+        }).join("")
+      : '<div class="empty">no roadmaps on disk</div>';
+    $("#czPeers").innerHTML = c.peers.length
+      ? '<table class="tbl">' + c.peers.map(function (p) {
+          return "<tr><td>" + ESC(p.name) + '</td><td class="mono faint">' + ESC(p.url) + "</td></tr>";
+        }).join("") + "</table>"
+      : '<div class="empty">no a2a peers registered</div>';
+    $("#czRuns").innerHTML = c.runs.length ? renderRuns(c.runs) : '<div class="empty">no crew runs yet — launch one above</div>';
+    $("#czRun").addEventListener("click", function () {
+      var topic = $("#czTopic").value.trim(), real = $("#czReal").value === "1";
+      if (!topic) return toast("topic required", "err");
+      api("/crewz/run", { body: { topic: topic, real: real } })
+        .then(function (r) { toast(r.ok ? "crew running (" + r.run_id + ")" : r.error, r.ok ? "ok" : "err"); if (r.ok) renderCrewz(); else flashErr(r); })
+        .catch(flashErr);
+    });
+  })).catch(flashErr);
+}
+function renderRuns(runs) {
+  return '<table class="tbl">' +
+    '<tr><th>run</th><th>status</th><th>started</th><th>log tail</th></tr>' +
+    runs.map(function (r) {
+      return "<tr>" +
+        '<td class="mono"><b>' + ESC(r.run_id) + "</b><div class=\"faint\" style=\"font-size:10px\">" + ESC(r.cmd ? r.cmd.slice(0, 4).join(" ") : "") + " " + ESC(new Date(r.started * 1000).toISOString()) + "</div></td>" +
+        "<td>" + pillFor(r.status) + (r.summary && r.summary.rc !== undefined ? '<div class="faint mono" style="font-size:10px">rc=' + r.summary.rc + " · " + r.summary.duration_s + "s</div>" : "") + "</td>" +
+        '<td class="mono" style="white-space:nowrap">' + fmtTs(r.started) + "</td>" +
+        "<td>" + (r.summary && r.summary.tail && !r.summary.tail.length <= 0 ? "" : "") + (r.tail && r.tail.length ? logLines(r.tail.slice(-12)) : '<div class="empty" style="border:none;padding:8px">no output</div>') + "</td>" +
+        "</tr>";
+    }).join("") + "</table>";
+}
+
+/* ========================================================== gamez ======= */
+function renderGamez() {
+  busy(api("/gamez").then(function (g) {
+    if (!g.ok) throw new Error(g.error || "gamez down");
+    $("#page").innerHTML =
+      '<div class="card" style="margin-bottom:14px"><h3>train agent (mem20gamez)</h3>' +
+      '  <div class="row wrap" style="gap:10px">' +
+      '    <label class="f" style="min-width:180px">environment<select id="gzEnv">' +
+          g.environments.map(function (e) { return '<option' + (e === "CartPole-v1" ? " selected" : "") + ">" + ESC(e) + "</option>"; }).join("") +
+      "      </select></label>" +
+      '    <label class="f">agent<select id="gzAgent"><option value="dqn">dqn</option><option value="random">random</option></select></label>' +
+      '    <label class="f">episodes<input id="gzEp" type="number" value="20" min="1" max="500" style="width:90px"></label>' +
+      '    <label class="f">max steps<input id="gzSteps" type="number" value="1000" min="1" max="10000" style="width:90px"></label>' +
+      '    <div style="align-self:flex-end"><button class="btn primary" id="gzTrain">train</button></div>' +
+      "  </div>" +
+      '  <div class="faint" style="font-size:10.5px;margin-top:6px">gymnasium 1.3.0 · runs as <span class="mono">python -m mem20gamez train --env &lt;env&gt; --agent &lt;agent&gt; ...</span> from /opt/mem20/mem20gamez</div>' +
+      "</div>" +
+      '<div class="card"><h3>runs</h3><div id="gzRuns"></div></div>';
+    $("#gzRuns").innerHTML = g.runs.length ? renderRuns(g.runs) : '<div class="empty">no training runs yet — train one above</div>';
+    $("#gzTrain").addEventListener("click", function () {
+      var env = $("#gzEnv").value, agent = $("#gzAgent").value;
+      var ep = parseInt($("#gzEp").value, 10) || 20, ms = parseInt($("#gzSteps").value, 10) || 1000;
+      api("/gamez/train", { body: { env: env, agent: agent, episodes: ep, max_steps: ms } })
+        .then(function (r) { toast(r.ok ? "training started (" + r.run_id + ")" : r.error, r.ok ? "ok" : "err"); if (r.ok) renderGamez(); else flashErr(r); })
+        .catch(flashErr);
+    });
+  })).catch(flashErr);
+}
+
+/* ========================================================= systems ====== */
+function renderSystems() {
+  busy(api("/systems").then(function (s) {
+    if (!s.ok) throw new Error(s.error || "systems down");
+    $("#page").innerHTML =
+      '<div class="grid g2">' +
+      '  <div class="card"><h3>systemd services</h3>' +
+      '    <table class="tbl">' + s.services.map(function (sv) {
+        return "<tr><td>" + statusDot(sv.state) + " &nbsp;" + ESC(sv.unit) + '</td><td class="right">' + pillFor(sv.state) + "</td></tr>";
+      }).join("") + "</table></div>" +
+      '  <div class="card"><h3>companion services</h3>' +
+      '    <table class="tbl">' + s.companions.map(function (c) {
+        return "<tr><td>" + statusDot(c.up) + ' &nbsp;<a href="' + ESC(c.url) + '" target="_blank" rel="noopener">' + ESC(c.name) + '</a></td><td class="mono faint">' + c.port + '</td><td class="right">' + (c.up ? '<span class="tag g">up</span>' : '<span class="tag r">down</span>') + "</td></tr>";
+      }).join("") + "</table></div>" +
+      "</div>" +
+      '<div class="card" style="margin-top:14px"><h3>fleet</h3>' +
+      (s.fleet && s.fleet.length
+        ? '<table class="tbl">' + s.fleet.map(function (f) {
+           return "<tr><td>" + statusDot(f.active || f.enabled) + " &nbsp;<b>" + ESC(f.name) + "</b></td><td>" + ESC(f.role || f.package || "") + "</td><td class=\"right\">" + ((f.active || f.enabled) ? '<span class="tag g">active</span>' : '<span class="tag">idle</span>') + "</td></tr>";
+          }).join("") + "</table>"
+        : '<div class="empty">fleet registry empty</div>') +
+      "</div>";
+  })).catch(flashErr);
+}
+
+/* ========================================================== fleet ======= */
+function renderFleet() {
+  busy(api("/fleet").then(function (d) {
+    if (!d.ok) throw new Error(d.error || "fleet inventory down");
+    var items = d.fleet || [];
+    var total = (d.total || items.length);
+    $("#page").innerHTML =
+      '<div class="card"><h3>fleet <span class="faint">' + total + " systems — every absorbed framework, built as mem20</span></h3>" +
+      '<div class="grid g2" style="margin-top:10px">' + items.sort(function (a, b) {
+        return b.loc - a.loc;
+      }).map(function (f) {
+        var id = encodeURIComponent(f.name);
+        return '<div class="card" style="margin:0">' +
+          '<div class="row" style="align-items:center"><b>' + ESC(f.name) + "</b>" +
+          "<span class=\"tag\">" + ESC(f.kind) + "</span>" +
+          '<span class="tag c">' + ESC(String(f.loc)) + " LOC</span>" +
+          (f.version ? '<span class="tag">v' + ESC(f.version) + "</span>" : "") +
+          "</div>" +
+          '<p class="faint" style="margin:8px 0">' + ESC(f.description || "no description") + "</p>" +
+          (f.commands && f.commands.length ? '<div class="chips">' + f.commands.slice(0, 6).map(function (c) {
+            return '<span class="chip mono">' + ESC(c) + "</span>";
+          }).join("") + "</div>" : "") +
+          '<div style="margin-top:10px"><a class="btn sm" href="#/fleet/' + id + '">open system</a> &nbsp;<span class="mono faint">' + ESC(f.package_dir) + "</span></div>" +
+          "</div>";
+      }).join("") + "</div></div>";
+  })).catch(flashErr);
+}
+
+function renderFleetDeep(nm) {
+  busy(api("/fleet/" + encodeURIComponent(nm)).then(function (d) {
+    if (!d.ok) throw new Error(d.error || "unknown system");
+    var f = d.fleet[0];
+    var links = "";
+    if (f.name.indexOf("gamez") !== -1) links += '<a class="btn sm" href="#/gamez">game page</a> ';
+    if (f.name.indexOf("crewz") !== -1) links += '<a class="btn sm" href="#/crewz">crews page</a> ';
+    if (f.name.indexOf("owebz") !== -1) links += '<a class="btn sm" href="http://127.0.0.1:3000" target="_blank" rel="noopener">chat ui</a> ';
+    if (f.name === "mem20agentz") links += '<a class="btn sm" href="#/systems">systems</a> <a class="btn sm" href="#/settings">settings</a> ';
+    $("#page").innerHTML =
+      '<div class="card"><a href="#/fleet" class="faint">&larr; all systems</a>' +
+      '<div class="row" style="align-items:center;margin-top:8px"><h3 style="margin:0">' + ESC(f.name) + "</h3>" +
+      "<span class=\"tag\">" + ESC(f.kind) + "</span>" +
+      '<span class="tag c">' + ESC(String(f.loc)) + " LOC</span>" +
+      (f.version ? '<span class="tag">v' + ESC(f.version) + "</span>" : "") +
+      (f.languages ? '<span class="tag">' + ESC(f.languages.join("+")) + "</span>" : "") +
+      "</div>" +
+      '<p>' + ESC(f.description || "no description") + "</p>" +
+      '<div class="row">' + links + '<a class="btn sm" href="#/fleet">back to fleet</a></div>' +
+      "</div>" +
+      '<div class="grid g2" style="margin-top:14px">' +
+      '<div class="card"><h3>commands</h3>' +
+      (f.commands && f.commands.length
+        ? '<div class="chips">' + f.commands.map(function (c) {
+            return '<button class="chip btn" data-cp="' + ESC(c) + '">' + ESC(c) + "</button>";
+          }).join("") + "</div>"
+        : '<div class="empty">no cli subcommands discovered for this component</div>') +
+      "</div>" +
+      '<div class="card"><h3>package</h3>' +
+      '<table class="tbl"><tr><td>source</td><td class="mono">' + ESC(f.package_dir) + "</td></tr>" +
+      "<tr><td>lines</td><td>" + f.loc + "</td></tr>" +
+      "<tr><td>state</td><td>" + pillFor(f.state) + "</td></tr></table>" +
+      "</div>" +
+      "</div>" +
+      '<div class="card" style="margin-top:14px"><h3>modules <span class="faint">(real source files)</span></h3>' +
+      (f.modules && f.modules.length
+        ? '<div class="grid g3">' + f.modules.map(function (m) {
+            return '<div class="mono faint" style="padding:2px 4px;border:1px solid var(--ui-border);border-radius:6px">' + ESC(m) + "</div>";
+          }).join("") + "</div>"
+        : '<div class="empty">no source modules scanned</div>') +
+      "</div>";
+    $$("#page [data-cp]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var e = b.dataset.cp;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText("/opt/mem20/" + f.package_dir.replace("/opt/mem20/", "") + " && python -m " + f.name + " " + e)
+            .then(function () { toast("command copied: " + e, "ok"); })
+            .catch(function () { toast(e, "ok"); });
+        } else { toast(e, "ok"); }
+      });
+    });
+  })).catch(flashErr);
+}
+
+/* ========================================================== ledger ====== */
+function renderLedger() {
+  busy(api("/ledger?k=250").then(function (d) {
+    var entries = d.entries || [];
+    $("#page").innerHTML =
+      '<div class="card"><h3>ledger <span class="faint">(mem20 ledger, newest first)</span></h3>' +
+      (entries.length
+        ? '<table class="tbl">' + entries.map(function (e) {
+            return "<tr><td class=\"mono faint\" style=\"white-space:nowrap\">" + ESC(e.ts || "") + "</td><td><span class=\"tag\">" + ESC(e.tag || "") + "</span></td><td>" + ESC(String(e.content || e.text || "")) + "</td></tr>";
+          }).join("") + "</table>"
+        : '<div class="empty">ledger empty</div>') +
+      "</div>";
+  })).catch(flashErr);
+}
+
+/* =========================================================== cron ======= */
+function renderCron() {
+  busy(api("/cron").then(function (c) {
+    if (c.ok !== true) throw new Error(c.error || "cron down");
+    var jobs = c.jobs || [];
+    $("#page").innerHTML =
+      '<div class="card"><h3>cron schedule</h3>' +
+      (jobs.length
+        ? '<table class="tbl">' + jobs.map(function (j) {
+            return "<tr><td><b>" + ESC(j.name) + "</b></td>" +
+              '<td class="mono">' + ESC(j.schedule || "") + "</td>" +
+              "<td>" + ESC(j.type || "") + "</td>" +
+              '<td class="mono faint">next: ' + ESC(j.next_run || "") + "</td>" +
+              '<td class="right"><button class="btn sm" data-cron data-name="' + ESC(j.name) + '">run now</button></td></tr>';
+          }).join("") + "</table>"
+        : '<div class="empty">no cron jobs configured — add one via settings or the gateway</div>') +
+      "</div>";
+    $$("#page [data-cron]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        api("/cron/run", { body: { name: b.dataset.name } })
+          .then(function (r) { toast(r.ok ? "ran " + r.name + " → " + r.result : r.error, r.ok ? "ok" : "err"); renderCron(); })
+          .catch(flashErr);
+      });
+    });
+  })).catch(flashErr);
+}
+
+/* ======================================================== webhooks ====== */
+function renderWebhooks() {
+  busy(api("/webhooks").then(function (w) {
+    var routes = (w.routes || []);
+    $("#page").innerHTML =
+      '<div class="card" style="margin-bottom:14px"><h3>deliver webhook (dispatch to handler or ledger)</h3>' +
+      '  <div class="row wrap" style="gap:10px">' +
+      '    <label class="f" style="min-width:200px">route<input id="whRoute" value="sample"></label>' +
+      '    <label class="f grow">json body<textarea id="whBody" rows="2">{"hello":"mem20"}</textarea></label>' +
+      '    <div style="align-self:flex-end"><button class="btn primary" id="whFire">fire</button></div>' +
+      "  </div></div>" +
+      '<div class="card"><h3>registered routes</h3>' +
+      (routes.length ? routes.map(function (r) { return '<div class="mono" style="padding:6px 0;border-bottom:1px solid var(--ui-border)">' + ESC(r) + "</div>"; }).join("") : '<div class="empty">no handlers registered (deliveries are logged to the ledger)</div>') +
+      "</div>";
+    $("#whFire").addEventListener("click", function () {
+      var route = $("#whRoute").value.trim(), body = $("#whBody").value.trim();
+      if (!route) return toast("route required", "err");
+      var parsed;
+      try { parsed = JSON.parse(body || "{}"); } catch (e) { return toast("body must be valid JSON", "err"); }
+      api("/webhooks/fire", { body: { route: route, body: parsed } })
+        .then(function (r) { toast(r.ok ? "delivered to " + r.route : ("no handler for " + r.route + " — logged"), r.ok ? "ok" : "err"); })
+        .catch(flashErr);
+    });
+  })).catch(flashErr);
+}
+
+/* =========================================================== chat ======= */
+var chatBusy = false;
+var transcript = [];
+function renderChat() {
+  $("#page").innerHTML =
+    '<div class="card" style="height:calc(100vh - 130px);display:flex;flex-direction:column">' +
+    '  <h3>office chat · session prefix "web:"</h3>' +
+    '  <div id="chatLog" class="log" style="flex:1;max-height:none;margin-bottom:10px"></div>' +
+    '  <div class="row" style="gap:8px">' +
+    '    <input id="chatIn" placeholder="ask mem office…" style="flex:1">' +
+    '    <button class="btn primary" id="chatSend">send</button>' +
+    "  </div></div>";
+  var log = $("#chatLog");
+  log.innerHTML = transcript.map(function (m) {
+    return '<div style="margin:2px 0"><b style="color:var(--ui-accent)">' + ESC(m.role) + "</b> " + ESC(m.text) + "</div>";
+  }).join("") || '<div class="empty" style="border:none;padding:10px">mem20 client ready. — say hello.</div>';
+  log.scrollTop = log.scrollHeight;
+  var inp = $("#chatIn");
+  var send = function () {
+    var msg = inp.value.trim();
+    if (!msg || chatBusy) return;
+    inp.value = "";
+    chatBusy = true;
+    transcript.push({ role: "you", text: msg });
+    renderChat();
+    api("/chat", { body: { message: msg } }).then(function (r) {
+      chatBusy = false;
+      if (r.ok) transcript.push({ role: "mem20", text: r.reply });
+      else transcript.push({ role: "mem20", text: "[error] " + (r.error || "no reply") });
+      renderChat();
+    }).catch(function (e) {
+      chatBusy = false;
+      transcript.push({ role: "mem20", text: "[network error] " + e.message });
+      renderChat();
+    });
+  };
+  $("#chatSend").addEventListener("click", send);
+  inp.addEventListener("keydown", function (ev) { if (ev.key === "Enter") send(); });
+  inp.focus();
+}
+
+/* ======================================================== settings ====== */
+function renderSettings() {
+  busy(Promise.all([api("/settings"), api("/status")]).then(function (rs) {
+    var s = rs[0], st = rs[1];
+    $("#page").innerHTML =
+      '<div class="grid g2">' +
+      '  <div class="card"><h3>service</h3>' +
+      '    <div class="row"><b>' + ESC(st.service || "mem office") + "</b>" + statusDot(st.status) + "</div>" +
+      '    <div class="faint mono" style="margin-top:6px;font-size:11px">' + (st.version ? "v" + ESC(st.version) : "") + "</div>" +
+      "  </div>" +
+      '  <div class="card"><h3>subsystems</h3>' +
+      (s.subsystems && Object.keys(s.subsystems).length
+        ? Object.keys(s.subsystems).map(function (k) {
+            var v = s.subsystems[k];
+            var on = v === true || (v && (v.enabled === true || v.active === true || v.ready === true));
+            return '<div class="row wrap" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--ui-border)">' +
+              "<b>" + ESC(k) + "</b>" + (on ? '<span class="tag g">on</span>' : '<span class="tag">' + ESC(String(v).slice(0, 20)) + "</span>") + "</div>";
+          }).join("")
+        : '<div class="empty">no subsystems reported</div>') +
+      "  </div></div>" +
+      '<div class="grid g2" style="margin-top:14px">' +
+      '  <div class="card"><h3>fleet</h3>' +
+      (s.fleet && s.fleet.length
+        ? '<table class="tbl">' + s.fleet.map(function (f) {
+            return "<tr><td><b>" + ESC(f.name) + "</b></td><td class=\"faint\">" + ESC(f.role || "") + "</td><td class=\"right\">" + ((f.active || f.enabled) ? '<span class="tag g">active</span>' : '<span class="tag">idle</span>') + "</td></tr>";
+          }).join("") + "</table>"
+        : '<div class="empty">fleet empty</div>') +
+      "  </div>" +
+      '  <div class="card"><h3>braid / json</h3><pre class="log" style="max-height:260px">' + ESC(JSON.stringify(s.braid || {}, null, 2).slice(0, 800)) + "</pre></div>" +
+      "</div>";
+  })).catch(flashErr);
+}
+
+/* ====================================================== boot ============ */
+buildNav();
+$("#ver").textContent = "command center · v" + (window.MEM20_VERSION || "?");
+window.addEventListener("hashchange", show);
+setInterval(clockTick, 1000); clockTick();
+api("/health").then(function (h) {
+  $("#statusPill").innerHTML = '<span class="dot-live"></span>' + ESC(h.service || "mem office");
+  if (h.service === "mem office") $("#ver").textContent = "command center · v" + (h.version || "");
+}).catch(function () { $("#statusPill").innerHTML = '<span class="dot-down"></span>offline'; });
+api("/status").then(function (st) {
+  var paused = !!(st.paused || st.status === false);
+  $("#pausePill").innerHTML = "paused: <b>" + (paused ? "off?" : "off") + "</b>";
+});
+show();
+console.log(window.MEM20_READY);
+</script>
+</body>
+</html>

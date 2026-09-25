@@ -1,0 +1,59 @@
+{
+  "Boot": {
+    "name": "Boot Scene",
+    "description": "Initial loading sequence - initializes all managers",
+    "prefabs": [],
+    "lighting": "main_menu",
+    "managers": ["QuestManager", "SaveManager", "InventoryManager", "BinderManager", "CompanionManager"]
+  },
+  "MainMenu": {
+    "name": "Main Menu",
+    "description": "Title screen and menu with save slots",
+    "prefabs": ["UI_MainMenu"],
+    "lighting": "soft"
+  },
+  "Quietvale": {
+    "name": "Quietvale Village",
+    "description": "Starter region - tutorial area (10 steps)",
+    "prefabs": [
+      "CH_PC1_Player",
+      "CH_Wizard",
+      "CH_Bureaucrat",
+      "PR_Binder",
+      "PR_Desk",
+      "PR_Forms",
+      "CR_MisfiledSkeleton"
+    ],
+    "environments": ["ENV_Quietvale"],
+    "lighting": "warm_morning",
+    "quests": ["M01", "M02"]
+  },
+  "BureaucracyHills": {
+    "name": "Bureaucracy Hills",
+    "description": "First regional area - critical path + 1 side quest + 1 amendment",
+    "prefabs": [
+      "CH_PC1_Player",
+      "CH_Wizard",
+      "CH_Bureaucrat",
+      "PR_FilingCabinet",
+      "PR_Desk",
+      "WP_BasicMelee",
+      "CR_MisfiledSkeleton",
+      "CR_InkBlot"
+    ],
+    "environments": ["ENV_Hills"],
+    "lighting": "institutional",
+    "quests": ["M03", "SQ01", "AMD01"]
+  },
+  "CombatTest": {
+    "name": "Combat Test Area",
+    "description": "Enemy testing space",
+    "prefabs": [
+      "CH_PC1_Player",
+      "CH_Bureaucrat",
+      "CR_MisfiledSkeleton",
+      "CR_InkBlot"
+    ],
+    "lighting": "neutral"
+  }
+}

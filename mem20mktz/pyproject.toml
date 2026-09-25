@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20mktz"
+version = "0.1.0"
+description = "mem30 Phase 2 marketplace organs: inference market, capability market, service bundling, adaptive pricing, resource trades"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "PyYAML>=6.0",
+    "cryptography>=42.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4", "fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27"]
+server = ["fastapi>=0.110", "uvicorn>=0.29"]
+
+[project.scripts]
+fs-mkt = "mem20mktz.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mem20mktz*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100

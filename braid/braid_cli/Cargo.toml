@@ -1,0 +1,11 @@
+[package]
+name = "braid_cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "braid_cli — the m13 terminal door: a stateless, keyless read-only projection of the ONE ledger (inspect/tail/query/policy/prove over the bridge shell)."
+
+[dependencies]
+braid_wire = { path = "../braid_wire" }
+serde.workspace = true
+serde_json.workspace = true

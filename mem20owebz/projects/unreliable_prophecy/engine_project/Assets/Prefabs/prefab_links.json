@@ -1,0 +1,15 @@
+{
+  "CH_PC1_Player": "Assets/Models/Characters/CH_PC1/CH_PC1.glb",
+  "CH_Wizard": "Assets/Models/Characters/CH_Wizard/CH_Wizard.glb",
+  "CH_Companion2": "Assets/Models/Characters/CH_Companion2/CH_Companion2.glb",
+  "CH_Bureaucrat": "Assets/Models/Characters/CH_Bureaucrat/CH_Bureaucrat.glb",
+  "CR_MisfiledSkeleton": "Assets/Models/Creatures/CR_MisfiledSkeleton/CR_MisfiledSkeleton.glb",
+  "CR_InkBlot": "Assets/Models/Creatures/CR_InkBlot/CR_InkBlot.glb",
+  "PR_Binder": "Assets/Models/Props/PR_Binder/PR_Binder.glb",
+  "PR_FilingCabinet": "Assets/Models/Props/PR_FilingCabinet/PR_FilingCabinet.glb",
+  "PR_Desk": "Assets/Models/Props/PR_Desk/PR_Desk.glb",
+  "PR_Forms": "Assets/Models/Props/PR_Forms/PR_Forms.glb",
+  "WP_BasicMelee": "Assets/Models/Weapons/WP_BasicMelee/WP_BasicMelee.glb",
+  "ENV_Quietvale": "Assets/Models/Environments/ENV_Quietvale/ENV_Quietvale.glb",
+  "ENV_Hills": "Assets/Models/Environments/ENV_Hills/ENV_Hills.glb"
+}

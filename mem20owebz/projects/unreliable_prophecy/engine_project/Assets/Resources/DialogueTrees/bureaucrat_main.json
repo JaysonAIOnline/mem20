@@ -1,0 +1,121 @@
+{
+  "dialogue_tree_id": "bureaucrat_main_questgiver",
+  "display_name": "The Bureaucrat - Main Quest Giver",
+  "description": "Primary quest-giving dialogue for the Bureaucrat NPC. Routes based on quest state.",
+  "start_node": "intro",
+  "nodes": [
+    {
+      "node_id": "intro",
+      "npc_text": "You have been selected. Prophecy 47-B (Revised) has your name on it. Please sign here.",
+      "options": [
+        {
+          "option_id": "accept_prophecy",
+          "text": "[Sign the form]",
+          "target_node": "tutorial_start",
+          "advances_quest": true,
+          "quest_id": "T01",
+          "quest_action": "accept",
+          "sets_flag": "signed_prophecy"
+        },
+        {
+          "option_id": "question_prophecy",
+          "text": "What happens if I refuse?",
+          "target_node": "refuse_warning"
+        },
+        {
+          "option_id": "ask_questions",
+          "text": "What is Prophecy 47-B exactly?",
+          "target_node": "prophecy_explanation"
+        }
+      ]
+    },
+    {
+      "node_id": "refuse_warning",
+      "npc_text": "Refusal is... noted. But the prophecy has already been filed. The paperwork exists. You exist in the system. Signing is merely a formality. A very important formality.",
+      "options": [
+        {
+          "option_id": "accept_after_warning",
+          "text": "[Sign the form]",
+          "target_node": "tutorial_start",
+          "advances_quest": true,
+          "quest_id": "T01",
+          "quest_action": "accept",
+          "sets_flag": "signed_prophecy"
+        },
+        {
+          "option_id": "persist_refusal",
+          "text": "I still refuse.",
+          "target_node": "forced_signature",
+          "sets_flag": "tried_to_refuse"
+        }
+      ]
+    },
+    {
+      "node_id": "forced_signature",
+      "npc_text": "The prophecy does not require your signature. It requires your compliance. Sign, and the tutorial begins. Don't sign, and the tutorial begins anyway. But with more forms.",
+      "options": [
+        {
+          "option_id": "finally_sign",
+          "text": "[Sign with great reluctance]",
+          "target_node": "tutorial_start",
+          "advances_quest": true,
+          "quest_id": "T01",
+          "quest_action": "accept",
+          "sets_flag": "signed_prophecy",
+          "emotionChange": "Concerned"
+        }
+      ]
+    },
+    {
+      "node_id": "prophecy_explanation",
+      "npc_text": "Prophecy 47-B (Revised) declares that a Chosen One will rise in Quietvale, gather a party, and save the world. The 'Revised' part means we fixed some typos from the original. The Chosen One before you had trouble with Section C. We clarified it.",
+      "options": [
+        {
+          "option_id": "ask_about_previous",
+          "text": "What happened to the previous Chosen One?",
+          "target_node": "previous_chosen",
+          "sets_flag": "asked_about_previous"
+        },
+        {
+          "option_id": "sign_after_explanation",
+          "text": "Alright. I'll sign.",
+          "target_node": "tutorial_start",
+          "advances_quest": true,
+          "quest_id": "T01",
+          "quest_action": "accept",
+          "sets_flag": "signed_prophecy"
+        }
+      ]
+    },
+    {
+      "node_id": "previous_chosen",
+      "npc_text": "Chosen One #347? Lost due to incomplete paperwork. Section 9-F was not filed in triplicate. The prophecy cannot save someone who doesn't file properly. Don't be like #347.",
+      "options": [
+        {
+          "option_id": "sign_solemnly",
+          "text": "[Sign solemnly]",
+          "target_node": "tutorial_start",
+          "advances_quest": true,
+          "quest_id": "T01",
+          "quest_action": "accept",
+          "sets_flag": "signed_prophecy"
+        }
+      ]
+    },
+    {
+      "node_id": "tutorial_start",
+      "npc_text": "Good. Now, your first task: file Form 1-A at the Form Station. Then stamp it. Then return to me. This is the tutorial. It is not optional.",
+      "on_enter_actions": [
+        {"action_type": "set_story_flag", "parameter": "tutorial_started", "secondary_parameter": "true"}
+      ],
+      "options": [
+        {
+          "option_id": "exit_dialogue",
+          "text": "[Continue]",
+          "target_node": "",
+          "is_exit_option": true
+        }
+      ]
+    }
+  ]
+}

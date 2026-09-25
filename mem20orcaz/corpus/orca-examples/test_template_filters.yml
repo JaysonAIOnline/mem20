@@ -1,0 +1,47 @@
+# Test workflow to verify custom template filters work end-to-end
+orchestrator:
+  id: test_template_filters
+  strategy: sequential
+  agents:
+    - agent1
+    - agent2
+    - final_synthesis
+
+agents:
+  - id: agent1
+    type: local_llm
+    model: "deepseek-r1-distill-qwen-7b"
+    provider: "lm_studio"
+    model_url: "http://localhost:1234"
+    temperature: 0.7
+    parse_json: false
+    max_tokens: 100
+    timeout: 30.0
+    prompt: "Analyze this topic: {{ input }}"
+
+  - id: agent2  
+    type: local_llm
+    model: "deepseek-r1-distill-qwen-7b"
+    provider: "lm_studio"
+    model_url: "http://localhost:1234"
+    temperature: 0.7
+    parse_json: false
+    max_tokens: 100
+    timeout: 30.0
+    prompt: "Build on this analysis: {{ safe_get_response('agent1', 'No previous analysis') }}"
+
+  - id: final_synthesis
+    type: local_llm
+    model: "deepseek-r1-distill-qwen-7b"
+    provider: "lm_studio"
+    model_url: "http://localhost:1234"
+    temperature: 0.5
+    parse_json: false
+    max_tokens: 200
+    timeout: 30.0
+    prompt: |
+      Previous responses:
+      Agent 1: {{ safe_get_response('agent1', 'No response') }}
+      Agent 2: {{ safe_get_response('agent2', 'No response') }}
+      
+      Synthesize these perspectives on: {{ get_input() }}

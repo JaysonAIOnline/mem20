@@ -1,0 +1,14 @@
+[package]
+name = "braid_drive"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "braid_drive — m3: drive the braid hard under concurrency, then audit EVERY node: no deadlock, no corruption."
+
+[dependencies]
+braid_core = { path = "../braid_core" }
+braid_keys = { path = "../braid_keys" }
+braid_wire = { path = "../braid_wire" }
+ed25519-dalek = { workspace = true }
+serde.workspace = true
+serde_json.workspace = true

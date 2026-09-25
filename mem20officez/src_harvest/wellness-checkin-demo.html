@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wellness Check-In Widget Demo | mem20</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #00ff88;
+    }
+    .page-header h1 { font-size: 1.4rem; letter-spacing: 0.05em; }
+    .page-header p { color: #00aa55; font-size: 0.85rem; margin-top: 4px; }
+    .demo-section {
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 40px;
+    }
+    .demo-section h2 {
+      font-size: 0.9rem;
+      color: #00ff88;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #004422;
+      padding-bottom: 8px;
+    }
+    .fake-content {
+      background: #111128;
+      border: 1px solid #004422;
+      border-radius: 4px;
+      padding: 20px;
+      color: #888;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .fake-content a { color: #00ff88; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>⬡ mem20 Wellness Check-In — Widget Demo</h1>
+    <p>Embedded widget demonstration page</p>
+  </div>
+
+  <div class="demo-section">
+    <h2>Embedded Widget</h2>
+    <div data-wellness-checkin></div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Surrounding Page Content</h2>
+    <div class="fake-content">
+      <p>This is example surrounding content on a host page. The widget above is fully scoped — it won't inherit or interfere with any host page styles thanks to its <code>#WC_SCOPE</code> ID isolation.</p>
+      <p>The widget can be dropped into any page on the mem20 site by adding a single <code>&lt;div data-wellness-checkin&gt;&lt;/div&gt;</code> element and including the embed script.</p>
+    </div>
+  </div>
+
+  <script src="wellness-checkin-embed.js" async></script>
+</body>
+</html>

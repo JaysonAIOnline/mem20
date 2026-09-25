@@ -1,0 +1,15 @@
+[package]
+name = "braid_her"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "braid_her — door3 (quest3d V-WORLD): the spatial walk-in on PROVEN facts. World facts = grounded ledger facts; a fact enters the world only when its audit signature verifies. Echo/resonator window + agent presence from braid identities."
+
+[dependencies]
+braid_core = { path = "../braid_core" }
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }

@@ -1,0 +1,22 @@
+Mem20 Cognitive Reasoning Batch 2 - Results
+=============================================
+Date: 2026-09-03
+Test ID: BATCH-002
+
+TEST 1 - Deductive
+------------------
+Problem: If all humans are mortal and Socrates is a human, what can we conclude about Socrates?
+Result: Socrates is mortal. (Classic syllogism: All humans are mortal; Socrates is human; therefore Socrates is mortal.)
+Confidence: 1.00
+
+TEST 2 - Abductive
+------------------
+Problem: A patient has a fever, cough, and fatigue. What is the most likely diagnosis and why?
+Result: The most likely diagnosis is a viral respiratory infection (such as Influenza), as it best explains the simultaneous presence of all three symptoms. Fever and fatigue indicate a systemic inflammatory response, while the cough indicates airway involvement.
+Confidence: 0.80
+
+TEST 3 - Inductive
+------------------
+Problem: Every swan observed so far has been white. What can we infer about all swans?
+Result: We can infer that all swans are likely white, although this is a probabilistic generalization rather than a logical certainty. A single counter-observation (e.g., a black swan) would falsify the conclusion.
+Confidence: 0.98

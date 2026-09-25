@@ -1,0 +1,43 @@
+{
+  "name": "malic",
+  "codename": "MALIC",
+  "description": "Deep research project: massive agentic autonomous loops and intersecting chains. Goal: understand how to safely run autonomous agent loops at scale (dynamic self-delegation, retry/refine loops, budget & termination control) and how intersecting chains (fan-out/join, DAG orchestration, cross-agent shared state) compose without deadlock, runaway cost, or divergent state. ANCHOR (2026-09-08): 'the MALIC machine' = a learning braid \u2014 rings (loops) spin independently and share members; overlapping rings and stacked sets mean every agent sits at multiple intersections; when shared members collide they exchange newly-learned success/failure knowledge, so one failure on ring 1 teaches ring 3 in the same iteration. OPERATIONS MODEL (2026-09-08, Jayson): AGS-OS IS THE CHAINS \u2014 AGS supplies the agents needed to OPERATE MALIC; 300 mem20agentz workers ARE the chain patterns (C1-C7) that drive the rings. Closed engine: AGS builds/supplies the natives \u2192 the braid runs them as rings \u2192 collisions produce lessons \u2192 00_reference_store (the fountain, under hypo-map-1) accretes them \u2192 AGS trains the next generation from the fountain \u2192 re-supplies the braid. Knowledge compounds from real collisions, never imported from static corpora. mem20 is the SERVER-LIFETIME ledger (not project-scoped) remembering every bit, so rings never start blank; proof = measurable improvement over server life (failure rate trends down, skills accrete). Notebook-driven: live Jupyter kernel, findings saved back into mem20 memory.",
+  "phases": [
+    {
+      "name": "1_scope_taxonomy",
+      "status": "completed",
+      "notes": "Anchor approved 2026-09-08 (learning braid model). Scope in/out + taxonomy axes A-F written to notebook cell 2 and verified live (kernel runs; taxonomy JSON saved). See mem20 records 'MALIC ANCHOR' and 'MALIC TAXONOMY'."
+    },
+    {
+      "name": "2_lit_ecosystem_survey",
+      "status": "completed",
+      "notes": "11 sources mapped to axes A-F in notebook cells 5-6, verified live (3/3 code cells ok). Artifact: /root/notebooks/research/malic_survey.json. Headliners: durable execution/Temporal saga (D6/D3/B7), gossip/epidemic = collision carrier (2508.01531, HyphaeDB 2606.28781 = anti-echo recipe for B4/B6), Mem0 ~26% consolidation ROI (F3), infinite-loop reality (2607.01641) vs brittle fixed caps. Gap: C7 braid topology is open ground. See mem20 record 1a07fc5ad601eeb."
+    },
+    {
+      "name": "3_loop_safety_patterns",
+      "status": "completed",
+      "notes": "6 kernel safety cards (A1-A6) + 7-item safety envelope + B1-B8 hazard->guard matrix, all 8 D guards exercised. Artifact /root/notebooks/research/malic_loop_safety.json, verified live (4/4 code cells ok). See mem20 record for full summary."
+    },
+    {
+      "name": "4_intersecting_chains_orchestration",
+      "status": "completed",
+      "notes": "C1-C7 chain contracts + braid wiring v1 (hypergraph model, scheduled collision protocol, diff schema, HyphaeDB anti-echo ported into mem20, 6 cross-chain contracts). Artifact malic_chains.json, verified live 5/5 cells ok. Status: proposed v1, validate in phase 5."
+    },
+    {
+      "name": "5_reference_implementations",
+      "status": "completed",
+      "notes": "Braid harness part COMPLETE + verified (7-seed: braid 54 vs control 60 failures, skills +11, 14 cross-origin lessons into stalled ring_d, 795 dedupe, registry 24 unique; 5-seed sweep all win). The harness is the DETERMINISTIC PROOF RIG \u2014 rings over precomputed task streams, abstract members m1-m4, scheduled rendezvous collisions. Remaining half = wiring into AGS-OS/fleetwide_mem20. DIRECTIVE (Jayson, 2026-09-08): AGS-OS IS THE CHAINS \u2014 AGS supplies the mem20agentz natives that operate MALIC; 300 mem20agentz workers ARE the chain patterns (C1-C7) driving the rings. Closed engine: AGS supplies natives \u2192 braid runs them \u2192 collisions fill 00_reference_store fountain \u2192 AGS trains from fountain \u2192 re-supplies braid."
+    },
+    {
+      "name": "6_synthesis_recommendations",
+      "status": "planned",
+      "notes": "OPERATIONS MODEL (Jayson, 2026-09-08): production rings are operated by AGS chains \u2014 300 mem20agentz natives supply the labor the ring memberships run on. Phase-5 harness = deterministic proof rig; AGS = production engine. Remaining scope to synthesize: (1) harness\u2192AGS-OS wiring (members m1-m4 \u2192 real mem20agentz workers), (2) fountain ingestion \u2014 00_reference_store pushes/pulls lessons mid-collision, (3) collision protocol promotion from scheduled-rendezvous (deterministic) to live-ring operation, (4) the closed engine end-to-end with proof metrics (failure \u2193, skills \u2191, fountain growth)."
+    },
+    {
+      "name": "7_deliverable_report",
+      "status": "planned",
+      "notes": "Report on the closed engine end-to-end: braid (rings) + chains (AGS-OS/mem20agentz) + fountain (00_reference_store) + ledger (mem20) + proof over server life."
+    }
+  ],
+  "created": "1788779402.1095536"
+}

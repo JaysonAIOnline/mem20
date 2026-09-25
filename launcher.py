@@ -6,10 +6,10 @@ run as a *script* (``python mcp/mcp_server.py``), not imported as a package.
 Importing it as ``mcp.mcp_server`` would shadow the ``mcp`` SDK package and
 break ``from mcp.server import Server``.
 
-This launcher finds the bundled server directory (shipped as package data inside
-``mem20_runtime/mcp/``), puts it on ``sys.path``, and runs ``mcp_server.py`` via
-runpy — exactly as ``python mcp/mcp_server.py`` would. It is fully equivalent to
-the repo-root invocation and keeps the same stdio + ``:8080`` health behaviour.
+This launcher finds the bundled server directory, puts it on ``sys.path``, and
+runs ``mcp_server.py`` via runpy — exactly as ``python mcp/mcp_server.py``
+would. It is fully equivalent to the repo-root invocation and keeps the same
+stdio + ``:8080`` health behaviour.
 """
 import os
 import runpy
@@ -20,6 +20,13 @@ from pathlib import Path
 
 def _mcp_dir() -> str:
     """Locate the bundled MCP server directory."""
+    # Primary: repo layout (editable install / git checkout) — mcp/ next to
+    # this file, or the legacy mem20_runtime/mcp bundle.
+    here = Path(__file__).resolve().parent
+    for candidate in (here / "mcp", here / "mem20_runtime" / "mcp"):
+        if candidate.is_dir():
+            return str(candidate)
+    # Installed-package fallback: MCP files shipped as package data.
     try:
         p = files("mem20_runtime").joinpath("mcp")
         path = Path(p)
@@ -27,11 +34,6 @@ def _mcp_dir() -> str:
             return str(path)
     except Exception:
         pass
-    # Editable / fallback: alongside this file.
-    here = Path(__file__).resolve().parent
-    candidate = here / "mem20_runtime" / "mcp"
-    if candidate.is_dir():
-        return str(candidate)
     raise RuntimeError("Could not locate the bundled mem20 MCP server directory.")
 
 

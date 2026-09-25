@@ -1,0 +1,42 @@
+{
+  "name": "jairf-beta",
+  "description": "JAIRF autonomous beta-testing swarm roadmap (per Autonomous_Beta_Testing_Agents.md guide). Runs continuously across all quarters: discovers crashes, soft-locks, exploits, progression blockers; evaluates combat feel, economy, builder usability, multiplayer stability; simulates player archetypes at scale; produces structured reports for humans + dev agents.",
+  "phases": [
+    {
+      "name": "1. Beta Testing Supervisor + archetype pool setup",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Controlled access tooling (client/headless, logs, screenshots, shared memory)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Deploy in parallel (single-player + multiplayer)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Scheduling (post-integration, overnight, stress before human QA)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Structured reporting + severity triage",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Human review loop + ticket auto-generation",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Evolution (prompt/memory refinement from successful reports)",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

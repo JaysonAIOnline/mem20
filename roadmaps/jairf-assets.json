@@ -1,0 +1,42 @@
+{
+  "name": "jairf-assets",
+  "description": "JAIRF digital assets roadmap (per Meshy_3D_Asset_Lists_by_Quarter.md). Copy-paste Meshy text-to-3D prompts: per-quarter asset lists (characters, weapons, environment, inventory props, builder modular pieces, hero assets). Pipeline: Meshy generate -> remesh to poly budget -> AI texturing PBR -> auto-rig -> FBX/GLB import to Unity. One consistent art-style keyword across all prompts.",
+  "phases": [
+    {
+      "name": "1. Art direction lock (style keyword + prompt formula)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Q1 asset set: characters, weapons, starter zone, inventory",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Q2 asset set: zones, non-player chars, social props",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Q3 asset set: classes, modular builder pieces, furnishing",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Q4 asset set: hero assets, biome expansion, advanced builder",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Meshy texture/rig pipeline (remesh, PBR, auto-rig, FBX/GLB)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Unity import + consistency/performance validation",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

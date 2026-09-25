@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20-mcp"
+version = "0.2.0"
+description = "Thin real loader for the canonical mem20 MCP server. Every module forwards to /opt/mem20/mcp so the shim cannot drift from the running implementation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "mcp", "tools", "shim", "canonical"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+# Flat layout: the project directory is itself the package, so the package
+# name must be mapped back onto "." or setuptools looks for ./mem20_mcp.
+[tool.setuptools]
+packages = [
+    "mem20_mcp",
+    "mem20_mcp.tools",
+]
+package-dir = { "mem20_mcp" = "." }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

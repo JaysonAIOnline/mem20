@@ -1,0 +1,47 @@
+{
+  "name": "jairf-3",
+  "description": "JAIRF Quarter 3 - Depth + Internal Builder: rich systems + player creation tools. Deliverable: full classes/progression, quests, deeper economy, guilds/housing basics, robust internal builder (create, persist, share objects/structures/experiences).",
+  "phases": [
+    {
+      "name": "Full classes + progression depth",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Quest system",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Deeper economy + crafting",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Guilds + housing basics",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Internal builder core (create/persist)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Builder sharing + moderation hooks",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "QA by beta-testing swarm",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Human sign-off on Q3",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

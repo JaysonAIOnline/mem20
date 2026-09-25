@@ -36,18 +36,13 @@ mem20-mcp = "launcher:main"
 mem20-metrics = "metrics_collector:main"
 
 [tool.setuptools]
-packages = ["memory_engine", "mem20_runtime"]
-# The repo-root `memory.py` shim lets `import memory` resolve to memory_engine.
-# `metrics_collector.py` is the standalone install-metrics collector server.
-py-modules = ["memory", "metrics_collector"]
-# Ship the MCP server files as package data (NOT as an importable `mcp` package).
-[tool.setuptools.package-data]
-mem20_runtime = [
-    "mcp/*.py",
-    "mcp/tools/*.py",
-    "mcp/prompts/*.py",
-    "mcp/resources/*.py",
-]
+packages = ["memory_engine"]
+# Repo-root top-level modules. `memory.py` is the real memory engine (global
+# memory / ledger / vectors) and it imports the standalone `procedural.py`
+# at module scope, so both must be installed together. `launcher.py` backs the
+# `mem20-mcp` console script. `metrics_collector.py` is the standalone
+# install-metrics collector server.
+py-modules = ["memory", "metrics_collector", "procedural", "launcher"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

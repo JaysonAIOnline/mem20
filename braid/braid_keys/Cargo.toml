@@ -1,0 +1,16 @@
+[package]
+name = "braid_keys"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "braid_keys — key management (DID:key derivation, session macaroons)."
+
+[dependencies]
+blake3.workspace = true
+ed25519-dalek.workspace = true
+rand.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+hmac.workspace = true
+sha2.workspace = true
+bs58.workspace = true

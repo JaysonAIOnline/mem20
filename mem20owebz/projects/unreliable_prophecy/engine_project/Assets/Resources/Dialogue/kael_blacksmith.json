@@ -1,0 +1,26 @@
+{
+  "npcId": "kael_blacksmith",
+  "npcDisplayName": "Kael Ironhand",
+  "coreBackstory": "Kael was the royal blacksmith before a disagreement with a noble cost him his position. He chose exile over apology.",
+  "greetings": [
+    "If you're here to browse, browse elsewhere. If you're here to buy, we'll talk.",
+    "Don't touch the finished blades. The oils on your fingers ruin the temper.",
+    "You look like you need a weapon. Or a better one. Either way, you came to the right forge."
+  ],
+  "idleChatter": [
+    "Good steel doesn't lie. It tells you what it wants to be. You just have to listen.",
+    "I made a sword for a knight once. He used it to defend a village. That's the job — make things that matter.",
+    "The ore from the northern mines is impure. I have to work twice as hard for half the result.",
+    "Adventurers break weapons like they're made of glass. I make tools, not toys."
+  ],
+  "farewells": [
+    "Take care of your blade, and it'll take care of you. Neglect it, and you're on your own.",
+    "Come back when you have better ore. I'll make something worth carrying.",
+    "And stay out of my scrap bin. Last person who went through it is still missing fingers."
+  ],
+  "reactiveComments": [
+    "That edge is ruined. Bring it to me. I can fix it — for a price.",
+    "You fight like you're afraid of your own weapon. Confidence is half the battle.",
+    "I've been working on something new. Experimental. You look like you need an advantage."
+  ]
+}

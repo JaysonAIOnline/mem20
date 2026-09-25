@@ -1,0 +1,158 @@
+orchestrator:
+  id: orka-ui
+  strategy: parallel
+  queue: orka:generated
+  memory_preset: "working"  # Use working memory for active processing
+  agents:
+    - initial_classify
+    - search_required
+    - fork_parallel_checks
+    - join_parallel_checks
+    - router_search_path
+    - final_summary
+agents:
+  - id: initial_classify
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.2
+    queue: orka:domain
+    prompt: >
+      Classify this input "{{ get_input() }}" into one of: tech, science, history, nonsense.
+      Choose exactly one from: tech, science, history, nonsense.
+      Answer with only the category name.
+  - id: search_required
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.1
+    queue: orka:need_search
+    prompt: Is "{{ get_input() }}" a question that requires deep internet research? Answer with exactly 'true' or 'false' only.
+    depends_on:
+      - initial_classify
+  - id: fork_parallel_checks
+    type: fork
+    targets:
+      - [topic_validity_check]  # Fixed: Each branch must be wrapped in a list
+      - [summary_category_check]
+    depends_on:
+      - search_required
+  - id: topic_validity_check
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.1
+    queue: orka:topic_check
+    prompt: Is "{{ get_input() }}" a valid, meaningful topic to investigate? Answer with exactly 'true' or 'false' only.
+    depends_on:
+      - fork_parallel_checks
+  - id: summary_category_check
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.2
+    queue: orka:summary_check
+    prompt: 'Classify the input "{{ get_input() }}" into one of: [summary, detailed, none]. Choose exactly one from: summary, detailed, none. Answer with only the classification.'
+    depends_on:
+      - fork_parallel_checks
+  - id: join_parallel_checks
+    type: join
+    group: fork_parallel_checks
+  - id: router_search_path
+    type: router
+    params:
+      decision_key: search_required
+      routing_map:
+        "true":
+          - failover_search
+          - info_completed
+          - final_router
+        "false":
+          - info_completed
+          - final_builder_false
+    depends_on:
+      - join_parallel_checks
+  - id: failover_search
+    type: failover
+    input: router_search_path
+    children:
+      - id: broken_search
+        type: failing
+        queue: orka:broken_search
+        prompt: This search will fail because agent is broken.
+      - id: backup_duck_search
+        type: duckduckgo
+        queue: orka:duck_backup
+        prompt: Perform a backup web search for "{{ get_input() }}"
+    depends_on:
+      - router_search_path
+      - broken_search
+      - backup_duck_search
+  - id: info_completed
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.1
+    queue: orka:info_completed
+    prompt: Did we retrieve extra data for this input "{{ get_input() }}"? {{ get_fork_responses() }} Answer with exactly 'true' or 'false' only.
+    depends_on:
+      - router_search_path
+  - id: final_router
+    type: router
+    params:
+      decision_key: info_completed
+      routing_map:
+        "true":
+          - final_builder_true
+        "false":
+          - final_builder_false
+    depends_on:
+      - failover_search
+  - id: final_builder_true
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.7
+    queue: orka:final_output
+    prompt: "Build a detailed answer combining:- Classification result: {{ get_agent_response('initial_classify') }}- Search result: {{ get_agent_response('failover_search') }}. Provide a comprehensive and informative response."
+    depends_on:
+      - final_router
+  - id: final_builder_false
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.6
+    queue: orka:final_output
+    prompt: "Build a detailed answer based on the classification result:- Classification result: {{ get_agent_response('initial_classify') }}. Provide the best possible response given the available information."
+    # NOTE: this node can be reached either via `final_router` (when search_required=true)
+    # or directly from `router_search_path` (when search_required=false).
+    depends_on:
+      - router_search_path
+  - id: final_summary
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.7
+    prompt: |
+      Regarding "{{ get_input() }}", here's what I found:
+      
+      {% set final_true = get_agent_response('final_builder_true') %}
+      {% set final_false = get_agent_response('final_builder_false') %}
+      
+      {% if final_true %}
+      {{ final_true }}
+      {% elif final_false %}
+      {{ final_false }}
+      {% else %}
+      Let me provide you with the most relevant information I can find about your question.
+      {% endif %}
+      
+      Give a complete and helpful response to the user's question.

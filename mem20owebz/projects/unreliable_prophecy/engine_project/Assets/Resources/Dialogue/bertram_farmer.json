@@ -1,0 +1,26 @@
+{
+  "npcId": "bertram_farmer",
+  "npcDisplayName": "Bertram \"Old Bert\" Hollowell",
+  "coreBackstory": "Bert has worked this land for forty years — his father before him, and his grandfather before that.",
+  "greetings": [
+    "Mornin'. You here about the grain, or you just lost?",
+    "Don't just stand there gawkin'. Come in or go on, but don't block the door.",
+    "Ah, a face I recognize. You want bread, or you want business?"
+  ],
+  "idleChatter": [
+    "The land's been restless. Plants don't lie — somethin' ain't right.",
+    "My granddad used to say: 'When the mill whispers, the earth is listening.' I thought it was just stories.",
+    "Rain's comin'. Can smell it in the air. Three days, maybe four.",
+    "Young folks these days don't know good soil if they're standin' in it."
+  ],
+  "farewells": [
+    "Take some bread for the road. You look like you haven't eaten proper in days.",
+    "Don't go wanderin' the fields after dark. Not safe, and I ain't just talkin' about pests.",
+    "Come back when the harvest's in. I'll have fresh cider worth celebratin'."
+  ],
+  "reactiveComments": [
+    "You've got the look of someone who's seen things. The land's got that effect.",
+    "If you're headed to the old ruins, stay clear of the eastern field. Ground's unstable there.",
+    "Strange folk been passin' through. Hooded types. Didn't like the look of 'em."
+  ]
+}

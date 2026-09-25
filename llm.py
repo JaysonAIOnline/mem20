@@ -3,12 +3,13 @@
 mem20 LLM client.
 
 Thin OpenAI-compatible chat-completions wrapper used by the cognitive engine,
-imagination, and theory-of-mind tools. Default target is NVIDIA's free
-OpenAI-compatible endpoint (https://integrate.api.nvidia.com/v1).
+imagination, and theory-of-mind tools. Default target is Groq's
+OpenAI-compatible endpoint (https://api.groq.com/openai/v1); NVIDIA's free
+endpoint remains reachable via MEM20_LLM_BASE_URL / the fallback chain.
 
 Configuration (environment variables):
-  NVAPI_KEY / NVIDIA_API_KEY / MEM20_LLM_API_KEY  : bearer token (required)
-  MEM20_LLM_BASE_URL                              : default NVIDIA endpoint
+  GROQ_API_KEY / MEM20_LLM_API_KEY / NVAPI_KEY / NVIDIA_API_KEY : bearer token
+  MEM20_LLM_BASE_URL                              : default endpoint
   MEM20_LLM_MODEL                                 : default model name
 
 Design rule: if no API key is configured, or the request fails, raise LLMError.
@@ -16,17 +17,24 @@ We NEVER fabricate a completion. Callers surface the error so behavior is honest
 """
 
 import os
+import re
 
 try:
     import httpx
 except ImportError:  # some venvs install the fork as "httpx2"
     import httpx2 as httpx
 
-DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
-DEFAULT_MODEL = "nvidia/nemotron-3-ultra-550b-a55b"
+# 2026-09-20: moved default off NVIDIA (too slow for interactive dreaming)
+# to Groq gpt-oss-120b. Groq gpt-oss returns reasoning in message.reasoning,
+# which _extract already handles.
+DEFAULT_BASE_URL = "https://api.groq.com/openai/v1"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 # Candidate .env files that may hold NVAPI_KEY / NVIDIA_API_KEY etc.
+# 2026-09-07 key rule: the single permanent secrets home is
+# /opt/mem20/secrets/.env — it must be read FIRST.
 _ENV_CANDIDATES = [
+    "/opt/mem20/secrets/.env",
     os.environ.get("MEM20_ENV_FILE"),
     "/home/jayson/Desktop/jayson-openwebui/.env",
     "/home/jayson/mem20/.env",
@@ -64,12 +72,26 @@ class LLMError(RuntimeError):
 
 def _config():
     base = os.environ.get("MEM20_LLM_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
-    key = (
-        os.environ.get("NVAPI_KEY")
-        or os.environ.get("NVIDIA_API_KEY")
-        or os.environ.get("MEM20_LLM_API_KEY")
-        or ""
-    ).strip()
+    # Key must match the provider the base URL points at. Previously NVAPI_KEY
+    # was always preferred, so a Groq base URL paired with NVAPI_KEY sent the
+    # NVIDIA key to Groq and failed with HTTP 401 "Invalid API Key".
+    if "groq" in base.lower():
+        key = (
+            os.environ.get("GROQ_API_KEY")
+            or os.environ.get("GROQ_API_KEYS")
+            or os.environ.get("MEM20_LLM_API_KEY")
+            or os.environ.get("NVAPI_KEY")
+            or os.environ.get("NVIDIA_API_KEY")
+            or ""
+        )
+    else:
+        key = (
+            os.environ.get("NVAPI_KEY")
+            or os.environ.get("NVIDIA_API_KEY")
+            or os.environ.get("MEM20_LLM_API_KEY")
+            or ""
+        )
+    key = key.strip()
     model = os.environ.get("MEM20_LLM_MODEL", DEFAULT_MODEL)
     return base, key, model
 
@@ -91,7 +113,113 @@ def _payload(messages, model, temperature, max_tokens):
 
 
 def _extract(content: dict) -> str:
-    return content["choices"][0]["message"]["content"]
+    msg = content["choices"][0]["message"]
+    text = msg.get("content") or ""
+    if isinstance(text, list):
+        text = "".join(p.get("text", "") for p in text if isinstance(p, dict))
+    if not text:
+        # Reasoning models differ: Groq gpt-oss uses message.reasoning,
+        # NVIDIA / others use message.reasoning_content.
+        text = msg.get("reasoning") or msg.get("reasoning_content") or ""
+    return _strip_thinking(text).strip()
+
+
+_OPEN  = r"\n\s*<think(?:ing)?>\s*\n?"
+_CLOSE = r"\n\s*</think(?:ing)?>\s*\n?"
+_RESP  = r"\n\s*response\s*\n?"
+
+
+def _strip_thinking(text: str) -> str:
+    """Drop the model's reasoning preamble up to the answer marker.
+
+    Delimiters vary per provider/model: plain ` thinking ... /thinking`,
+    `<thinking> ... </thinking>`, and Groq qwen3.x which emits
+    ` thinking ... response` or `<thinking> ... response` (no close tag).
+    """
+    pairs = [
+        (_OPEN, _CLOSE),
+        (_OPEN, _RESP),
+        (r"\n\s*thinking\s*\n", _RESP),
+        (r"\n\s*thinking\s*\n", r"\n\s*/thinking\s*\n?"),
+        (r"\n\s*thinking\s*\n", _CLOSE),
+        (r"<thinking>\s*", r"</thinking>"),
+    ]
+    for start, end in pairs:
+        m = re.search(start + r".*?" + end, text, flags=re.S | re.I)
+        if m:
+            return re.sub(start + r".*?" + end, "\n", text, flags=re.S | re.I)
+    return text
+
+
+def _env(name: str, default: str = "") -> str:
+    """Resolve an env var plus its numbered *_N variants, first present wins."""
+    for i in range(10):
+        key = name if i == 0 else f"{name}_{i}"
+        val = os.environ.get(key, "")
+        if val:
+            return val.strip()
+    return default
+
+
+def _provider_key(name: str) -> str:
+    """API key for a fallback provider name (openrouter -> OPENROUTER_API_KEY)."""
+    stem = name.upper().replace("-", "_")
+    return _env(f"{stem}_API_KEY") or _env(f"{stem}_API_KEYS") or ""
+
+
+def _fallback_chain() -> list[dict]:
+    """Ordered fallback provider candidates for chat()/achat().
+
+    Built from the explicit ``MEM20_LLM_FALLBACK_BASE_URL`` endpoint plus every
+    provider listed in ``MEM20_LLM_FALLBACK_PROVIDERS`` that actually has a key
+    configured. Providers without a key are skipped — we never retry a provider
+    anonymously or fabricate a completion.
+    """
+    chain: list[dict] = []
+    fb_base = os.environ.get("MEM20_LLM_FALLBACK_BASE_URL", "").strip().rstrip("/")
+    if fb_base:
+        fb_key = os.environ.get("MEM20_LLM_FALLBACK_API_KEY", "").strip()
+        if fb_key:
+            chain.append({
+                "name": "fallback",
+                "base": fb_base,
+                "key": fb_key,
+                "model": os.environ.get("MEM20_LLM_FALLBACK_MODEL", ""),
+            })
+    for name in os.environ.get("MEM20_LLM_FALLBACK_PROVIDERS", "").split(","):
+        name = name.strip()
+        if not name:
+            continue
+        key = _provider_key(name)
+        if not key:
+            continue
+        stem = name.upper().replace("-", "_")
+        chain.append({
+            "name": name,
+            "base": _env(f"{stem}_BASE_URL", DEFAULT_BASE_URL).rstrip("/"),
+            "key": key,
+            "model": _env(f"{stem}_MODEL", DEFAULT_MODEL),
+        })
+    return chain
+
+
+def _aggregate_error(primary: str, failures: list[dict]) -> LLMError:
+    lines = [f"LLM primary provider failed: {primary}"]
+    if failures:
+        lines.extend(f"  fallback {f['name']}: {f['error']}" for f in failures)
+    else:
+        lines.append("  no fallback providers configured")
+    return LLMError("\n".join(lines))
+
+
+def _post_sync(client, base, key, messages, model, temperature, max_tokens):
+    resp = client.post(
+        f"{base}/chat/completions",
+        headers=_headers(key),
+        json=_payload(messages, model, temperature, max_tokens),
+    )
+    resp.raise_for_status()
+    return _extract(resp.json())
 
 
 def chat(
@@ -103,7 +231,12 @@ def chat(
     api_key: str = None,
     timeout: float = 180.0,
 ) -> str:
-    """Synchronous chat completion. Raises LLMError on missing key / failure."""
+    """Synchronous chat completion with fallback chain.
+
+    Tries the primary provider first; on an HTTP/transport failure, tries each
+    configured fallback provider in order and returns the first success. If
+    every provider fails, raises an honest, aggregated LLMError.
+    """
     base, key, def_model = _config()
     base = (base_url or base).rstrip("/")
     key = api_key if api_key is not None else key
@@ -115,21 +248,34 @@ def chat(
             "MEM20_LLM_API_KEY. Refusing to fabricate reasoning output."
         )
 
+    primary_err = None
     try:
         with httpx.Client(timeout=timeout) as client:
-            resp = client.post(
-                f"{base}/chat/completions",
-                headers=_headers(key),
-                json=_payload(messages, model, temperature, max_tokens),
-            )
-            resp.raise_for_status()
-            return _extract(resp.json())
+            return _post_sync(client, base, key, messages, model, temperature, max_tokens)
     except httpx.HTTPStatusError as exc:
-        raise LLMError(f"LLM HTTP {exc.response.status_code}: {exc.response.text[:400]}")
+        primary_err = f"HTTP {exc.response.status_code}: {exc.response.text[:400]}"
     except httpx.HTTPError as exc:
-        raise LLMError(f"LLM request failed: {exc}")
+        primary_err = f"request failed: {exc}"
     except (KeyError, IndexError, ValueError) as exc:
         raise LLMError(f"LLM response malformed: {exc}")
+
+    failures: list[dict] = []
+    for fb in _fallback_chain():
+        if not fb.get("base") or not fb.get("key"):
+            continue
+        try:
+            with httpx.Client(timeout=timeout) as client:
+                return _post_sync(client, fb["base"], fb["key"], messages,
+                                  fb["model"] or model, temperature, max_tokens)
+        except httpx.HTTPStatusError as exc:
+            failures.append({"name": fb["name"],
+                             "error": f"HTTP {exc.response.status_code}: {exc.response.text[:400]}"})
+        except httpx.HTTPError as exc:
+            failures.append({"name": fb["name"], "error": f"request failed: {exc}"})
+        except (KeyError, IndexError, ValueError) as exc:
+            failures.append({"name": fb["name"], "error": f"malformed response: {exc}"})
+
+    raise _aggregate_error(primary_err, failures)
 
 
 async def achat(
@@ -171,15 +317,43 @@ async def achat(
                 import asyncio
                 await asyncio.sleep(2 ** attempt)
                 continue
-            raise LLMError(f"LLM HTTP {exc.response.status_code}: {exc.response.text[:400]}")
+            last_exc = exc
+            break
         except httpx.HTTPError as exc:
             last_exc = exc
             if attempt < max_retries:
                 import asyncio
                 await asyncio.sleep(2 ** attempt)
                 continue
-            raise LLMError(f"LLM request failed: {exc}")
+            break
         except (KeyError, IndexError, ValueError) as exc:
             raise LLMError(f"LLM response malformed: {exc}")
 
-    raise LLMError(f"LLM request failed after {max_retries + 1} attempts: {last_exc}")
+    import asyncio
+
+    failures: list[dict] = []
+    for fb in _fallback_chain():
+        if not fb.get("base") or not fb.get("key"):
+            continue
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(
+                    f"{fb['base']}/chat/completions",
+                    headers=_headers(fb["key"]),
+                    json=_payload(messages, fb["model"] or model, temperature, max_tokens),
+                )
+                resp.raise_for_status()
+                return _extract(resp.json())
+        except httpx.HTTPStatusError as exc:
+            failures.append({"name": fb["name"],
+                             "error": f"HTTP {exc.response.status_code}: {exc.response.text[:400]}"})
+        except httpx.HTTPError as exc:
+            failures.append({"name": fb["name"], "error": f"request failed: {exc}"})
+        except (KeyError, IndexError, ValueError) as exc:
+            failures.append({"name": fb["name"], "error": f"malformed response: {exc}"})
+
+    if isinstance(last_exc, httpx.HTTPStatusError):
+        primary = f"HTTP {last_exc.response.status_code}: {last_exc.response.text[:400]}"
+    else:
+        primary = f"request failed: {last_exc}"
+    raise _aggregate_error(primary, failures)

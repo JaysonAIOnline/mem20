@@ -1,0 +1,24 @@
+{
+  "stage": "Stage 6 - RELEASE_PACKAGE",
+  "status": "completed",
+  "version": "0.5.0",
+  "generated": "2026-08-23T16:28:31.131807",
+  "package": {
+    "path": "/home/jayson/Desktop/jayson-openwebui/projects/unreliable_prophecy/release/unreliable_prophecy_v0.5.0.zip",
+    "size_kb": 12.9,
+    "contents": {
+      "glb_assets": 10,
+      "unity_project": true,
+      "scenes": [
+        "Boot",
+        "MainMenu",
+        "Quietvale",
+        "BureaucracyHills"
+      ],
+      "docs": [
+        "IMPORT_INSTRUCTIONS.md"
+      ]
+    }
+  },
+  "ready_for": "Stage 7 - DONE"
+}

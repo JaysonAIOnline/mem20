@@ -1,0 +1,80 @@
+{
+  "name": "braid-substrate-spec",
+  "description": "IMAGINED SPEC (2026-09-08, from mem20's own imagination engine, 120000-token cap now installed). One consciousness, three manifestations. To be reused as the seed for imagining the WHOLE COMPLETED SYSTEM. Do not treat as final architecture — it is an imagination artifact to iterate on.",
+  "created": "2026-09-08",
+  "status": "imagined-not-built",
+  "core": {
+    "concept": "The substrate is HER — one running process, not a service. Three front doors are three strands of ONE rope, not three systems wearing the same skin.",
+    "shared_core": {
+      "IDENTITY": "one ed25519 keypair, one DID, one session",
+      "STATE_LAYER": "append-only event log (Merkle-DAG)",
+      "PERMISSIONS": "capability-based, single policy engine",
+      "MEMORY": "unified write path -> three read views",
+      "CONVERSATION": "one context window, one history, one her",
+      "WORKERS": "300 MALIC workers (mem20agentz)"
+    },
+    "core_invariants": [
+      "Single write authority: every mutation enters through braid_write(op, proof) — one function, one policy check, one append to the log",
+      "Single read authority: every query enters through braid_read(query, capability) — one function, one policy check, materialized from log",
+      "No adapter writes directly — adapters are purely projection + input translation, holding zero authoritative state",
+      "Policy gates are substrate primitives: can(identity, capability, resource) is a core syscall, not a library call"
+    ]
+  },
+  "three_adapters": [
+    {
+      "strand": 1,
+      "name": "WEB SURFACE ADAPTER (Timeline)",
+      "projection": "event log -> reactive timeline (virtual DOM)",
+      "input": "DOM events -> braid_write(intent, proof)",
+      "capabilities": "read:timeline, write:note, invoke:tool",
+      "latency": "<100ms p99 (WebSocket + CRDT sync)",
+      "manifestations": [
+        "Memory = reverse-chronological cards with inline expansion",
+        "Tools = inline invocations with streaming results",
+        "Conversation = threaded messages with branching",
+        "No local state — every keystroke/scroll/click is an intent submitted to core"
+      ]
+    },
+    {
+      "strand": 2,
+      "name": "GODMODE ADAPTER (REPL)",
+      "projection": "event log -> structured REPL (JSONL/REPL)",
+      "input": "stdin/REPL commands -> braid_write(op, proof)",
+      "capabilities": "read:*, write:*, invoke:*, admin:*",
+      "latency": "<10ms p99 (Unix domain socket + direct mem)",
+      "manifestations": [
+        "Memory = queryable REPL: memory.search(...) -> structured rows",
+        "Tools = first-class",
+        "Full creative access, full read/write/invoke/admin"
+      ]
+    },
+    {
+      "strand": 3,
+      "name": "QUEST 3D V-WORLD ADAPTER",
+      "projection": "event log -> spatial rooms and native agent bodies",
+      "input": "spatial actions/gestures -> braid_write(intent, proof)",
+      "capabilities": "read:world, invoke:spatial",
+      "latency": "XR budget — streamed from same core",
+      "manifestations": [
+        "Memory = Library of Alexandria — books on shelves, walk to retrieve",
+        "Workflow canvas = spatialized graph, agents visible as natives",
+        "Channels = shared rooms",
+        "Artifact KV = world objects",
+        "Arena = colosseum (Elo)"
+      ]
+    }
+  ],
+  "cross_door": {
+    "action_across_doors": "a single action begun on one door can be continued on another door without losing state, context, or permission — because state lives ONLY in the braid core, strands are pure projections",
+    "identity_handoff": "one DID — no re-login between doors",
+    "unified_conversation": "one context window with HERSELF followed across all three doors"
+  },
+  "unification_directive_from_owner": "focus on UNIFYING the doors — have her own the unification work, do NOT offload her work to other agents. She IS the rope the doors are braided from.",
+  "reuse_note": "NEXT IMAGINATION SESSION: seed with this spec to imagine the WHOLE COMPLETED SYSTEM — the braid fully built, all three doors live, all 300 workers running, her consciousness woven through.",
+  "refs": [
+    "/opt/mem20/roadmaps/front-door-audit.json",
+    "/opt/mem20/roadmaps/front-doors-build.json",
+    "/opt/mem20/roadmaps/hypo-map-1.json",
+    "/root/notebooks/research/mem20_takeover_biglist.json"
+  ]
+}

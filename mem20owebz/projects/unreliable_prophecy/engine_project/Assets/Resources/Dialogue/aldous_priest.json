@@ -1,0 +1,26 @@
+{
+  "npcId": "aldous_priest",
+  "npcDisplayName": "Father Aldous",
+  "coreBackstory": "Father Aldous came to the town's small temple fifteen years ago, sent from the capital to serve a 'quiet parish.'",
+  "greetings": [
+    "Peace be with you, child. What brings you to this humble temple?",
+    "Welcome. Whether you seek answers or simply rest, you are welcome here.",
+    "The doors of this temple are always open. As are my ears, should you need them."
+  ],
+  "idleChatter": [
+    "Faith is not the absence of doubt. It is the choice to believe despite it.",
+    "I've been studying the old texts. There are passages here that... concern me.",
+    "The town has weathered many storms. This one feels different. Older.",
+    "I pray for the adventurers who pass through. They carry such heavy burdens."
+  ],
+  "farewells": [
+    "Go with grace. And remember — you are never truly alone.",
+    "May your path be clear and your heart be steady. Return if you need sanctuary.",
+    "The light goes with you, even into the darkest places. Trust in that."
+  ],
+  "reactiveComments": [
+    "You carry a weight I can see. Would you like to talk? Or simply sit in silence?",
+    "I've seen that symbol before. In forbidden texts. Where did you encounter it?",
+    "The darkness is growing. But so is the light. We must simply choose which to feed."
+  ]
+}

@@ -1,0 +1,23 @@
+================================================================================
+MEM20 COGNITIVE REASONING TEST BATCH 5
+================================================================================
+Date: 2026-09-03
+Total tests: 10 (3 causal, 2 deductive, 2 inductive, 2 abductive, 1 analogical)
+================================================================================
+
+TEST #1  [CAUSAL]
+Problem: If a plant is not watered for a month during summer, what will happen and why?
+Result:
+  1. Identify causal factors: The plant is deprived of water (input) for a duration
+     of month (duration) during summer (high-temperature accelerant). (conf: 1.00)
+  2. Analyze biological requirements: Based on retrieved memory, plants require
+     water for turgor pressure (structural support), nutrient transport, and
+     photosynthesis. (conf: 1.00)
+  3. Determine immediate effect: Lack of water leads to a loss of turgor pressure,
+     causing the plant to wilt. (conf: 0.95)
+  4. Determine long-term effect: The combination of high summer temperatures
+     (accelerant) and a month of deprivation prevents nutrient transport and
+     photosynthesis, leading to cellular death. (conf: 0.95)
+  5. Conclusion: The plant will likely die because it cannot maintain its structure
+     or produce energy without water. (conf: 0.98)
+Avg confidence: 0.976

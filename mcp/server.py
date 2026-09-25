@@ -19,21 +19,35 @@ import subprocess
 import tempfile
 import time
 import logging
+import asyncio
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Import MCP framework
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
+try:
+    from mcp.server import Server
+    from mcp.server.lowlevel.server import ServerRequestContext
+    import mcp_types as mt
+except ImportError:
+    print("Error: mcp package not installed. Please install with:")
+    print("pip install mcp")
+    sys.exit(1)
 
-# Make the unified engine importable. `import memory` resolves (via the repo-root
-# shim) to `memory_engine/memory.py`, so the live deployment, a clean clone, and the
-# GitHub source all share one engine module. User data lives under MEM20_STORE_PATH
-# (engine default ~/.mem20/store) — code and data are fully separated.
+# Make the unified engine importable. `import memory` must resolve to the store
+# engine (MEM20_STORE_PATH, default ~/.mem20/store), the engine every handler's API
+# contract is written against. The repo-root shim (memory_engine/memory.py) shares
+# this module; code and data are fully separated. The store path MUST be nearer the
+# front of sys.path than _REPO_ROOT so `import memory` finds ~/.mem20/store/memory.py
+# and not the legacy standalone engine at /opt/mem20/memory.py (which would be
+# cached in sys.modules and poison recall, pinned-block, and ledger tools alike).
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
+_MEMORY_ENGINE_DIR = os.path.expanduser(os.environ.get("MEM20_STORE_PATH", os.path.join(os.path.expanduser("~"), ".mem20", "store")))
+if _MEMORY_ENGINE_DIR in sys.path:
+    sys.path.remove(_MEMORY_ENGINE_DIR)
+sys.path.insert(0, _MEMORY_ENGINE_DIR)
 try:
     from memory import remember, recall, status as mem_status, rebuild_index, ledger_view
     MEMORY_SYSTEM_AVAILABLE = True
@@ -49,6 +63,7 @@ from memory_tools import MemoryToolsMixin
 from cognitive_tools import CognitiveToolsMixin
 from roadmap_tools import RoadmapToolsMixin
 from tools.world_tools import WorldToolsMixin
+from tools.procedural_tools import ProceduralToolsMixin
 from tools.blender_tools import BlenderToolsMixin
 from tools.unity_tools import UnityToolsMixin
 from tools.integration_tools import IntegrationToolsMixin
@@ -68,10 +83,11 @@ from tools.productivity_tools import ProductivityToolsMixin
 from tools.search_tools import SearchToolsMixin
 from tools.versioncontrol_tools import VersionControlToolsMixin
 from tools.webscraping_tools import WebScrapingToolsMixin
+from tools.braid_tools import BraidToolsMixin
 from health import start_health_server
 
 class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
-                     WorldToolsMixin, BlenderToolsMixin, UnityToolsMixin,
+                     WorldToolsMixin, ProceduralToolsMixin, BlenderToolsMixin, UnityToolsMixin,
                      IntegrationToolsMixin, A2AToolsMixin, ThoughtProcessMixin,
                      CloudServiceToolsMixin, CloudStorageToolsMixin,
                      CommunicationToolsMixin, DatabaseToolsMixin,
@@ -79,10 +95,13 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
                      EnhancedMemoryToolsMixin, FilesystemToolsMixin,
                      FinanceToolsMixin, MarketingToolsMixin,
                      ProductivityToolsMixin, SearchToolsMixin,
-                     VersionControlToolsMixin, WebScrapingToolsMixin):
+                     VersionControlToolsMixin, WebScrapingToolsMixin,
+                     BraidToolsMixin):
     def __init__(self):
         self.tools = {}
         self._start_time = time.time()
+        self._jobs = {}
+        self._job_timeout = float(os.environ.get("MEM20_JOB_TIMEOUT", "1800"))
         self._request_count = 0
         self._request_errors = 0
         self._tool_calls = {}
@@ -98,10 +117,12 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
             on_call_tool=self._handle_call_tool,
         )
     def _setup_tools(self):
+        """Define all available tools for mem20."""
         self.register_memory_tools()
         self.register_cognitive_tools()
         self.register_roadmap_tools()
         self.register_world_tools()
+        self.register_procedural_tools()
         self.register_blender_tools()
         self.register_unity_tools()
         self.register_integration_tools()
@@ -121,13 +142,33 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
         self.register_search_tools()
         self.register_versioncontrol_tools()
         self.register_webscraping_tools()
-
+        self.register_braid_tools()
+        self.register_job_tools()
     async def _handle_list_tools(self, context: ServerRequestContext, params: Optional[mt.PaginatedRequestParams]) -> mt.ListToolsResult:
         """Handle tools/list request."""
         return mt.ListToolsResult(
             tools=list(self.tools.values()),
             resultType="complete"
         )
+    # ------------------------------------------------------------------
+    # Background job registry — long-running tools (LLM-heavy imagination
+    # and cognitive calls) execute as asyncio tasks so a single MCP client
+    # request never blocks past the client timeout. The tool returns a
+    # job token immediately; clients poll with mem20_job_status /
+    # mem20_job_wait (job_* tools) until complete.
+    # ------------------------------------------------------------------
+    LONG_RUNNING_TOOLS = {
+        "imagination_concept", "imagination_dream", "imagination_critique",
+        "imagination_simulate", "imagination_counterfactual", "imagination_recombine",
+        "imagination_model", "imagination_visualize",
+        "cog_process", "cog_chain", "cog_reason", "cog_plan", "cog_reflect",
+        "tot_reason", "tot_diagnose", "tot_modeling",
+        "beam_search", "least_to_most", "react_reason",
+        "theory_of_mind_simulate", "theory_of_mind_perspective",
+        "self_model_reflect", "memory_auto_consolidate",
+        "cognitive_substrate",
+    }
+
     async def _handle_call_tool(self, context: ServerRequestContext, params: mt.CallToolRequestParams) -> mt.CallToolResult:
         """Handle tools/call request."""
         self._request_count += 1
@@ -145,6 +186,19 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
             )
         
         try:
+            if tool_name in self.LONG_RUNNING_TOOLS:
+                job_id = await self._spawn_job(tool_name, arguments)
+                return mt.CallToolResult(
+                    content=[mt.TextContent(type="text", text=json.dumps({
+                        "job_id": job_id,
+                        "status": "running",
+                        "tool": tool_name,
+                        "poll": "job_status",
+                        "wait": "job_wait",
+                    }, indent=2))],
+                    isError=False,
+                    resultType="complete"
+                )
             result = await self._execute_tool(tool_name, arguments)
             return mt.CallToolResult(
                 content=[mt.TextContent(type="text", text=result)],
@@ -159,9 +213,87 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
                 isError=True,
                 resultType="complete"
             )
+    def register_job_tools(self):
+        self.tools["job_status"] = mt.Tool(
+            name="job_status",
+            title="Job Status",
+            description="Check the status of a background mem20 job started by a long-running tool. Returns running/ok/error with the result when done.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "job_id": {"type": "string"},
+                },
+                "required": ["job_id"],
+            },
+        )
+        self.tools["job_wait"] = mt.Tool(
+            name="job_wait",
+            title="Job Wait",
+            description="Block until a background mem20 job completes (or timeout_ms elapses) and return its status/result. Use on job_id returned by a long-running tool.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "job_id": {"type": "string"},
+                    "timeout_ms": {"type": "integer", "default": 30000},
+                },
+                "required": ["job_id"],
+            },
+        )
+    async def _spawn_job(self, tool_name: str, arguments: Dict[str, Any]) -> str:
+        job_id = uuid.uuid4().hex[:12]
+        self._jobs[job_id] = {"status": "running", "tool": tool_name, "result": None, "error": None}
+        task = asyncio.create_task(self._run_job(job_id, tool_name, arguments))
+        self._jobs[job_id]["task"] = task
+        return job_id
+    async def _run_job(self, job_id: str, tool_name: str, arguments: Dict[str, Any]) -> None:
+        try:
+            result = await asyncio.wait_for(
+                self._execute_tool(tool_name, arguments),
+                timeout=self._job_timeout,
+            )
+            self._jobs[job_id]["result"] = result
+            self._jobs[job_id]["status"] = "ok"
+        except asyncio.TimeoutError:
+            self._jobs[job_id]["error"] = (
+                f"job timed out after {self._job_timeout}s in tool {tool_name}"
+            )
+            self._jobs[job_id]["status"] = "error"
+        except Exception as e:
+            self._jobs[job_id]["error"] = str(e)
+            self._jobs[job_id]["status"] = "error"
+    async def _job_status(self, arguments: Dict[str, Any]) -> str:
+        job_id = arguments.get("job_id", "")
+        entry = self._jobs.get(job_id)
+        if not entry:
+            return json.dumps({"job_id": job_id, "status": "not_found"})
+        return json.dumps({
+            "job_id": job_id,
+            "status": entry["status"],
+            "tool": entry["tool"],
+            "result": entry.get("result"),
+            "error": entry.get("error"),
+        }, indent=2)
+    async def _job_wait(self, arguments: Dict[str, Any]) -> str:
+        job_id = arguments.get("job_id", "")
+        timeout_ms = int(arguments.get("timeout_ms", 30000))
+        entry = self._jobs.get(job_id)
+        if not entry:
+            return json.dumps({"job_id": job_id, "status": "not_found"})
+        task = entry.get("task")
+        if task and not task.done():
+            try:
+                await asyncio.wait_for(task, timeout=max(1, timeout_ms) / 1000.0)
+            except asyncio.TimeoutError:
+                pass
+        return await self._job_status(arguments)
     async def _execute_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
         """Execute a tool and return result as string."""
         
+        # Job registry tools
+        if tool_name == "job_status":
+            return await self._job_status(arguments)
+        elif tool_name == "job_wait":
+            return await self._job_wait(arguments)
         # Memory tools
         if tool_name == "memory_store":
             return await self._memory_store(arguments)
@@ -417,6 +549,33 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
         # ToT state query
         elif tool_name == "get_cognitive_tree_state":
             return await self._get_cognitive_tree_state(arguments)
+        
+        # Web scraping tools (registered by WebScrapingToolsMixin)
+        elif tool_name == "scrape_page":
+            return await self._scrape_page(arguments)
+        elif tool_name == "scrape_dynamic":
+            return await self._scrape_dynamic(arguments)
+        elif tool_name == "scrape_api":
+            return await self._scrape_api(arguments)
+        elif tool_name == "scrape_rss":
+            return await self._scrape_rss(arguments)
+        elif tool_name == "scrape_sitemap":
+            return await self._scrape_sitemap(arguments)
+        elif tool_name == "scrape_structured":
+            return await self._scrape_structured(arguments)
+        elif tool_name == "scrape_forms":
+            return await self._scrape_forms(arguments)
+        elif tool_name == "scrape_submit_form":
+            return await self._scrape_submit_form(arguments)
+        
+        # Dynamic fallback: any tool registered in self.tools whose handler follows
+        # the "_<tool_name>" convention gets dispatched here. This prevents the
+        # "registered but never dispatched" failure mode from recurring.
+        if tool_name in self.tools:
+            handler = getattr(self, f"_{tool_name}", None)
+            if callable(handler):
+                return await handler(arguments)
+            return f"Error: tool '{tool_name}' registered but has no _'{tool_name}' handler"
         
         return f"Unknown tool: {tool_name}"
     def _persist_simulated(self, args: Dict, out, sim_type: str):
@@ -867,15 +1026,51 @@ namespace {concept}.AI
         if os.environ.get("MEM20_HEALTH_DISABLE") not in ("1", "true", "yes"):
             start_health_server(self, port)
 
-        async def main():
-            async with stdio_server() as (read_stream, write_stream):
-                await self.server.run(
-                    read_stream,
-                    write_stream,
-                    self.server.create_initialization_options()
+        # MCP transport: stdio (default) or http (for opencode to connect to systemd instance)
+        transport = os.environ.get("MEM20_TRANSPORT", "stdio").lower()
+
+        if transport == "http":
+            mcp_port = int(os.environ.get("MEM20_MCP_PORT", "8082"))
+            # mcp 2.2 rewrite: the old `streamable_http_server()` helper was
+            # removed from mcp.server.streamable_http. The supported pattern is
+            # StreamableHTTPSessionManager (ASGI) fronted by Starlette + uvicorn.
+            import contextlib
+
+            from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
+            from starlette.applications import Starlette
+
+            # One manager per process lifetime: mcp 2.2 forbids re-entering a
+            # manager after its run() context exits, so create it fresh here.
+            manager = StreamableHTTPSessionManager(app=self.server)
+
+            @contextlib.asynccontextmanager
+            async def lifespan(app: Starlette):
+                async with manager.run():
+                    yield
+
+            http_app = Starlette(lifespan=lifespan)
+            # Streamable HTTP: POST initialize / GET SSE both live under "/".
+            http_app.mount("/", manager.handle_request)
+
+            import uvicorn
+
+            async def main():
+                uvicorn_config = uvicorn.Config(
+                    http_app, host="0.0.0.0", port=mcp_port, log_level="warning",
                 )
-        
-        anyio.run(main)
+                uvicorn_server = uvicorn.Server(uvicorn_config)
+                await uvicorn_server.serve()
+            anyio.run(main)
+        else:
+            async def main():
+                async with stdio_server() as (read_stream, write_stream):
+                    await self.server.run(
+                        read_stream,
+                        write_stream,
+                        self.server.create_initialization_options()
+                    )
+            
+            anyio.run(main)
 
 
 def main():

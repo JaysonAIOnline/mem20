@@ -1,0 +1,42 @@
+{
+  "name": "jairf-2",
+  "description": "JAIRF Quarter 2 - Persistent Multiplayer World: dedicated servers + shared persistent world. Deliverable: account system, networking, multiple zones, shared world state, parties, chat, early economy.",
+  "phases": [
+    {
+      "name": "Account system + auth",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Networking architecture + dedicated server",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Multiple zones + shared world state",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Parties + chat",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Early economy",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "QA by beta-testing swarm",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Human sign-off on Q2",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

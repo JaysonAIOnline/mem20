@@ -1,0 +1,207 @@
+/* ================================================================
+   JAYSON — Aggressive Grok / xAI inspired theme
+   Near-black • High contrast • Minimal chrome • Pill controls
+   ================================================================ */
+
+:root {
+  /* Deep black canvas (xAI style) */
+  --color-gray-950: #050505 !important;
+  --color-gray-900: #0a0a0a !important;
+  --color-gray-850: #0e0e0f !important;
+  --color-gray-800: #131314 !important;
+  --color-gray-700: #1a1a1c !important;
+  --color-gray-600: #252528 !important;
+
+  /* Text hierarchy */
+  --color-gray-50:  #ffffff !important;
+  --color-gray-100: #f4f4f5 !important;
+  --color-gray-200: #e4e4e7 !important;
+  --color-gray-300: #a1a1aa !important;
+  --color-gray-400: #71717a !important;
+  --color-gray-500: #52525b !important;
+
+  /* Accent — restrained warm orange */
+  --primary-600: #ff6b35 !important;
+  --primary-500: #ff7a45 !important;
+  --primary-400: #ff8f66 !important;
+}
+
+/* ========== GLOBAL ========== */
+html.dark,
+.dark,
+body {
+  background-color: #0a0a0a !important;
+  color: #f4f4f5 !important;
+}
+
+/* ========== SIDEBAR ========== */
+#sidebar,
+aside,
+.sidebar {
+  background-color: #0a0a0a !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Soften secondary sidebar text */
+#sidebar .text-xs,
+#sidebar .opacity-50 {
+  opacity: 0.55 !important;
+}
+
+/* ========== CHAT AREA ========== */
+.chat-container,
+#chat-container,
+[class*="chat"] {
+  background-color: #0a0a0a !important;
+}
+
+/* ========== MESSAGES ========== */
+/* User bubbles */
+.user-message,
+.message.user,
+[data-role="user"] {
+  background-color: #1a1a1c !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 18px 18px 6px 18px !important;
+}
+
+/* Assistant messages stay clean */
+.assistant-message,
+.message.assistant,
+[data-role="assistant"] {
+  background-color: transparent !important;
+}
+
+/* ========== INPUT AREA ========== */
+textarea,
+#chat-input,
+.chat-input,
+[contenteditable="true"] {
+  background-color: #131314 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9999px !important;
+  color: #f4f4f5 !important;
+  box-shadow: none !important;
+}
+
+textarea:focus,
+#chat-input:focus {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Send button — solid white pill */
+button[type="submit"],
+#send-message-button,
+.send-button {
+  background-color: #ffffff !important;
+  color: #0a0a0a !important;
+  border-radius: 9999px !important;
+  border: none !important;
+  font-weight: 500 !important;
+}
+
+button[type="submit"]:hover,
+#send-message-button:hover {
+  background-color: #e8e8e8 !important;
+  transform: scale(1.03);
+}
+
+/* ========== HEADER / NAV ========== */
+header,
+nav,
+.navbar,
+[class*="navbar"] {
+  background-color: rgba(10, 10, 10, 0.82) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ========== BUTTONS ========== */
+button,
+.btn,
+[role="button"] {
+  border-radius: 9999px !important;
+}
+
+/* Primary accent buttons */
+.bg-primary,
+.bg-blue-600,
+.bg-blue-500 {
+  background-color: #ff6b35 !important;
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2e;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* ========== TYPOGRAPHY TWEAKS ========== */
+.logo,
+[data-testid="logo"],
+.font-semibold {
+  font-weight: 500 !important;
+  letter-spacing: -0.025em !important;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em !important;
+}
+
+/* Soften secondary UI */
+.text-gray-500,
+.text-gray-400,
+.opacity-60 {
+  opacity: 0.65 !important;
+}
+
+/* ================================================================
+   EXTRA AGGRESSIVE MINIMALISM
+   Hide more chrome for a cleaner Grok-like experience
+   ================================================================ */
+
+/* Soften / hide secondary UI elements */
+.sidebar .text-xs,
+.sidebar .opacity-40,
+.sidebar .opacity-50,
+[class*="footer"],
+.version,
+.text-gray-500 {
+  opacity: 0.45 !important;
+}
+
+/* Tighter message spacing */
+.message,
+.chat-message {
+  margin-bottom: 0.75rem !important;
+}
+
+/* Cleaner input area */
+.chat-input-container,
+[class*="input-container"] {
+  background: transparent !important;
+  border-top: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+/* Hide some decorative elements if present */
+.bg-gradient-to-t,
+.bg-gradient-to-b {
+  background-image: none !important;
+}
+
+/* Make the whole interface feel denser and more focused */
+.prose {
+  max-width: 72ch !important;
+}

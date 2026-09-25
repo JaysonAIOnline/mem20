@@ -1,0 +1,49 @@
+# Genesis policy — braid seed (m1).
+# One braid, one policy; snapshots freeze a version of THIS document at the
+# moment an op was evaluated.
+
+name = "genesis"
+version = 1
+
+# Witness door (door1 "THE REAL ONE"): small scoped read caps.
+[[rules]]
+allow = true
+capability = "read:timeline:*"
+
+[[rules]]
+allow = true
+capability = "read:world:*"
+
+# Spatial facts (door3 quest3d, m9): world WRITES are ledger writes. door3
+# creates world objects through the SAME braided-triplet path as every write;
+# position is derived deterministically from the object id (D3.3).
+[[rules]]
+allow = true
+capability = "write:world:*"
+
+# Note/tool writes for the creative doors.
+[[rules]]
+allow = true
+capability = "write:note:*"
+
+# Intent strand (m12, spec-forth): a committed desire is an ordinary braided
+# node of op `write:intent` — the same policy authority that licenses normal
+# writes also licenses the strand. An intent stays OPEN until later proven work
+# references it via `payload.fulfills == <intent cid>`; resolution is real
+# committed motion, never imagined execution.
+[[rules]]
+allow = true
+capability = "write:intent:*"
+
+[[rules]]
+allow = true
+capability = "invoke:tool:*"
+
+# Brick wall: godmode escalation lives via a SECOND human-gated token + its
+# own snapshot — `policy_escalation_seed.toml` (m4). Nothing admin is granted
+# here, and nothing admin is reachable with a single creative token.
+[[rules]]
+allow = false
+capability = "admin:*:*"
+
+# Nothing else is granted (default_deny).

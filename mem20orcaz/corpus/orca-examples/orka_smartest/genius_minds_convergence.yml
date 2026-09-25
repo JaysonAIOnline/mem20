@@ -1,0 +1,421 @@
+# Genius Minds Convergence Workflow — Multi-perspective analysis with historical geniuses
+# Uses local LLM agents (gpt-oss:20b) for all reasoning and generation.
+
+orchestrator:
+  id: genius_minds_convergence
+  strategy: sequential
+  memory_preset: "procedural"  # Use procedural memory for genius insights and patterns
+  agents:
+    - prior_insights_reader
+    - genius_minds_loop
+    - final_synthesis_builder
+    - convergence_evaluator
+    - memory_writer
+
+agents:
+  # Initial memory reader to retrieve past insights
+  - id: prior_insights_reader
+    type: memory
+    memory_preset: "procedural"  # Skills and process patterns (90 days)
+    namespace: genius_insights
+    queue: orka:shared-debate-memory-reader
+    config:
+      operation: read
+      # 🎯 Preset provides: limit=6, similarity_threshold=0.7, vector_weight=0.6,
+      # text_weight=0.4, enable_hybrid_search=true, ef_runtime=12, etc.
+      limit: 5                    # Override preset default of 6
+      similarity_threshold: 0.1   # Override for very broad matching
+      temporal_weight: 0.4        # Override preset minimal temporal bias
+      memory_category_filter: store
+      memory_type_filter: "all"
+      fallback_to_text: true
+    prompt: |
+      {{ get_input() }}
+
+  # Main loop node for genius minds discussion
+  - id: genius_minds_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.85
+    
+    high_priority_agents:
+      - "convergence_scorer"
+      - "insight_quality_checker"
+    
+    # Boolean scoring configuration for deterministic convergence evaluation
+    scoring:
+      preset: moderate  # Balanced approach for creative convergence
+      context: loop_convergence  # Track genius minds convergence
+      custom_weights:
+        # Convergence criteria for multi-perspective synthesis
+        improvement.better_than_previous: 0.25
+        improvement.approaching_target: 0.20
+        stability.consistent_direction: 0.15
+        stability.not_degrading: 0.10
+        convergence.within_tolerance: 0.15
+        convergence.delta_decreasing: 0.10
+    
+    cognitive_extraction:
+      enabled: true
+      max_length_per_category: 200
+      extract_patterns:
+        insights:
+          - "INSIGHTS[\":]?\\s*(.+?)(?=\\n[A-Z_]+:|$)"
+        innovations:
+          - "INNOVATIONS[\":]?\\s*(.+?)(?=\\n[A-Z_]+:|$)"
+        synthesis:
+          - "SYNTHESIS[\":]?\\s*(.+?)(?=\\n[A-Z_]+:|$)"
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      breakthrough: "{{ safe_get_response('breakthrough_detector', 'none') }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+      mistakes: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: genius-minds-internal
+        strategy: sequential
+        agents:
+          - historical_context
+          - genius_fork
+          - genius_join
+          - insight_synthesizer
+          - breakthrough_detector
+          - insight_quality_checker
+          - convergence_scorer
+      
+      agents:
+        # Historical context provider
+        - id: historical_context
+          type: memory
+          memory_preset: "semantic"  # Facts and knowledge base (30 days)
+          namespace: historical_knowledge
+          queue: orka:shared-debate-memory
+          config:
+            operation: read
+            # 🎯 Preset provides: limit=10, similarity_threshold=0.65, vector_weight=0.7,
+            # enable_hybrid_search=true, ef_runtime=15, no temporal bias, etc.
+            limit: 3                # Override preset default of 10
+          prompt: |
+            Retrieve historical context and knowledge relevant to: {{ get_input() }}
+
+        # Fork for parallel genius perspectives
+        - id: genius_fork
+          type: fork
+          targets:
+            - [da_vinci_perspective]
+            - [einstein_perspective]
+            - [pythagoras_perspective]
+            - [newton_perspective]
+            - [tesla_perspective]
+        
+        # Leonardo da Vinci's perspective
+        - id: da_vinci_perspective
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Channel Leonardo da Vinci's polymathic genius. Analyze the problem through:
+            1. Visual-spatial reasoning
+            2. Artistic-scientific synthesis
+            3. Nature-inspired innovation
+            4. Practical engineering
+            5. Anatomical/structural understanding
+            
+            Topic: {{ get_input() }}
+            Historical context: {{ safe_get_response('historical_context', 'No specific context found') }}
+            
+            Return in da Vinci's voice, including sketches described in words.
+            End with:
+            INNOVATION_SCORE: [0.0-1.0]
+            KEY_INSIGHT: [one sentence]
+        
+        # Einstein's perspective
+        - id: einstein_perspective
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Channel Albert Einstein's revolutionary thinking. Analyze through:
+            1. Thought experiments
+            2. Fundamental principles
+            3. Space-time considerations
+            4. Quantum implications
+            5. Unified theory approach
+            
+            Topic: {{ get_input() }}
+            Historical context: {{ safe_get_response('historical_context', 'No specific context found') }}
+            
+            Return in Einstein's voice, with his characteristic metaphors.
+            End with:
+            INNOVATION_SCORE: [0.0-1.0]
+            KEY_INSIGHT: [one sentence]
+        
+        # Pythagoras's perspective
+        - id: pythagoras_perspective
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Channel Pythagoras's mathematical wisdom. Analyze through:
+            1. Mathematical harmony
+            2. Geometric patterns
+            3. Numerical relationships
+            4. Musical ratios
+            5. Universal order
+            
+            Topic: {{ get_input() }}
+            Historical context: {{ safe_get_response('historical_context', 'No specific context found') }}
+            
+            Return in Pythagoras's voice, emphasizing mathematical harmony.
+            End with:
+            INNOVATION_SCORE: [0.0-1.0]
+            KEY_INSIGHT: [one sentence]
+        
+        # Newton's perspective
+        - id: newton_perspective
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Channel Isaac Newton's systematic genius. Analyze through:
+            1. Physical laws
+            2. Mathematical models
+            3. Experimental evidence
+            4. Universal principles
+            5. Mechanical relationships
+            
+            Topic: {{ get_input() }}
+            Historical context: {{ safe_get_response('historical_context', 'No specific context found') }}
+            
+            Return in Newton's voice, with mathematical precision.
+            End with:
+            INNOVATION_SCORE: [0.0-1.0]
+            KEY_INSIGHT: [one sentence]
+        
+        # Tesla's perspective
+        - id: tesla_perspective
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Channel Nikola Tesla's visionary mind. Analyze through:
+            1. Electromagnetic theory
+            2. Energy systems
+            3. Innovative applications
+            4. Future implications
+            5. System interconnections
+            
+            Topic: {{ get_input() }}
+            Historical context: {{ safe_get_response('historical_context', 'No specific context found') }}
+            
+            Return in Tesla's voice, with futuristic vision.
+            End with:
+            INNOVATION_SCORE: [0.0-1.0]
+            KEY_INSIGHT: [one sentence]
+        
+        # Join genius perspectives
+        - id: genius_join
+          type: join
+          group: genius_fork
+          prompt: |
+            Combine insights from all historical geniuses.
+            
+            Da Vinci: {{ safe_get_response('da_vinci_perspective', '{}') }}
+            Einstein: {{ safe_get_response('einstein_perspective', '{}') }}
+            Pythagoras: {{ safe_get_response('pythagoras_perspective', '{}') }}
+            Newton: {{ safe_get_response('newton_perspective', '{}') }}
+            Tesla: {{ safe_get_response('tesla_perspective', '{}') }}
+            
+            {% if get_loop_number() > 1 %}
+            Previous insights: {{ get_past_loops() | truncate(200) }}
+            {% endif %}
+            
+            Synthesize the perspectives, noting agreements and unique insights.
+        
+        # Insight synthesizer
+        - id: insight_synthesizer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Create a unified synthesis of all genius perspectives.
+            
+            Topic: {{ get_input() }}
+            Combined insights: {{ safe_get_response('genius_join', '') }}
+            
+            Consider:
+            1. Common threads across perspectives
+            2. Complementary insights
+            3. Novel combinations
+            4. Practical applications
+            5. Future implications
+            
+            Return a comprehensive synthesis that honors each genius's contribution.
+            
+            End with:
+            SYNTHESIS_SCORE: [0.0-1.0]
+            UNIFIED_INSIGHT: [one paragraph]
+        
+        # Breakthrough detector
+        - id: breakthrough_detector
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Analyze for potential breakthrough insights.
+            
+            Synthesis: {{ safe_get_response('insight_synthesizer', '') }}
+            
+            Evaluate:
+            1. Novelty of combinations
+            2. Practical potential
+            3. Theoretical advancement
+            4. Cross-domain application
+            5. Future impact
+            
+            Return analysis with:
+            BREAKTHROUGH_POTENTIAL: [0.0-1.0]
+            KEY_BREAKTHROUGH: [one sentence]
+        
+        # Insight quality checker
+        - id: insight_quality_checker
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Evaluate the quality of insights for:
+            1. Logical coherence
+            2. Cross-disciplinary integration
+            3. Innovation potential
+            4. Practical applicability
+            5. Theoretical soundness
+            
+            Synthesis: {{ safe_get_response('insight_synthesizer', '') }}
+            Breakthrough: {{ safe_get_response('breakthrough_detector', '') }}
+            
+            End with:
+            INSIGHTS: [key points]
+            IMPROVEMENTS: [suggestions]
+            QUALITY_SCORE: [0.0-1.0]
+        
+        # Convergence scorer
+        - id: convergence_scorer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          prompt: |
+            Score the convergence of genius perspectives:
+            1. Agreement level
+            2. Insight integration
+            3. Synthesis quality
+            4. Breakthrough potential
+            5. Practical consensus
+            
+            Target convergence: {{ get_score_threshold() }}
+            
+            All perspectives: {{ safe_get_response('genius_join', '') }}
+            Synthesis: {{ safe_get_response('insight_synthesizer', '') }}
+            Quality: {{ safe_get_response('insight_quality_checker', '') }}
+            
+            {% if get_loop_number() > 1 %}
+            Previous scores: {{ get_past_loops() | truncate(200) }}
+            {% endif %}
+            
+            End with:
+            CONVERGENCE_NOTES: [key points]
+            CONVERGENCE_SCORE: [0.0-1.0]
+
+  # Final synthesis builder
+  - id: final_synthesis_builder
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    prompt: |
+      Create final synthesis of genius minds discussion.
+      
+      Topic: {{ get_input() }}
+      Perspectives: {{ safe_get_response('genius_minds_loop.genius_join', '') }}
+      Final synthesis: {{ safe_get_response('genius_minds_loop.insight_synthesizer', '') }}
+      Convergence: {{ safe_get_response('genius_minds_loop.convergence_scorer', '') }}
+      Quality: {{ safe_get_response('genius_minds_loop.insight_quality_checker', '') }}
+      Iterations: {{ safe_get_response('genius_minds_loop.loops_completed', '1') }}
+      
+      Provide:
+      1. Summary of each genius's key contribution
+      2. Areas of consensus
+      3. Unique insights
+      4. Practical implications
+      5. Future directions
+      
+      FINAL_SYNTHESIS:
+
+  # Convergence evaluator
+  - id: convergence_evaluator
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    prompt: |
+      Evaluate the final convergence of genius perspectives.
+      
+      Topic: {{ get_input() }}
+      Final synthesis: {{ safe_get_response('final_synthesis_builder', '') }}
+      Convergence score: {{ safe_get_response('genius_minds_loop.convergence_scorer.CONVERGENCE_SCORE', '0.0') }}
+      Iterations: {{ safe_get_response('genius_minds_loop.loops_completed', '1') }}
+      Agents Perspectives: {{ safe_get_response('genius_minds_loop.genius_join', '') }}
+      
+      Analyze:
+      1. List of agent prospective within Previous loops.
+      2. Quality of consensus
+      3. Integration of perspectives
+      4. Innovation level
+      5. Practical value
+      6. Theoretical advancement
+      7. Include Final response in the answer
+      
+      EVALUATION:
+
+  # Memory writer
+  - id: memory_writer
+    type: memory
+    memory_preset: "procedural"  # Skills and process patterns (90 days)
+    namespace: genius_insights
+    queue: orka:shared-debate-memory-writer
+    config:
+      operation: write
+      vector: true
+      vector_field: "content_vector"
+      force_recreate_index: false  # Only create index if it doesn't exist
+      vector_params:
+        type: "FLOAT32"
+        distance_metric: "COSINE"
+        ef_construction: 200
+        m: 16
+      metadata:
+        source: "genius_minds_convergence"
+        convergence_score: "{{ safe_get_response('genius_minds_loop.convergence_scorer.CONVERGENCE_SCORE', '0.0') }}"
+        quality_score: "{{ safe_get_response('genius_minds_loop.insight_quality_checker.QUALITY_SCORE', '0.0') }}"
+        breakthrough_potential: "{{ safe_get_response('genius_minds_loop.breakthrough_detector.BREAKTHROUGH_POTENTIAL', '0.0') }}"
+        loop_count: "{{ safe_get_response('genius_minds_loop.loops_completed', '1') }}"
+    prompt: |
+      Store complete discussion with metrics and insights.
+      
+      Topic: {{ get_input() }}
+      Final synthesis: {{ safe_get_response('final_synthesis_builder', '') }}
+      Evaluation: {{ safe_get_response('convergence_evaluator', '') }}
+      Iterations: {{ safe_get_response('genius_minds_loop.loops_completed', '1') }}

@@ -1,0 +1,200 @@
+# Cognitive Loop with Scoring and Extraction
+# Demonstrates iterative improvement with cognitive insight extraction
+#
+# ROBUSTNESS FEATURES:
+# - Explicit output format requirements
+# - Multiple score extraction patterns
+# - Fallback scores for timeouts
+# - Focused prompts to reduce LLM confusion
+# - Consistent temperature settings
+
+orchestrator:
+  id: cognitive-loop-scoring
+  strategy: sequential
+  agents:
+    - cognitive_loop
+    - final_processor
+
+agents:
+  - id: cognitive_loop
+    type: loop
+    max_loops: 5
+    score_threshold: 0.60
+    fallback_score: 0.20
+    timeout_score: 0.10
+    persist_across_runs: false
+    
+    # Boolean-based scoring
+    scoring:
+      preset: moderate
+      context: loop_convergence
+      custom_weights:
+        improvement.better_than_previous: 0.35
+        stability.consistent_direction: 0.25
+        convergence.within_tolerance: 0.40
+    
+    # Robust score extraction
+    score_extraction_config:
+      strategies:
+        - type: pattern
+          patterns:
+            - "SCORE:\\s*([0-9]+\\.?[0-9]*)"
+            - "Score:\\s*([0-9]+\\.?[0-9]*)"
+            - "QUALITY:\\s*([0-9]+\\.?[0-9]*)"
+        - type: pattern
+          patterns:
+            - "(0\\.[6-9][0-9]?)"
+            - "(0\\.[5][0-9])"
+    
+    # Cognitive extraction patterns
+    cognitive_extraction:
+      enabled: true
+      max_length_per_category: 400
+      extract_patterns:
+        insights:
+          - "(?:provides?|identifies?|shows?|reveals?)\\s+(.+?)(?:\\n|$)"
+          - "(?:key|main|important)\\s+(?:insight|finding|point)s?[:\\s]+(.+?)(?:\\n|$)"
+        improvements:
+          - "(?:lacks?|needs?|requires?|missing|should)\\s+(.+?)(?:\\n|$)"
+          - "(?:could|would)\\s+(?:improve|benefit|enhance)\\s+(.+?)(?:\\n|$)"
+        mistakes:
+          - "(?:overlooked|missed|not adequately|fails? to)\\s+(.+?)(?:\\n|$)"
+          - "(?:weakness|gap|issue|problem)s?[:\\s]+(.+?)(?:\\n|$)"
+      agent_priorities:
+        analyzer: ["insights", "improvements"]
+        scorer: ["improvements", "mistakes"]
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      key_insights: "{{ insights }}"
+      improvements_needed: "{{ improvements }}"
+      mistakes_found: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: internal-cognitive
+        strategy: sequential
+        agents: [analyzer, scorer]
+      
+      agents:
+        - id: analyzer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.6
+          timeout: 60
+          prompt: |
+            TASK: Analyze this topic thoroughly.
+            TOPIC: {{ get_input() }}
+            
+            {% if has_past_loops() %}
+            IMPROVEMENT REQUIRED - Previous attempts ({{ get_past_loops() | length }}):
+            {% for past_loop in get_past_loops() %}
+            Loop {{ past_loop.loop_number }} (Score: {{ past_loop.score }}):
+            - Insights: {{ past_loop.key_insights | default('None captured') }}
+            - Needed: {{ past_loop.improvements_needed | default('General improvement') }}
+            - Gaps: {{ past_loop.mistakes_found | default('None identified') }}
+            {% endfor %}
+            
+            ADDRESS all gaps identified above.
+            {% endif %}
+            
+            REQUIRED OUTPUT FORMAT:
+            
+            KEY_INSIGHTS:
+            1. [Specific insight with evidence]
+            2. [Specific insight with evidence]
+            3. [Specific insight with evidence]
+            
+            ANALYSIS:
+            [Thorough analysis addressing the topic]
+            
+            AREAS_NEEDING_WORK:
+            - [What could be explored further]
+            
+            CONCLUSION:
+            [Clear, supported conclusion]
+            
+            Target 350-450 words. Be specific and evidence-based.
+            
+        - id: scorer
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.1
+          timeout: 60
+          prompt: |
+            TASK: Rate the quality of this analysis.
+            
+            ANALYSIS TO EVALUATE:
+            {{ get_agent_response('analyzer') }}
+            
+            SCORING CRITERIA:
+            1. Completeness (0-0.25): Does it cover all key aspects?
+            2. Depth (0-0.25): Is the analysis thorough and insightful?
+            3. Evidence (0-0.25): Are claims supported?
+            4. Clarity (0-0.25): Is it well-structured and clear?
+            
+            REQUIRED OUTPUT FORMAT:
+            
+            BREAKDOWN:
+            - Completeness: [0.0-0.25]
+            - Depth: [0.0-0.25]
+            - Evidence: [0.0-0.25]
+            - Clarity: [0.0-0.25]
+            
+            SCORE: [Sum of above, 0.0-1.0]
+            
+            IMPROVEMENTS_NEEDED:
+            - [Specific improvement 1]
+            - [Specific improvement 2]
+            
+            GAPS_FOUND:
+            - [What was overlooked or missed]
+            
+            IMPORTANT: The SCORE line must be exactly "SCORE: X.XX" format.
+
+  - id: final_processor
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.4
+    timeout: 60
+    prompt: |
+      TASK: Synthesize the cognitive loop results.
+      
+      ORIGINAL TOPIC: {{ get_input() }}
+      
+      {% if previous_outputs.cognitive_loop %}
+      LOOP STATISTICS:
+      - Loops completed: {{ previous_outputs.cognitive_loop.loops_completed | default('Unknown') }}
+      - Final score: {{ previous_outputs.cognitive_loop.final_score | default('Unknown') }}
+      - Threshold met: {{ previous_outputs.cognitive_loop.threshold_met | default('Unknown') }}
+      
+      {% set loop_result = get_loop_output('cognitive_loop', previous_outputs) %}
+      {% if loop_result.past_loops %}
+      COGNITIVE EVOLUTION:
+      {% for past_loop in loop_result.past_loops %}
+      Loop {{ past_loop.loop_number }} ({{ past_loop.score }}):
+      - Insights: {{ past_loop.key_insights | default('None') }}
+      - Improvements: {{ past_loop.improvements_needed | default('None') }}
+      {% endfor %}
+      {% endif %}
+      
+      FINAL ANALYSIS:
+      {{ safe_get(loop_result, 'result', 'No final result available') }}
+      {% else %}
+      No loop results available.
+      {% endif %}
+      
+      REQUIRED OUTPUT:
+      Provide a meta-analysis (200-300 words) covering:
+      1. How thinking evolved across loops
+      2. Key breakthroughs between iterations
+      3. Final insights and conclusions
+      4. Confidence assessment

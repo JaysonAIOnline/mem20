@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>door2 · godmode console</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #151b26; --line: #263042;
+    --ink: #dde5f0; --dim: #7d8aa0; --accent: #5eeaa0; --warn: #ffb86b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 13px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 14px; margin: 0 0 8px; color: var(--accent); font-weight: 600; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  nav button {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 4px; padding: 5px 10px; font: inherit; cursor: pointer;
+  }
+  nav button[aria-selected="true"] { border-color: var(--accent); color: var(--accent); }
+  main { padding: 14px 16px; max-width: 960px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin: 0 0 8px; }
+  .stat { color: var(--dim); }
+  .stat b { color: var(--ink); font-weight: 600; }
+  .card {
+    border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
+    padding: 10px 12px; margin: 8px 0;
+  }
+  .row { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px dotted var(--line); }
+  .row .cid { color: var(--dim); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .op { color: var(--accent); }
+  .row .target { color: var(--ink); }
+  .rule { border-bottom: 1px dotted var(--line); padding: 3px 0; }
+  .rule .cap { color: var(--accent); }
+  .rule.allow { color: var(--ink); }
+  .rule.deny { color: var(--warn); }
+  .spine { font-size: 11px; color: var(--dim); word-break: break-all; }
+  form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  input, textarea {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 4px; padding: 6px 8px; font: inherit;
+  }
+  button.primary {
+    background: var(--accent); color: #06231a; border: 0; border-radius: 4px;
+    padding: 7px 12px; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button.reset {
+    background: var(--warn); color: #2d1c00; border: 0; border-radius: 4px;
+    padding: 7px 12px; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  #error { color: var(--warn); padding: 8px 0; display: none; }
+  #receipt { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>door2 · godmode console</h1>
+  <nav id="nav"></nav>
+</header>
+<div id="error"></div>
+<main>
+  <section id="panel"></section>
+</main>
+<footer id="footer" style="padding:8px 16px;color:var(--dim);border-top:1px solid var(--line)">waiting for the bridge…</footer>
+
+<script>
+  const el = (id) => document.getElementById(id);
+
+  // godmode surfaces: creative (single door2 token) + destructive (human-gated).
+  const NAV = [
+    { id: "console", label: "console" },
+    { id: "canvas", label: "canvas" },
+    { id: "playground", label: "playground" },
+    { id: "evaluate", label: "evaluate" },
+    { id: "daemon", label: "daemon" },
+  ];
+
+  function esc(s) {
+    return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;');
+  }
+
+  async function fetch_json(path) {
+    const res = await fetch(path);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || (path + ' failed'));
+    return json.data;
+  }
+
+  function navBtn() {
+    const nav = el('nav');
+    nav.innerHTML = '';
+    NAV.forEach(s => {
+      const b = document.createElement('button');
+      b.textContent = s.label;
+      b.setAttribute('aria-selected', selected === s.id);
+      b.onclick = () => { selected = s.id; render(); };
+      nav.appendChild(b);
+    });
+  }
+
+  let selected = 'console';
+
+  async function render() {
+    const btns = [...el('nav').querySelectorAll('button')];
+    btns.forEach(b => b.setAttribute('aria-selected', selected === b.textContent));
+    const panel = el('panel');
+    if (selected === 'console') return renderConsole(panel);
+    if (selected === 'canvas') return renderCanvas(panel);
+    if (selected === 'playground') return renderPlayground(panel);
+    if (selected === 'evaluate') return renderEvaluate(panel);
+    if (selected === 'daemon') return renderDaemon(panel);
+  }
+
+  async function renderConsole(panel) {
+    panel.innerHTML = '<h2>console · door registry</h2><span class="stat">loading…</span>';
+    const data = await fetch_json('/console');
+    panel.innerHTML = `<h2>console · door registry</h2>` +
+      `<div class="card"><div class="stat">door <b>${data.door}</b> · engine <b>${data.engine}</b> · escalation <b>${data.escalation_armed ? 'armed' : 'not armed'}</b> · default snapshot <b>${data.default_snapshot}</b></div></div>` +
+      `<h2>registered doors</h2>`;
+    data.doors.forEach(d => {
+      const r = document.createElement('div');
+      r.className = 'row';
+      r.innerHTML = `<div class="op">${esc(d.door)}</div><div class="target">${esc(d.location)}</div>`;
+      panel.appendChild(r);
+    });
+  }
+
+  async function renderCanvas(panel) {
+    panel.innerHTML = `<h2>canvas · creative (door2 write token)</h2>` +
+      `<form id="canvasForm">
+        <input id="target" placeholder="target · e.g. canvas/room-1" value="canvas/room-1">
+        <textarea id="content" rows="3" placeholder="a creative bond…">compiled from the godmode canvas</textarea>
+        <button type="submit" class="primary">compile → write:note</button>
+      </form>
+      <div id="receipt"></div><h2>creative log</h2>`;
+    el('canvasForm').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const r = await fetch('/canvas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: el('target').value, content: el('content').value }),
+      });
+      const json = await r.json();
+      const rec = el('receipt');
+      rec.textContent = json.ok
+        ? `compiled → cid ${json.data.cid.slice(0, 18)}… (depth ${json.data.depth}, escalated ${json.data.escalated})`
+        : `refused: ${json.error}`;
+      renderCanvasList(panel);
+    };
+    renderCanvasList(panel);
+  }
+
+  // door2 reads come back as the AXIOM structure view (no timeline for door2);
+  // render its DAG shape honestly instead of assuming a witness timeline.
+  function renderStructure(panel, data, heading) {
+    const v = data.view;
+    const box = document.createElement('div');
+    box.innerHTML = `<div class="card"><div class="stat"><b>${heading}</b> · kind <b>${esc(v.kind)}</b> · nodes <b>${v.node_count}</b> · spine→genesis <b>${(v.spine_to_genesis || []).length}</b> · whole-log verified <b>${v.verified}</b></div>` +
+      `<div class="row"><div class="op">head</div><div class="target cid">${esc(v.head || '—')}</div></div>` +
+      `<div class="row"><div class="op">edges</div><div class="target">${(v.edges || []).length}</div></div></div>`;
+    panel.appendChild(box);
+  }
+
+  async function renderCanvasList(panel) {
+    const data = await fetch_json('/canvas');
+    renderStructure(panel, data, 'canvas');
+  }
+
+  async function renderPlayground(panel) {
+    panel.innerHTML = `<h2>playground · creative single-token writes</h2>` +
+      `<form id="playForm">
+        <input id="ptarget" placeholder="target · e.g. playground/sand-pit" value="playground/sand-pit">
+        <textarea id="pcontent" rows="3" placeholder="a sandbox bond…">spinning up in the godmode playground</textarea>
+        <button type="submit" class="primary">write (creative)</button>
+      </form>
+      <div id="preceipt"></div>` +
+      `<h2>reset · destructive (human-gated)</h2>` +
+      `<div class="card"><div class="stat">clearing the playground needs the <b>second human-gated token</b> — the bridge attaches it only on the escalated route (D2.3).</div>
+       <button id="resetBtn" class="reset" style="margin-top:8px">self-reset playground → admin:destroy</button></div>
+      <div id="rreceipt"></div><h2>playground</h2>`;
+    el('playForm').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const r = await fetch('/playground', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: el('ptarget').value, content: el('pcontent').value }),
+      });
+      const json = await r.json();
+      const rec = el('preceipt');
+      rec.textContent = json.ok
+        ? `creative write ok → cid ${json.data.cid.slice(0, 18)}… (escalated ${json.data.escalated})`
+        : `refused: ${json.error}`;
+    };
+    el('resetBtn').onclick = async () => {
+      const r = await fetch('/playground/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: 'playground', content: 'self-reset via destructive escalation' }),
+      });
+      const json = await r.json();
+      const rec = el('rreceipt');
+      rec.textContent = json.ok
+        ? `reset committed → cid ${json.data.cid.slice(0, 18)}… (escalated ${json.data.escalated}, double triplet)`
+        : `refused: ${json.error}`;
+    };
+    renderPlaygroundList(panel);
+  }
+
+  async function renderPlaygroundList(panel) {
+    const data = await fetch_json('/playground');
+    renderStructure(panel, data, 'playground');
+  }
+
+  async function renderEvaluate(panel) {
+    panel.innerHTML = '<h2>evaluate · real policy snapshot</h2><span class="stat">loading…</span>';
+    const data = await fetch_json('/evaluate');
+    panel.innerHTML = `<h2>evaluate · real policy snapshot</h2>` +
+      `<div class="card"><div class="stat">snapshot <b>${data.snapshot}</b> · <b>${data.policy.policy.name}</b> v${data.policy.policy.version} · default-deny <b>${data.policy.policy.default_deny}</b></div></div>` +
+      `<form id="evalForm">
+        <input id="cap" placeholder="capability · e.g. write:note" value="write:note">
+        <button type="submit" class="primary">evaluate against the frozen snapshot</button>
+      </form>
+      <div id="ereceipt"></div><h2>rules</h2>`;
+    data.policy.policy.rules.forEach(rule => {
+      const r = document.createElement('div');
+      r.className = 'rule ' + (rule.allow ? 'allow' : 'deny');
+      r.innerHTML = `<span class="cap">${esc(rule.capability || 'match:*')}</span> → ${rule.allow ? 'allow' : 'deny'}`;
+      panel.appendChild(r);
+    });
+    el('evalForm').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const r = await fetch('/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cap: el('cap').value }),
+      });
+      const json = await r.json();
+      const rec = el('ereceipt');
+      rec.textContent = json.ok
+        ? `cap ${esc(json.data.cap)} → ${json.data.allowed ? 'ALLOWED' : 'DENIED'} under ${json.data.snapshot}`
+        : `refused: ${json.error}`;
+    };
+  }
+
+  async function renderDaemon(panel) {
+    panel.innerHTML = '<h2>daemon · boot-time server info</h2><span class="stat">loading…</span>';
+    const data = await fetch_json('/daemon');
+    panel.innerHTML = `<h2>daemon · boot-time server info</h2>` +
+      `<div class="card"><div class="stat">registry door <b>${data.door}</b> · engine <b>${data.engine}</b> · escalation <b>${data.escalation_armed ? 'armed' : 'not armed'}</b></div>` +
+      `<div class="spine">registered doors: ${data.doors.map(d => d.door + '@' + d.location).join(', ')}</div></div>`;
+  }
+
+  async function poll() {
+    try {
+      if (!el('nav').children.length) navBtn();
+      el('error').style.display = 'none';
+      el('footer').textContent =
+        `door2 · godmode console · creative tokens are door2-widened, destructive ops are human-gated · all keys held server-side`;
+    } catch (e) {
+      el('error').textContent = 'bridge unreachable: ' + e.message;
+      el('error').style.display = 'block';
+    }
+  }
+
+  navBtn();
+  render();
+  poll();
+  setInterval(poll, 3000);
+</script>
+</body>
+</html>

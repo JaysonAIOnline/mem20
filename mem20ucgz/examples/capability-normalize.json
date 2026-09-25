@@ -1,0 +1,13 @@
+{
+  "id": "example.text.normalize",
+  "name": "Example Text Normalizer",
+  "version": "1.0.0",
+  "provider": "example",
+  "inputs": ["text/raw"],
+  "outputs": ["text/normalized"],
+  "tags": ["text", "normalization"],
+  "platforms": ["local", "hybrid", "cloud"],
+  "latency_ms": 2.5,
+  "cost_units": 0.0,
+  "energy_units": 0.1
+}

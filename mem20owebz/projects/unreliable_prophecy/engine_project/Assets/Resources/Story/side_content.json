@@ -1,0 +1,110 @@
+{
+  "storyline_id": "side_content",
+  "title": "Side Content & Companion Stories",
+  "version": "1.0",
+  "side_quests": [
+    {
+      "quest_id": "S01",
+      "name": "The Lost Ledger",
+      "region": "Bureaucracy Hills",
+      "giver": "Archivist_NPC",
+      "description": "Three pages from the Grand Ledger have gone missing. Without them, nothing in this region balances.",
+      "objectives": [
+        {"id": "S01_O1", "description": "Find Ledger Page 1", "type": "collect", "target": "LedgerPage_1"},
+        {"id": "S01_O2", "description": "Find Ledger Page 2", "type": "collect", "target": "LedgerPage_2"},
+        {"id": "S01_O3", "description": "Find Ledger Page 3", "type": "collect", "target": "LedgerPage_3"},
+        {"id": "S01_O4", "description": "Return to the Archivist", "type": "talk", "target": "Archivist_NPC"}
+      ],
+      "rewards": ["Bonus Stamp", "Ledger Page (collectible)", "+5 Reputation"]
+    }
+  ],
+  "companion_banter": {
+    "banter_triggers": [
+      {"id": "BANTER_01", "location": "Bureaucracy Hills", "companions": ["Wizard", "Sorceress"], "line": "Wizard: 'I've seen this before.' Sorceres: 'You've seen everything before.' Wizard: 'That's not— okay, yes.'"},
+      {"id": "BANTER_02", "location": "Forest", "companions": ["Wizard", "Rogue"], "line": "Rogue: 'These trees are judging us.' Wizard: 'They're always judging. It's their thing.'"},
+      {"id": "BANTER_03", "location": "City of Forms", "companions": ["Sorceress", "Warrior"], "line": "Warrior: 'I could just smash through the queue.' Sorceres: 'Please don't. We'd have to fill out the forms.'"}
+    ]
+  },
+  "guidebook_entries": [
+    {"id": "GB_01", "title": "On the Nature of Prophecies", "text": "Prophecies are living documents. They revise themselves when no one is looking. Do not read your prophecy in a mirror."},
+    {"id": "GB_02", "title": "Filing Systems", "text": "There are three systems: alphabetical, chronological, and 'wherever there's space.' The third is most common."},
+    {"id": "GB_03", "title": "Amendment Protocol", "text": "When an amendment conflicts with the original text, the amendment wins. When two amendments conflict, the most recent wins. When all amendments conflict, see your local bureaucrat."},
+    {"id": "GB_04", "title": "Department of Previous Failures", "text": "Not a punishment. A memorial. The plaques here honor those who tried. That they failed is less important than that they filed the paperwork."},
+    {"id": "GB_05", "title": "The Talking Trees", "text": "The trees in the Forest of Unhelpful Trees were once memos. They were never delivered. Now they judge everyone who passes."},
+    {"id": "GB_06", "title": "Paper Elementals", "text": "Born from forgotten forms. They grow stronger the longer a document goes unfiled. Stamp early, stamp often."},
+    {"id": "GB_07", "title": "Compliance Officers", "text": "They are not evil. They are paperwork given form. They will inspect you first. Always have your permits ready."},
+    {"id": "GB_08", "title": "The Binder", "text": "Your Prophecy Binder will get heavier. This is normal. The words accumulate. The amendments multiply. Carry it anyway."}
+  ],
+  "bureaucrat_dialogue": {
+    "idle_lines": [
+      "Please take a number.",
+      "Form 12-B is for emergencies only. This is not an emergency.",
+      "The line moves when it moves.",
+      "No, I cannot 'just skip' the waiting period.",
+      "Your amendment is in processing. It will be ready never."
+    ],
+    "amendment_delivery": [
+      "This just came through. Prophecy 47-B (Revised) is now 47-B (Revised Again).",
+      "New amendment. All prophecies must be filed in triplicate.",
+      "Revision 47-B-2: The Chosen One shall carry the binder with both hands.",
+      "Urgent memo: All forests now require Form 9-F (Forest Entry Permit)."
+    ],
+    "post_amendment": [
+      "The paperwork has been updated. Please acknowledge receipt.",
+      "Your prophecy is now longer. Congratulations.",
+      "Next amendment in 3-5 business days."
+    ]
+  },
+  "ambient_npc_dialogue": {
+    "mira_shopkeeper": [
+      "Ink's fresh. Paper's fresh. You're... here. That's something.",
+      "Buy something or keep walking. Both help the economy.",
+      "The forest path is free. The city gate costs 3 stamps."
+    ],
+    "aldric_guard": [
+      "Nothing happens here. That's why I took this post.",
+      "If you see anything suspicious, file a report. In triplicate.",
+      "Quietvale. Quiet vale. Very quiet. Suspiciously quiet."
+    ],
+    "bertram_farmer": [
+      "My crops grew wrong this year. All paperwork-related issues.",
+      "The soil needs Form 7-A. I don't have Form 7-A.",
+      "The Bureaucrat came by. Said my turnips were 'unauthorized.'"
+    ],
+    "pip_gossip": [
+      "Did you hear? The Bureaucrat's binder fell open. Pages everywhere!",
+      "There's a rumor about Prophecy 47-C. But rumors aren't documented, so they don't count.",
+      "I know something about everyone. It's my job. And also my hobby."
+    ],
+    "lyra_questgiver": [
+      "Three scouts lost this month. Officially. Unofficially, I'm out of explanations.",
+      "The ruins aren't a tourist destination. People die there.",
+      "I don't believe in fate. I believe in preparation."
+    ],
+    "sister_wren": [
+      "Rest here. The beds are clean and the prophecy-binding doesn't hurt.",
+      "You look tired. The prophecy is heavy. I have tea for that.",
+      "The Goddess watches. But mostly she naps. Don't tell anyone I said that."
+    ],
+    "kael_blacksmith": [
+      "Steel needs form. Form needs filing. Everything needs something.",
+      "I forged a sword once. Now I forge permits. Less exciting, more stable.",
+      "Your weapon looks dull. Or maybe that's just bureaucracy."
+    ],
+    "dolly_innkeeper": [
+      "Welcome to the Quietvale Inn. No lurgy, no prophecy, just sleep.",
+      "If the Bureaucrat comes looking, I haven't seen you.",
+      "Rooms are 5 stamps a night. Cheaper if you have a permit."
+    ],
+    "aldous_priest": [
+      "The Goddess is eternal. Her paperwork is also eternal.",
+      "Blessings are free. Curses require Form 13-C.",
+      "I've been a priest for thirty years. The bureaucracy never changes."
+    ],
+    "jasper_bard": [
+      "♪ The Chosen One went to file / And stayed a little while / The forms were many / The patience thin / But the prophecy pulled them in ♪",
+      "I sing for stamps. Not stamps as in 'awesome.' Actual adhesive stamps.",
+      "Every good song needs a rhythm. Bureaucracy has rhythm. It's just very, very slow."
+    ]
+  }
+}

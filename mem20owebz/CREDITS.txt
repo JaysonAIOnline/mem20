@@ -1,0 +1,83 @@
+# API Keys to Gather — Jayson Model Bridge
+
+Every key goes in the `.env` file next to `docker-compose.full.yml`.
+The bridge (`litellm`) reads these and exposes ~42 models. Empty keys are simply ignored —
+only the providers you supply keys for become available.
+
+You have confirmed VERIFIED free-tier access (with payment method on file) to:
+  Azure, AWS, Oracle/OCI, and Cloudflare  — these are wired into the bridge config.
+
+--------------------------------------------------------------------------------
+## Priority providers (best free tiers — get these first)
+--------------------------------------------------------------------------------
+| # | Provider              | Env Variable            | Where to get the key                                  |
+|---|-----------------------|-------------------------|-------------------------------------------------------|
+| 1 | Google AI Studio      | GEMINI_API_KEY          | https://aistudio.google.com/app/apikey               |
+| 2 | Groq                  | GROQ_API_KEY            | https://console.groq.com/keys  (prefix: gsk_)        |
+| 3 | xAI / Grok            | XAI_API_KEY             | https://x.ai/api  (prefix: xai-)                     |
+| 4 | AnyAPI                | ANYAPI_API_KEY          | https://anyapi.ai or https://dash.anyapi.ai          |
+| 5 | OpenRouter            | OPENROUTER_API_KEY      | https://openrouter.ai/keys  (prefix: sk-or-)         |
+| 6 | Cloudflare Workers AI | CLOUDFLARE_API_KEY      | https://dash.cloudflare.com → API Tokens             |
+|   |                       | CLOUDFLARE_ACCOUNT_ID   | Cloudflare dashboard → Overview                       |
+| 7 | Hugging Face          | HF_TOKEN                | https://huggingface.co/settings/tokens  (prefix: hf_)|
+| 8 | DeepSeek              | DEEPSEEK_API_KEY        | https://platform.deepseek.com                        |
+
+--------------------------------------------------------------------------------
+## Cloud providers you confirmed (free tier w/ CC on file)
+--------------------------------------------------------------------------------
+| Provider | Env Variables                                                  | Notes                                  |
+|----------|---------------------------------------------------------------|----------------------------------------|
+| Azure    | AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT                   | Azure OpenAI resource (api-version 2024-10-21) |
+| AWS      | AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME      | Bedrock models (Claude, Llama)         |
+| Oracle   | OCI_API_KEY, OCI_GENAI_ENDPOINT                               | OCI Generative AI (Cohere)             |
+
+--------------------------------------------------------------------------------
+## Additional free / low-cost providers
+--------------------------------------------------------------------------------
+| Provider         | Env Variable       | Where to get the key                       |
+|------------------|--------------------|--------------------------------------------|
+| Mistral          | MISTRAL_API_KEY    | https://console.mistral.ai                 |
+| Qwen / Alibaba   | DASHSCOPE_API_KEY  | https://dashscope.console.aliyun.com       |
+| NVIDIA NIM       | NVIDIA_API_KEY     | https://build.nvidia.com                    |
+| Together         | TOGETHER_API_KEY   | https://api.together.xyz                   |
+| Cohere           | COHERE_API_KEY     | https://dashboard.cohere.com               |
+| SiliconFlow      | SILICONFLOW_API_KEY| https://siliconflow.cn                      |
+| Moonshot / Kimi  | MOONSHOT_API_KEY   | https://platform.moonshot.cn               |
+| Zhipu / Z.ai     | ZHIPU_API_KEY      | https://open.bigmodel.cn                   |
+| SambaNova        | SAMBANOVA_API_KEY  | https://cloud.sambanova.ai                 |
+| Cerebras         | CEREBRAS_API_KEY   | https://cloud.cerebras.ai                  |
+| Fireworks        | FIREWORKS_API_KEY  | https://fireworks.ai                       |
+| Novita           | NOVITA_API_KEY     | https://novita.ai                          |
+
+--------------------------------------------------------------------------------
+## Local (no key needed)
+--------------------------------------------------------------------------------
+| Provider | Notes                                       |
+|----------|---------------------------------------------|
+| Ollama   | Runs fully local. Point bridge at :11434.   |
+
+--------------------------------------------------------------------------------
+## How to use the keys
+--------------------------------------------------------------------------------
+1. Open `.env` in this folder.
+2. Paste each real key next to its variable (replace the placeholder).
+3. Save, then restart the bridge:
+       docker compose -f docker-compose.full.yml up -d jayson-bridge
+4. Verify: the bridge serves more models as you add keys.
+
+## Router groups (auto-failover between providers)
+- `fast`     → cheap + low latency (Groq 8B, Gemini 2.5 Flash)
+- `balanced` → mid-size general work (Groq 70B, Gemini 2.5 Flash)
+- `strong`   → best reasoning (Gemini 2.5 Pro, DeepSeek Reasoner)
+
+## Recommended minimum set
+For a strong free setup, get at least:
+1. GEMINI_API_KEY
+2. GROQ_API_KEY  (or XAI_API_KEY)
+3. ANYAPI_API_KEY  (or OPENROUTER_API_KEY)
+4. HF_TOKEN
+
+## Security
+- Never commit `.env` to git.
+- The bridge master_key and WEBUI_SECRET_KEY are already randomized in the config.
+- Keep a secure offline copy of your real `.env`.

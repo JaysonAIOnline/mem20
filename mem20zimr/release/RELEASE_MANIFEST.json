@@ -1,0 +1,10 @@
+{
+  "roadmap": "RM-002",
+  "title": "Zero-Install Microapp Runtime",
+  "artifact_version": "0.2.0",
+  "release_type": "rollback-safe versioned handoff",
+  "test_count": 15,
+  "test_status": "PASS",
+  "live_freestack_deployed": false,
+  "production_credentials_included": false
+}

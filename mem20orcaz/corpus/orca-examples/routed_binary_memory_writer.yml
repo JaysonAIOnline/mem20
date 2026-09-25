@@ -1,0 +1,309 @@
+orchestrator:
+  id: test-routing-memory-writers
+  strategy: decision-tree
+  queue: orka:test-routing-memory
+  memory:
+    enabled: true
+    backend: redisstack
+    config:
+      redis_url: redis://localhost:6380/0
+    # Vector search configuration
+    vector_search:
+      enabled: true
+      index_name: "orka_enhanced_memory"
+      vector_dim: 384
+      enable_hnsw: true
+      force_recreate_index: false
+      vector_params:
+        type: "FLOAT32"
+        distance_metric: "COSINE"
+        ef_construction: 200
+        m: 16
+  agents:
+    - memory_reader
+    - binary_answer_classifier
+    - memory_check_router
+    - final_summary
+
+agents:
+  - id: memory_reader
+    type: memory
+    memory_preset: "working"  # Active problem-solving cache (4 hours)
+    queue: orka:memory-reader
+    config:
+      operation: read
+      # 🎯 Preset provides: limit=5, similarity_threshold=0.7, vector_weight=0.6,
+      # text_weight=0.4, enable_hybrid_search=true, context_weight=0.5, etc.
+      memory_category_filter: stored
+      similarity_threshold: 0.1  # Override for very broad matching
+      temporal_weight: 0.1        # Override preset default
+    namespace: processed_numbers
+    prompt: "Number: {{ get_input() }}"
+
+  - id: binary_answer_classifier
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.1  # Low temperature for consistent binary decisions
+    prompt: |
+      Can the previous memory provide a complete answer to this question?
+
+      QUESTION: Is {{ get_input() }} greater than 5?
+      MEMORY: {{ previous_outputs.memory_reader.memories }}
+
+      The memory contains stored analysis results. If the memory shows analysis for this specific number {{ get_input() }}, 
+      return true (memory can answer the question). If memory is empty ("NONE") or contains analysis for different numbers, 
+      return false (need to process this number).
+
+      IMPORTANT: If you found actual memory entries (not "NONE"), that means we have a cached result and you should return TRUE.
+      Only return FALSE if the memory is "NONE" or empty.
+      
+      Answer with exactly "true" or "false" only.
+    queue: orka:classify
+
+  - id: memory_check_router
+    type: router
+    params:
+      decision_key: binary_answer_classifier
+      routing_map:
+        "false": [binary_classifier, classification_router] # No existing memory found, process normally
+        "true": [binary_result_returner] # Memory found, return stored answer
+
+  - id: answer_returner
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.3
+    prompt: |
+      Based on previously stored analysis:
+      {{ previous_outputs.memory_reader.memories }}
+
+      Return the cached result for input "{{ get_input() }}" without reprocessing. Provide a clear, concise answer.
+
+  - id: binary_classifier
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.0  # Zero temperature for deterministic mathematical comparison
+    prompt: "Is the number in this input greater than 5? Return true or false: {{ get_input() }}. Answer with exactly 'true' or 'false' only."
+    queue: orka:classify
+
+  - id: classification_router
+    type: router
+    params:
+      decision_key: binary_classifier
+      routing_map:
+        "true": [true_validation_guardian, true_memory_writer, binary_result_returner]
+        "false": [false_validation_guardian, false_memory_writer, binary_result_returner]
+
+  - id: binary_result_returner
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.2
+    prompt: |
+      {% if previous_outputs.binary_classifier %}
+      The classification result is {{ previous_outputs.binary_classifier.response | default(previous_outputs.binary_classifier) }}.
+      {% else %}
+      Based on the stored memory analysis, the result has been determined.
+      {% endif %}
+      
+      For input "{{ input }}": The number {{ input }} {% if previous_outputs.binary_classifier and (previous_outputs.binary_classifier.response == 'true' or previous_outputs.binary_classifier == 'true') %}IS{% else %}is NOT{% endif %} greater than 5.
+    depends_on:
+      - binary_classifier
+
+  - id: true_validation_guardian
+    type: validate_and_structure
+    queue: orka:validation-guardian-true
+    prompt: |
+      Validate and structure the following number classification result for memory storage:
+
+      Question: Is the number {{ get_input() }} greater than 5?
+      Answer: Yes, {{ get_input() }} IS greater than 5
+      Classification Result: TRUE
+      Binary Classifier Output: {{ previous_outputs.binary_classifier }}
+
+      This is a valid mathematical analysis. Please validate this result and structure it for memory storage.
+
+      The analysis shows that {{ get_input() }} > 5, which makes the "greater than 5" condition TRUE.
+
+      IMPORTANT: You MUST respond with the exact JSON format specified below. Do not use any other format.
+
+      Return your response in the following JSON format:
+      {
+          "valid": true,
+          "reason": "The mathematical analysis is correct - {{ get_input() }} is indeed > 5",
+          "memory_object": {
+              "number": "{{ get_input() }}",
+              "result": "true",
+              "condition": "greater_than_5",
+              "analysis_type": "number_comparison",
+              "confidence": "{{ previous_outputs.binary_classifier.confidence | default(1.0) }}",
+              "category": "stored",
+              "validation_status": "validated",
+              "validation_reason": "Correct mathematical classification"
+          }
+      }
+    depends_on:
+      - binary_classifier
+    store_structure: |
+      {
+        "number": "string",
+        "result": "string", 
+        "condition": "string",
+        "analysis_type": "string",
+        "confidence": "number",
+        "category": "string",
+        "validation_status": "string",
+        "validation_reason": "string"
+      }
+
+  - id: false_validation_guardian
+    type: validate_and_structure
+    queue: orka:validation-guardian-false
+    prompt: |
+      Validate and structure the following number classification result for memory storage:
+
+      Question: Is the number {{ get_input() }} greater than 5?
+      Answer: No, {{ get_input() }} is NOT greater than 5 (it is less than or equal to 5)
+      Classification Result: FALSE
+      Binary Classifier Output: {{ previous_outputs.binary_classifier }}
+
+      This is a valid mathematical analysis. Please validate this result and structure it for memory storage.
+
+      The analysis shows that {{ get_input() }} ≤ 5, which makes the "greater than 5" condition FALSE.
+
+      IMPORTANT: You MUST respond with the exact JSON format specified below. Do not use any other format.
+
+      Return your response in the following JSON format:
+      {
+          "valid": true,
+          "reason": "The mathematical analysis is correct - {{ get_input() }} is indeed ≤ 5",
+          "memory_object": {
+              "number": "{{ get_input() }}",
+              "result": "false",
+              "condition": "less_than_or_equal_5",
+              "analysis_type": "number_comparison",
+              "confidence": "{{ previous_outputs.binary_classifier.confidence | default(1.0) }}",
+              "category": "stored",
+              "validation_status": "validated",
+              "validation_reason": "Correct mathematical classification"
+          }
+      }
+    depends_on:
+      - binary_classifier
+    store_structure: |
+      {
+        "number": "string",
+        "result": "string",
+        "condition": "string", 
+        "analysis_type": "string",
+        "confidence": "number",
+        "category": "string",
+        "validation_status": "string",
+        "validation_reason": "string"
+      }
+
+  - id: true_memory_writer
+    type: memory
+    memory_preset: "working"  # Active problem-solving cache (4 hours)
+    queue: orka:memory-writer-short
+    config:
+      operation: write
+      vector: true # Enable semantic search
+      category: stored
+      # Enhanced vector configuration
+      vector_field_name: "content_vector"
+      force_recreate_index: false
+      vector_params:
+        type: "FLOAT32"
+        distance_metric: "COSINE"
+        ef_construction: 200
+        m: 16
+    namespace: processed_numbers
+    prompt: |
+      {{ previous_outputs.true_validation_guardian.memory_object | tojson }}
+    metadata:
+      number: "{{ get_input() }}"
+      result: "true"
+      condition: "greater_than_5"
+      analysis_type: "number_comparison"
+      confidence: "{{ previous_outputs.binary_classifier | default('1.0') }}"
+      category: "stored"
+      processed_by: "binary_classifier"
+      validated_by: "true_validation_guardian"
+      validation_status: "{{ previous_outputs.true_validation_guardian.valid }}"
+      validation_reason: "{{ previous_outputs.true_validation_guardian.reason }}"
+      validation_confidence: "{{ previous_outputs.true_validation_guardian.memory_object.confidence }}"
+      structured_data: "{{ previous_outputs.true_validation_guardian.memory_object }}"
+      timestamp: "{{ timestamp }}"
+    key_template: "validated_number_analysis_{{ get_input() }}_gt5"
+
+  - id: false_memory_writer
+    type: memory
+    memory_preset: "working"  # Active problem-solving cache (4 hours)
+    queue: orka:memory-writer-short
+    config:
+      operation: write
+      vector: true # Enable semantic search
+      # Enhanced vector configuration
+      vector_field_name: "content_vector"
+      force_recreate_index: false
+      vector_params:
+        type: "FLOAT32"
+        distance_metric: "COSINE"
+        ef_construction: 200
+        m: 16
+    namespace: processed_numbers
+    prompt: |
+      {{ previous_outputs.false_validation_guardian.memory_object | tojson }}
+    metadata:
+      number: "{{ input }}"
+      result: "false"
+      condition: "less_than_or_equal_5"
+      analysis_type: "number_comparison"
+      confidence: "{{ previous_outputs.binary_classifier.confidence | default('1.0') }}"
+      category: "stored"
+      processed_by: "binary_classifier"
+      validated_by: "false_validation_guardian"
+      validation_status: "{{ previous_outputs.false_validation_guardian.valid }}"
+      validation_reason: "{{ previous_outputs.false_validation_guardian.reason }}"
+      validation_confidence: "{{ previous_outputs.false_validation_guardian.memory_object.confidence }}"
+      structured_data: "{{ previous_outputs.false_validation_guardian.memory_object }}"
+      timestamp: "{{ timestamp }}"
+    key_template: "validated_number_analysis_{{ get_input() }}_lte5"
+    depends_on:
+      - binary_classifier
+  
+  - id: final_summary
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.7
+    prompt: |
+      Answer whether {{ get_input() }} is greater than 5.
+      
+      {% set memory_check = get_agent_response('memory_reader') %}
+      {% if memory_check and memory_check != "NONE" %}
+      I found this in memory: {{ memory_check }}
+      {% endif %}
+      
+      {% set classification = get_agent_response('binary_classifier') %}
+      {% set final_result = get_agent_response('binary_result_returner') %}
+      
+      {% if final_result %}
+      {{ final_result }}
+      {% elif classification %}
+      The answer is {{ classification }}.
+      {% else %}
+      Let me analyze {{ get_input() }} to determine if it's greater than 5.
+      {% endif %}
+      
+      Provide a clear, direct answer to the mathematical question.
+    depends_on:
+      - binary_result_returner

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20ops"
+version = "0.1.0"
+description = "Reusable mem20 operational workflows: Cloudflare zone/Pages audits, stale-code detection, bounded verification, identity and namespace ACL inspection, lint deltas."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "ops", "cloudflare", "dns", "verification", "audit"]
+dependencies = []
+
+[project.scripts]
+fs-ops = "mem20ops.cli:main"
+
+[tool.setuptools]
+packages = ["mem20ops"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

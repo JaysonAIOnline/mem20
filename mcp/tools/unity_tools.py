@@ -1,20 +1,16 @@
 """OPTIONAL Unity integration (shipped as a separate, pluggable module).
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 
 Unity is NOT a required dependency. The build/test tools degrade gracefully: when
 Unity is not installed (or MEM20_UNITY_EXECUTABLE is unset / the default path is
 absent), they return an informative message instead of failing.
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
-import os
-import sys
+
 import json
+import os
 import re
-import asyncio
+import subprocess
+import sys
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -24,7 +20,7 @@ try:
     import mcp_types as mt
 except ImportError:
     print("Error: mcp package not installed. Please install with: pip install mcp")
-    sys.exit(1)
+    raise
 
 sys.path.insert(0, os.environ.get("MEM20_STORE_PATH", os.path.expanduser("~/.mem20/store")))
 try:
@@ -163,9 +159,6 @@ class UnityToolsMixin:
         // Cache component references here
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "OnEnable":
                 method_code += """
     private void OnEnable()
@@ -173,9 +166,6 @@ import mcp_types as mt
         // Subscribe to events here
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "Start":
                 method_code += """
     private void Start()
@@ -183,9 +173,6 @@ import mcp_types as mt
         // Initialize after all Awake calls
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "Update":
                 method_code += """
     private void Update()
@@ -193,9 +180,6 @@ import mcp_types as mt
         // Per-frame logic (input, non-physics)
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "FixedUpdate":
                 method_code += """
     private void FixedUpdate()
@@ -203,9 +187,6 @@ import mcp_types as mt
         // Physics logic here
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "LateUpdate":
                 method_code += """
     private void LateUpdate()
@@ -213,9 +194,6 @@ import mcp_types as mt
         // Camera follow, post-physics updates
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "OnDisable":
                 method_code += """
     private void OnDisable()
@@ -223,9 +201,6 @@ import mcp_types as mt
         // Unsubscribe from events
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
             elif method == "OnDestroy":
                 method_code += """
     private void OnDestroy()
@@ -233,9 +208,6 @@ import mcp_types as mt
         // Cleanup
     }
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
         namespace_block = f"namespace {namespace}\n" + "{" if namespace else ""
         script_content = f"""using UnityEngine;
 
@@ -246,154 +218,151 @@ public class {script_name} : {base_class}
 {method_code}
 }}
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
         if namespace:
             script_content = script_content.replace("\n}", "\n}\n}")
         try:
-    Path(script_path).write_text(script_content)
-    return f"Created script at {script_path}"
-    except Exception as e:
-    return f"Error creating script: {str(e)}"
+            Path(script_path).write_text(script_content)
+            return f"Created script at {script_path}"
+        except Exception as e:
+            return f"Error creating script: {str(e)}"
 
     async def _unity_build_project(self, args: Dict) -> str:
-    project_path = args.get("project_path", "")
-    build_path = args.get("build_path", "")
-    platform = args.get("platform", "StandaloneLinux64")
-    unity_executable = args.get("unity_executable", "")
-    if not project_path or not build_path:
-    return "Error: project_path and build_path are required"
-    unity_executable, err = self._resolve_optional_executable("unity", unity_executable, "MEM20_UNITY_EXECUTABLE", "Unity")
-    if err:
-    return err
-    platform_map = {
-    "StandaloneWindows64": "StandaloneWindows64",
-    "StandaloneLinux64": "StandaloneLinux64",
-    "StandaloneOSX": "StandaloneOSX",
-    "WebGL": "WebGL",
-    "Android": "Android",
-    "iOS": "iOS",
-    }
-    target_platform = platform_map.get(platform, "StandaloneLinux64")
-    if platform == "StandaloneWindows64":
-    build_target = "-buildWindows64Player"
-    build_file = f"{build_path}/{Path(project_path).name}.exe"
-    elif platform == "StandaloneLinux64":
-    build_target = "-buildLinux64Player"
-    build_file = f"{build_path}/{Path(project_path).name}"
-    elif platform == "StandaloneOSX":
-    build_target = "-buildOSXUniversalPlayer"
-    build_file = f"{build_path}/{Path(project_path).name}.app"
-    elif platform == "WebGL":
-    build_target = "-buildWebGLPlayer"
-    build_file = build_path
-    else:
-    build_target = "-buildLinux64Player"
-    build_file = f"{build_path}/{Path(project_path).name}"
-    cmd = [
-    unity_executable,
-    "-batchmode",
-    "-quit",
-    "-projectPath", project_path,
-    build_target, build_file,
-    "-logFile", "-"
-    ]
+        project_path = args.get("project_path", "")
+        build_path = args.get("build_path", "")
+        platform = args.get("platform", "StandaloneLinux64")
+        unity_executable = args.get("unity_executable", "")
+        if not project_path or not build_path:
+            return "Error: project_path and build_path are required"
+        unity_executable, err = self._resolve_optional_executable("unity", unity_executable, "MEM20_UNITY_EXECUTABLE", "Unity")
+        if err:
+            return err
+        platform_map = {
+            "StandaloneWindows64": "StandaloneWindows64",
+            "StandaloneLinux64": "StandaloneLinux64",
+            "StandaloneOSX": "StandaloneOSX",
+            "WebGL": "WebGL",
+            "Android": "Android",
+            "iOS": "iOS",
+        }
+        target_platform = platform_map.get(platform, "StandaloneLinux64")
+        if platform == "StandaloneWindows64":
+            build_target = "-buildWindows64Player"
+            build_file = f"{build_path}/{Path(project_path).name}.exe"
+        elif platform == "StandaloneLinux64":
+            build_target = "-buildLinux64Player"
+            build_file = f"{build_path}/{Path(project_path).name}"
+        elif platform == "StandaloneOSX":
+            build_target = "-buildOSXUniversalPlayer"
+            build_file = f"{build_path}/{Path(project_path).name}.app"
+        elif platform == "WebGL":
+            build_target = "-buildWebGLPlayer"
+            build_file = build_path
+        else:
+            build_target = "-buildLinux64Player"
+            build_file = f"{build_path}/{Path(project_path).name}"
+        cmd = [
+            unity_executable,
+            "-batchmode",
+            "-quit",
+            "-projectPath", project_path,
+            build_target, build_file,
+            "-logFile", "-"
+        ]
         try:
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-    if result.returncode == 0:
-    return f"Build successful!\nOutput: {build_file}\n{result.stdout[-2000:]}"
-    else:
-    return f"Build failed (code {result.returncode}):\n{result.stderr[-3000:]}"
-    except subprocess.TimeoutExpired:
-    return "Error: Build timed out after 10 minutes"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            if result.returncode == 0:
+                return f"Build successful!\nOutput: {build_file}\n{result.stdout[-2000:]}"
+            else:
+                return f"Build failed (code {result.returncode}):\n{result.stderr[-3000:]}"
+        except subprocess.TimeoutExpired:
+            return "Error: Build timed out after 10 minutes"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _unity_run_test(self, args: Dict) -> str:
-    project_path = args.get("project_path", "")
-    test_mode = args.get("test_mode", "PlayMode")
-    unity_executable = args.get("unity_executable", "")
-    if not project_path:
-    return "Error: project_path is required"
-    unity_executable, err = self._resolve_optional_executable("unity", unity_executable, "MEM20_UNITY_EXECUTABLE", "Unity")
-    if err:
-    return err
-    cmd = [
-    unity_executable,
-    "-batchmode",
-    "-quit",
-    "-projectPath", project_path,
-    "-runTests",
-    "-testPlatform", test_mode,
-    "-logFile", "-"
-    ]
+        project_path = args.get("project_path", "")
+        test_mode = args.get("test_mode", "PlayMode")
+        unity_executable = args.get("unity_executable", "")
+        if not project_path:
+            return "Error: project_path is required"
+        unity_executable, err = self._resolve_optional_executable("unity", unity_executable, "MEM20_UNITY_EXECUTABLE", "Unity")
+        if err:
+            return err
+        cmd = [
+            unity_executable,
+            "-batchmode",
+            "-quit",
+            "-projectPath", project_path,
+            "-runTests",
+            "-testPlatform", test_mode,
+            "-logFile", "-"
+        ]
         try:
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    return f"Tests {'passed' if result.returncode == 0 else 'failed'} (code {result.returncode}):\n{result.stdout[-3000:]}\n{result.stderr[-2000:]}"
-    except subprocess.TimeoutExpired:
-    return "Error: Tests timed out after 5 minutes"
-    except Exception as e:
-    return f"Error: {str(e)}"
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            return f"Tests {'passed' if result.returncode == 0 else 'failed'} (code {result.returncode}):\n{result.stdout[-3000:]}\n{result.stderr[-2000:]}"
+        except subprocess.TimeoutExpired:
+            return "Error: Tests timed out after 5 minutes"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     async def _unity_generate_asmdef(self, args: Dict) -> str:
-    project_path = args.get("project_path", "")
-    asmdef_path = args.get("asmdef_path", "")
-    assembly_name = args.get("assembly_name", "")
-    references = args.get("references", [])
-    include_platforms = args.get("include_platforms", [])
-    exclude_platforms = args.get("exclude_platforms", [])
-    if not project_path or not asmdef_path or not assembly_name:
-    return "Error: project_path, asmdef_path, and assembly_name are required"
-    full_path = f"{project_path}/{asmdef_path}"
-    os.makedirs(os.path.dirname(full_path), exist_ok=True)
-    asmdef = {
-    "name": assembly_name,
-    "references": references,
-    "includePlatforms": include_platforms,
-    "excludePlatforms": exclude_platforms,
-    "allowUnsafeCode": False,
-    "overrideReferences": False,
-    "precompiledReferences": [],
-    "autoReferenced": True,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": False
-    }
+        project_path = args.get("project_path", "")
+        asmdef_path = args.get("asmdef_path", "")
+        assembly_name = args.get("assembly_name", "")
+        references = args.get("references", [])
+        include_platforms = args.get("include_platforms", [])
+        exclude_platforms = args.get("exclude_platforms", [])
+        if not project_path or not asmdef_path or not assembly_name:
+            return "Error: project_path, asmdef_path, and assembly_name are required"
+        full_path = f"{project_path}/{asmdef_path}"
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        asmdef = {
+            "name": assembly_name,
+            "references": references,
+            "includePlatforms": include_platforms,
+            "excludePlatforms": exclude_platforms,
+            "allowUnsafeCode": False,
+            "overrideReferences": False,
+            "precompiledReferences": [],
+            "autoReferenced": True,
+            "defineConstraints": [],
+            "versionDefines": [],
+            "noEngineReferences": False
+        }
         try:
-    Path(full_path).write_text(json.dumps(asmdef, indent=2))
-    return f"Created Assembly Definition at {full_path}"
-    except Exception as e:
-    return f"Error creating asmdef: {str(e)}"
+            Path(full_path).write_text(json.dumps(asmdef, indent=2))
+            return f"Created Assembly Definition at {full_path}"
+        except Exception as e:
+            return f"Error creating asmdef: {str(e)}"
 
     async def _unity_validate_project(self, args: Dict) -> str:
-    project_path = args.get("project_path", "")
-    if not project_path:
-    return "Error: project_path is required"
-    issues = []
-    warnings = []
-    required_dirs = ["Assets", "ProjectSettings", "Packages"]
-    for d in required_dirs:
-    if not os.path.exists(f"{project_path}/{d}"):
-    issues.append(f"Missing required directory: {d}")
-    asmdefs = list(Path(project_path).rglob("*.asmdef"))
-    if not asmdefs:
-    warnings.append("No Assembly Definitions found - consider adding .asmdef files for better compilation")
-    scripts = list(Path(project_path).rglob("*.cs"))
-    no_namespace = []
-    for script in scripts:
-    content = script.read_text()
-    if "namespace" not in content and "class " in content:
-    no_namespace.append(str(script.relative_to(project_path)))
-    if no_namespace:
-    warnings.append(f"Scripts without namespace: {', '.join(no_namespace[:5])}")
-    if not os.path.exists(f"{project_path}/ProjectSettings/ProjectSettings.asset"):
-    issues.append("Missing ProjectSettings.asset")
-    result = f"Validation for {project_path}:\n"
-    if issues:
-    result += f"\n❌ Issues ({len(issues)}):\n" + "\n".join(f"  - {i}" for i in issues)
-    else:
-    result += "\n✅ No critical issues found"
-    if warnings:
-    result += f"\n⚠️ Warnings ({len(warnings)}):\n" + "\n".join(f"  - {w}" for w in warnings)
-    return result
+        project_path = args.get("project_path", "")
+        if not project_path:
+            return "Error: project_path is required"
+        issues = []
+        warnings = []
+        required_dirs = ["Assets", "ProjectSettings", "Packages"]
+        for d in required_dirs:
+            if not os.path.exists(f"{project_path}/{d}"):
+                issues.append(f"Missing required directory: {d}")
+        asmdefs = list(Path(project_path).rglob("*.asmdef"))
+        if not asmdefs:
+            warnings.append("No Assembly Definitions found - consider adding .asmdef files for better compilation")
+        scripts = list(Path(project_path).rglob("*.cs"))
+        no_namespace = []
+        for script in scripts:
+            content = script.read_text()
+            if "namespace" not in content and "class " in content:
+                no_namespace.append(str(script.relative_to(project_path)))
+        if no_namespace:
+            warnings.append(f"Scripts without namespace: {', '.join(no_namespace[:5])}")
+        if not os.path.exists(f"{project_path}/ProjectSettings/ProjectSettings.asset"):
+            issues.append("Missing ProjectSettings.asset")
+        result = f"Validation for {project_path}:\n"
+        if issues:
+            result += f"\n❌ Issues ({len(issues)}):\n" + "\n".join(f"  - {i}" for i in issues)
+        else:
+            result += "\n✅ No critical issues found"
+        if warnings:
+            result += f"\n⚠️ Warnings ({len(warnings)}):\n" + "\n".join(f"  - {w}" for w in warnings)
+        return result

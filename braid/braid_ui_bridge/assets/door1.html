@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>door1 — nav shell</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #151b26; --line: #263042;
+    --ink: #dde5f0; --dim: #7d8aa0; --accent: #5eeaa0; --warn: #ffb86b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 13px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 14px; margin: 0 0 8px; color: var(--accent); font-weight: 600; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  nav button {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 4px; padding: 5px 10px; font: inherit; cursor: pointer;
+  }
+  nav button[aria-selected="true"] { border-color: var(--accent); color: var(--accent); }
+  nav button.planned { opacity: .55; border-style: dashed; }
+  main { padding: 14px 16px; max-width: 960px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin: 0 0 8px; }
+  .stat { color: var(--dim); }
+  .stat b { color: var(--ink); font-weight: 600; }
+  .stat.out { color: var(--warn); }
+  .card {
+    border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
+    padding: 10px 12px; margin: 8px 0;
+  }
+  .row { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px dotted var(--line); }
+  .row .cid { color: var(--dim); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .op { color: var(--accent); }
+  .row .target { color: var(--ink); }
+  .spine { font-size: 11px; color: var(--dim); word-break: break-all; }
+  a, .surface { color: var(--accent); text-decoration: none; }
+  .surface .where { color: var(--dim); font-size: 10px; }
+  form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  input, textarea {
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 4px; padding: 6px 8px; font: inherit;
+  }
+  button.primary {
+    background: var(--accent); color: #06231a; border: 0; border-radius: 4px;
+    padding: 7px 12px; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  #error { color: var(--warn); padding: 8px 0; display: none; }
+  #receipt { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>door1 · nav shell</h1>
+  <nav id="nav"></nav>
+</header>
+<div id="error"></div>
+<main>
+  <section id="panel"></section>
+</main>
+<footer id="footer" style="padding:8px 16px;color:var(--dim);border-top:1px solid var(--line)">waiting for the bridge…</footer>
+
+<script>
+  const el = (id) => document.getElementById(id);
+
+  // The seven door1 surfaces + live/planned surfaces from the bridge manifest.
+  const NAV = [
+    { id: "witness", label: "witness" },
+    { id: "structure", label: "structure" },
+    { id: "forge", label: "forge" },
+    { id: "state", label: "state" },
+  ];
+
+  function esc(s) {
+    return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;');
+  }
+
+  async function fetch_json(path) {
+    const res = await fetch(path);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || (path + ' failed'));
+    return json.data;
+  }
+
+  async function renderManifest() {
+    const nav = el('nav');
+    nav.innerHTML = '';
+    const data = await fetch_json('/manifest');
+    // own nav surfaces (the braid views served on this one wire)
+    NAV.forEach(s => nav.appendChild(btn(s)));
+    // bridge surfaces: live (url set) or planned (url empty)
+    (data.surfaces || []).forEach(s => {
+      nav.appendChild(btn({ id: 'surface-' + s.name, label: s.name, planned: !!s.planned }));
+    });
+    function btn(s) {
+      const b = document.createElement('button');
+      b.textContent = s.label;
+      b.setAttribute('aria-selected', selected === s.id);
+      if (s.planned) b.className = 'planned';
+      b.onclick = () => { selected = s.id; render(); };
+      return b;
+    }
+    render();
+  }
+
+  let selected = 'witness';
+
+  async function render() {
+    const navBtns = [...el('nav').querySelectorAll('button')];
+    navBtns.forEach(b => {
+      const label = b.textContent;
+      b.setAttribute('aria-selected', selected === label || (selected.startsWith('surface-') && b.textContent === selected.slice(8)));
+    });
+    const panel = el('panel');
+    if (selected === 'witness') return renderWitness(panel);
+    if (selected === 'structure') return renderStructure(panel);
+    if (selected === 'forge') return renderForge(panel);
+    if (selected === 'state') return renderState(panel);
+    const data = await fetch_json('/manifest');
+    const surface = (data.surfaces || []).find(s => 'surface-' + s.name === selected) ||
+                    (data.surfaces || []).find(s => s.name === selected);
+    panel.innerHTML =
+      `<h2>${esc(surface ? surface.name : selected)}</h2>` +
+      (surface && !surface.planned
+        ? `<div class="card">live · <a href="${esc(surface.url)}">${esc(surface.url)}</a></div>`
+        : `<div class="card">planned surface — not mounted yet.<div class="spine">reachable point reserved under this ONE nav.</div></div>`);
+  }
+
+  async function renderWitness(panel) {
+    panel.innerHTML = '<h2>witness · door1</h2><span class="stat">loading…</span>';
+    const data = await fetch_json('/witness');
+    panel.innerHTML = `<h2>witness · door1</h2>` +
+      `<div class="stat">timeline <b>${data.view.timeline.length}</b> · ${data.door} · ${data.view.kind}</div>`;
+    data.view.timeline.forEach(n => {
+      const d = document.createElement('div');
+      d.className = 'row';
+      d.innerHTML =
+        `<div class="cid">${esc(n.cid.slice(0, 14))}…</div>` +
+        `<div class="op">${esc(n.op)}</div>` +
+        `<div class="target" title="${esc(n.target)}">${esc(n.target)}</div>`;
+      panel.appendChild(d);
+    });
+  }
+
+  async function renderStructure(panel) {
+    panel.innerHTML = '<h2>structure · door2</h2><span class="stat">loading…</span>';
+    const data = await fetch_json('/structure');
+    panel.innerHTML = `<h2>structure · door2</h2>` +
+      `<div class="stat">nodes <b>${data.view.node_count}</b> · verified <b>${data.view.verified}</b> · spine-to-genesis <b>${data.view.spine_to_genesis.length}</b> hops</div>` +
+      `<div class="card"><h2>spine</h2><div class="spine">${data.view.spine_to_genesis.map(c => esc(c.slice(0, 12))).join(' → ')}</div></div>`;
+  }
+
+  async function renderState(panel) {
+    panel.innerHTML = '<h2>state</h2><span class="stat">loading…</span>';
+    const data = await fetch_json('/state');
+    panel.innerHTML = `<h2>state</h2>` +
+      `<div class="card"><div class="stat">engine <b>${data.engine}</b> · doors <b>${data.doors}</b> · ${data.status}</div>` +
+      `<div class="spine">one wire, one base url, every surface under this nav.</div></div>`;
+  }
+
+  async function renderForge(panel) {
+    panel.innerHTML = `<h2>forge · door1</h2>` +
+      `<form id="forgeForm">
+        <input id="target" placeholder="target · e.g. place/nav-room" value="place/nav-room">
+        <textarea id="content" rows="3" placeholder="what the bond should say…">forged from the door1 nav shell</textarea>
+        <button type="submit" class="primary">forge into the witness</button>
+      </form>
+      <div id="receipt"></div>`;
+    el('forgeForm').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const r = await fetch('/forge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: el('target').value, content: el('content').value }),
+      });
+      const json = await r.json();
+      const rec = el('receipt');
+      rec.textContent = json.ok
+        ? `forged → cid ${json.data.cid.slice(0, 18)}… (depth ${json.data.depth}) over the one wire`
+        : `refused: ${json.error}`;
+    };
+  }
+
+  async function poll() {
+    try {
+      if (!el('nav').children.length) await renderManifest();
+      el('error').style.display = 'none';
+      el('footer').textContent =
+        `door1 · witness | structure | forge | state + bridge surfaces · all served by the ONE bridge, keys held server-side`;
+    } catch (e) {
+      el('error').textContent = 'bridge unreachable: ' + e.message;
+      el('error').style.display = 'block';
+    }
+  }
+
+  poll();
+  setInterval(poll, 3000);
+</script>
+</body>
+</html>

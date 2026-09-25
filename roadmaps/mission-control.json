@@ -1,0 +1,32 @@
+{
+  "name": "mission-control",
+  "description": "Mission Control \u2014 the operating system for agents you can sell, govern, and get paid for. System of record for agent runs; the signed mission receipt is the artifact. Source docs (the contracts): /home/jayson/Desktop/5/mission-control.md (pitch + 90-day MVP spec), mission-control-sales-pack.md (GA marketing discipline), mission-control-10-year.md (gates/kill-criteria/cadence/GA ordering \u2014 calendar dates ignored). Combined roadmap = /home/jayson/Desktop/5/mission-control-roadmap.md. Realistic timeline, not the 10-year calendar.",
+  "phases": [
+    {
+      "name": "A Intercept",
+      "status": "in_progress",
+      "notes": "DoD wedge SHIPPED 2026-09-19: intercept + identity + tool gate + budget + memory hashes + two outcome adapters (Zendesk/Stripe) + signed receipt. Built: registry, MissionService (fail-closed start), Intercept gate (schema+semantic+budget+idempotency+kill), MemoryPartition (hashed/chained/TTL/trust tiers), HTTP gateway (agents/policies/tools/missions/execute/memory/receipt/receipt.sig/complete/outcome-verify), completions passthrough proxy (openai+anthropic), SDK client (MissionControl ctx mgr + Mission handle), adapters.py. 75 tests passing. Commit trail 7ee33a3..46db547. Remaining Phase A: pass^k CI, receipt JSON export bundle + webhooks, internal mission viewer, stored-arg redaction, persistence backend."
+    },
+    {
+      "name": "B Ship",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "C Sell",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "D Standard",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "Beyond 42 (Default/Fabric contingent)",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789604765.3759632"
+}

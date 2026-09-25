@@ -1,15 +1,9 @@
 """OPTIONAL Blender integration (shipped as a separate, pluggable module).
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 
 Blender is NOT a required dependency. These tools degrade gracefully: when Blender
 is not installed (or MEM20_BLENDER_EXECUTABLE is unset), the runner returns an
 informative message instead of failing. See server._run_blender_script.
 """
-from mcp.server import Server
-from mcp.server.lowlevel.server import ServerRequestContext
-import mcp_types as mt
 import os
 import sys
 import json
@@ -214,7 +208,7 @@ print("OK: camera set")
         engine = args.get("engine", "CYCLES")
         samples = args.get("samples", 64)
         resolution = args.get("resolution", [1280, 720])
-        out = f"{os.environ.get("MEM20_BLENDER_WORKDIR", os.path.expanduser("~/.mem20/blender"))}/{filename}"
+        out = f"{os.environ.get('MEM20_BLENDER_WORKDIR', os.path.expanduser('~/.mem20/blender'))}/{filename}"
         script = f'''
 import bpy
 scene = bpy.context.scene
@@ -231,7 +225,7 @@ print("OK:" + r"{out}")
 
     async def _blender_export_glb(self, args: Dict) -> str:
         filename = args.get("filename", "model.glb")
-        out = f"{os.environ.get("MEM20_BLENDER_WORKDIR", os.path.expanduser("~/.mem20/blender"))}/{filename}"
+        out = f"{os.environ.get('MEM20_BLENDER_WORKDIR', os.path.expanduser('~/.mem20/blender'))}/{filename}"
         script = f'''
 import bpy
 bpy.ops.export_scene.gltf(

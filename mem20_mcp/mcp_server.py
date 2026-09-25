@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Entry-point shim for the mem20 MCP server.
 
-The real implementation lives in server.py; this file preserves the
-systemd ExecStart path (mcp/mcp_server.py).
+server.py in this package is a read-only forwarder to the canonical,
+running server implementation at /opt/mem20/mcp (see mem20_mcp._forward),
+so ``main`` here is the exact real main. This file preserves the familiar
+entry-point shape (mcp/mcp_server.py).
 """
 from server import main
 

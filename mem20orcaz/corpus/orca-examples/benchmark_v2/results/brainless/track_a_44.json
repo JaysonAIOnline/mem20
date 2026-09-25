@@ -1,0 +1,172 @@
+{
+  "task_id": "track_a_44",
+  "condition": "brainless",
+  "elapsed_s": 13.26,
+  "success": true,
+  "output": {
+    "response": {
+      "domain": "satellite_ground_ops",
+      "task": "Diagnose and recover a GEO comms satellite that entered safe\u2011hold 47\u202fs into a station\u2011keeping maneuver due to wheel torque spikes, star\u2011tracker exclusion, gyro bias drift at 3\u03c3, and a 23\u2011s telemetry gap.",
+      "solution_steps": [
+        {
+          "step_id": 1,
+          "description": "Collect all relevant telemetry from \u201360\u202fs to +120\u202fs around the maneuver: wheel speeds, star\u2011tracker status, gyro biases, transmitter logs, and thruster firings."
+        },
+        {
+          "step_id": 2,
+          "description": "Align timestamps. Confirm a reaction wheel speed spike at ~47\u202fs coincident with a sun\u2011intrusion exclusion on the secondary tracker (~45\u202fs)."
+        },
+        {
+          "step_id": 3,
+          "description": "Verify gyro bias drift of +0.003\u00b0/hr, within spec but at the 3\u03c3 boundary, reducing attitude confidence during the event."
+        },
+        {
+          "step_id": 4,
+          "description": "Note a 23\u2011second telemetry gap starting at ~50\u202fs caused by a transmitter waveguide fault, preventing immediate ground confirmation of safe\u2011hold."
+        },
+        {
+          "step_id": 5,
+          "description": "Review wheel health: Wheels C and D have been in degraded momentum\u2011management mode for 8\u202fmonths, limiting corrective torque capability."
+        },
+        {
+          "step_id": 6,
+          "description": "Prepare recovery command sequence:",
+          "substeps": [
+            "Switch to sun\u2011sensor\u2011only coarse pointing to regain attitude knowledge.",
+            "Initiate on\u2011board gyro bias recalibration using the latest calibration model.",
+            "Command Hall\u2011effect thrusters to desaturate reaction wheels, removing excess momentum accumulated during the anomaly.",
+            "Return to nominal attitude control mode with updated autonomy parameters that account for degraded wheels and recent sensor behavior."
+          ]
+        },
+        {
+          "step_id": 7,
+          "description": "Uplink the recovery packet during the next ground contact. Monitor immediate telemetry to confirm: attitude re\u2011acquisition, gyro bias reset, wheel speed stabilization, and safe\u2011hold clearance."
+        },
+        {
+          "step_id": 8,
+          "description": "Update onboard autonomy thresholds: lower momentum limits for wheels C/D, increase reliance on sun sensors during desaturation, tighten exclusion zone logic to prevent future star\u2011tracker intrusions."
+        },
+        {
+          "step_id": 9,
+          "description": "Continue 24\u202fh post\u2011recovery monitoring. Log all telemetry, confirm sustained nominal operation, and archive anomaly closure data for future reference."
+        }
+      ],
+      "quality_self_assessment": 0.95
+    },
+    "confidence": "0.95",
+    "internal_reasoning": "All steps directly address the evidence: wheel spikes, star\u2011tracker exclusion, gyro drift at 3\u03c3, telemetry gap, and degraded wheels. The recovery plan follows standard procedures for attitude re\u2011acquisition, bias recalibration, momentum desaturation, and autonomy update.",
+    "_metrics": {
+      "tokens": 1639,
+      "prompt_tokens": 953,
+      "completion_tokens": 686,
+      "latency_ms": 4261.81,
+      "cost_usd": 0.000263,
+      "model": "openai/gpt-oss-20b",
+      "provider": "lm_studio"
+    },
+    "formatted_prompt": "Produce the FINAL structured output for this task.\n\nDOMAIN: general\nTASK: {'domain': 'satellite_ground_ops', 'task': \"Monitor a GEO communications satellite's attitude determination and control subsystem (star trackers, gyroscopes, sun sensors, reaction wheels, and Hall-effect thrusters) during a scheduled station-keeping maneuver. Diagnose why the spacecraft entered safe-hold mode 47 seconds into the maneuver by correlating: reaction wheel speed telemetry showing unexpected torque spikes, a star tracker exclusion zone event triggered by sun intrusion on the secondary tracker, gyroscope bias drift rates that diverged from the onboard calibration model by 0.003\u00b0/hr (within spec but at the 3\u03c3 boundary), and a 23-second telemetry gap from the ground station due to a transmitter waveguide fault. Two of the four reaction wheels have been operating in a degraded momentum management mode since a previous anomaly 8 months ago. Execute recovery: ground-commanded attitude re-acquisition using sun-sensor-only coarse pointing, gyroscope bias recalibration, reaction wheel momentum desaturation via thruster firing, and return to nominal attitude control mode with updated onboard autonomy parameters.\"}\n\nSOLUTION:\n1. Gather telemetry from \u201360\u202fs to +120\u202fs around the maneuver start: wheel speeds, star\u2011tracker status, gyro bias, transmitter logs.\n2. Align timestamps and confirm a reaction wheel speed spike at 47\u202fs coincident with a sun\u2011intrusion exclusion on the secondary tracker at ~45\u202fs.\n3. Verify gyro bias drift of 0.003\u00b0/hr is within spec but at the 3\u03c3 limit, reducing attitude confidence during the event.\n4. Note a 23\u2011second telemetry gap beginning at 50\u202fs caused by a transmitter waveguide fault, preventing immediate ground confirmation of the safe\u2011hold.\n5. Review wheel health: Wheels\u202fC and D have been in degraded momentum\u2011management mode for 8\u202fmonths, limiting corrective torque.\n6. Prepare recovery command sequence:\n   - Switch to sun\u2011sensor\u2011only coarse pointing to regain attitude knowledge.\n   - Initiate on\u2011board gyro bias recalibration.\n   - Command Hall\u2011effect thrusters to desaturate reaction wheels and remove excess momentum.\n   - Return to nominal attitude control with updated autonomy parameters that account for degraded wheels and recent sensor behavior.\n7. Uplink the recovery packet during the next ground contact; monitor immediate telemetry to confirm attitude re\u2011acquisition, gyro bias reset, wheel speed stabilization, and safe\u2011hold clearance.\n8. Update onboard autonomy thresholds: lower momentum limits, increase reliance on sun sensors during desaturation, and tighten exclusion zone logic.\n9. Continue 24\u202fh post\u2011recovery monitoring to ensure sustained nominal operation; log anomaly closure.\n\nReturn JSON with:\n- \"response\": comprehensive structured solution\n- \"domain\": the domain\n- \"task\": brief description\n- \"solution_steps\": array of concrete solution steps\n- \"quality_self_assessment\": 0.0-1.0 with brief justification\n- \"brain_assisted\": false\n- \"recalled_skill\": \"none\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": final reflection",
+    "trace_id": "af103ec2-0e6a-469f-932a-a41df83c9596",
+    "execution_time_ms": 4262.807846069336
+  },
+  "agent_outputs": {
+    "task_reasoner": {
+      "response": "1. **Collect all telemetry around the safe\u2011hold trigger** \u2013 Gather reaction wheel speed, star tracker status, gyroscope bias, and transmitter logs from -60\u202fs to +120\u202fs relative to the maneuver start.\n   *Why:* Establish a baseline and identify anomalies coincident with the safe\u2011hold.\n   *Result:* A time\u2011aligned dataset showing wheel spikes at 47\u202fs, star tracker exclusion at 45\u202fs, gyro bias drift of 0.003\u00b0/hr, and a 23\u202fs data gap starting at 50\u202fs.\n\n2. **Correlate reaction wheel torque spikes with star tracker exclusion** \u2013 Overlay wheel speed vs. star tracker event timestamps.\n   *Why:* Determine if the wheel acceleration caused attitude error that triggered the sun\u2011intrusion exclusion.\n   *Result:* Confirmation that a sudden spin\u2011up of Wheel\u202fA at 47\u202fs exceeded the control bandwidth, leading to pointing drift into the secondary tracker\u2019s exclusion zone.\n\n3. **Assess gyro bias drift impact** \u2013 Compare the measured 0.003\u00b0/hr drift against the calibration model and its 3\u03c3 limit.\n   *Why:* Verify whether gyro errors contributed to attitude misestimation during the maneuver.\n   *Result:* Drift is within spec but at the upper bound, implying reduced confidence in attitude estimate when combined with wheel spikes.\n\n4. **Evaluate transmitter gap effect** \u2013 Map the 23\u202fs telemetry loss against command and health packet flow.\n   *Why:* Identify if missing data prevented timely fault detection or commanded recovery.\n   *Result:* The gap coincided with the safe\u2011hold initiation, preventing ground\u2011side confirmation of the attitude error until after the event.\n\n5. **Diagnose degraded wheels** \u2013 Review wheel health logs for Wheels\u202fC and D operating in momentum\u2011management mode.\n   *Why:* Degraded wheels may limit corrective torque authority during desaturation.\n   *Result:* Wheels\u202fC/D have reduced maximum torque, necessitating thruster assistance for full momentum removal.\n\n6. **Plan ground\u2011commanded recovery** \u2013 Draft a command sequence: (a) switch to sun\u2011sensor\u2011only coarse pointing; (b) initiate gyro bias recalibration; (c) command reaction wheel desaturation via Hall\u2011effect thrusters; (d) return to nominal attitude control with updated autonomy parameters.\n   *Why:* Sequentially restore attitude knowledge, correct sensor biases, and free momentum before resuming normal operations.\n   *Result:* A recovery plan ready for uplink within the next ground window.\n\n7. **Execute recovery commands** \u2013 Send the command packet during the next available contact.\n   *Why:* Immediate action reduces risk of further anomalies.\n   *Result:* Successful re\u2011acquisition of attitude, gyro bias reset to nominal, wheel speeds stabilized, and safe\u2011hold cleared.\n\n8. **Update autonomy parameters** \u2013 Upload revised momentum management thresholds accounting for degraded wheels and recent sensor behavior.\n   *Why:* Prevent recurrence by tightening safety margins.\n   *Result:* Onboard autonomy now triggers earlier desaturation and uses sun sensors preferentially during similar events.\n\n9. **Post\u2011recovery verification** \u2013 Monitor telemetry for 24\u202fh to confirm stable attitude, wheel operation within limits, and absence of further safe\u2011holds.\n   *Why:* Ensure the issue is fully resolved before resuming routine operations.\n   *Result:* Continuous nominal performance observed; anomaly logged as closed.",
+      "confidence": "0.95",
+      "internal_reasoning": "I systematically mapped telemetry timestamps to identify causal links, evaluated sensor health against specifications, and constructed a logical recovery sequence that addresses each identified fault while respecting subsystem constraints.",
+      "_metrics": {
+        "tokens": 1431,
+        "prompt_tokens": 623,
+        "completion_tokens": 808,
+        "latency_ms": 5908.63,
+        "cost_usd": 0.000364,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "You are an expert analyst. Analyze the following task step by step.\n\nDOMAIN: satellite_ground_ops\nTASK: Monitor a GEO communications satellite's attitude determination and control subsystem (star trackers, gyroscopes, sun sensors, reaction wheels, and Hall-effect thrusters) during a scheduled station-keeping maneuver. Diagnose why the spacecraft entered safe-hold mode 47 seconds into the maneuver by correlating: reaction wheel speed telemetry showing unexpected torque spikes, a star tracker exclusion zone event triggered by sun intrusion on the secondary tracker, gyroscope bias drift rates that diverged from the onboard calibration model by 0.003\u00b0/hr (within spec but at the 3\u03c3 boundary), and a 23-second telemetry gap from the ground station due to a transmitter waveguide fault. Two of the four reaction wheels have been operating in a degraded momentum management mode since a previous anomaly 8 months ago. Execute recovery: ground-commanded attitude re-acquisition using sun-sensor-only coarse pointing, gyroscope bias recalibration, reaction wheel momentum desaturation via thruster firing, and return to nominal attitude control mode with updated onboard autonomy parameters.\n\n\n\nThink carefully about how to solve this task. For each step:\n1. State what you need to do\n2. Explain WHY this step is necessary\n3. Describe the expected output\n\nReturn JSON with:\n- \"domain\": the domain\n- \"task\": brief task description\n- \"response\": your complete step-by-step analysis\n- \"steps\": array of {\"action\": \"...\", \"result\": \"expected outcome\"}\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": brief approach explanation",
+      "trace_id": "54527057-5db3-4f07-9daa-ded5e4f80703",
+      "execution_time_ms": 5909.691333770752
+    },
+    "task_applier": {
+      "response": "1. Gather telemetry from \u201360\u202fs to +120\u202fs around the maneuver start: wheel speeds, star\u2011tracker status, gyro bias, transmitter logs.\n2. Align timestamps and confirm a reaction wheel speed spike at 47\u202fs coincident with a sun\u2011intrusion exclusion on the secondary tracker at ~45\u202fs.\n3. Verify gyro bias drift of 0.003\u00b0/hr is within spec but at the 3\u03c3 limit, reducing attitude confidence during the event.\n4. Note a 23\u2011second telemetry gap beginning at 50\u202fs caused by a transmitter waveguide fault, preventing immediate ground confirmation of the safe\u2011hold.\n5. Review wheel health: Wheels\u202fC and D have been in degraded momentum\u2011management mode for 8\u202fmonths, limiting corrective torque.\n6. Prepare recovery command sequence:\n   - Switch to sun\u2011sensor\u2011only coarse pointing to regain attitude knowledge.\n   - Initiate on\u2011board gyro bias recalibration.\n   - Command Hall\u2011effect thrusters to desaturate reaction wheels and remove excess momentum.\n   - Return to nominal attitude control with updated autonomy parameters that account for degraded wheels and recent sensor behavior.\n7. Uplink the recovery packet during the next ground contact; monitor immediate telemetry to confirm attitude re\u2011acquisition, gyro bias reset, wheel speed stabilization, and safe\u2011hold clearance.\n8. Update onboard autonomy thresholds: lower momentum limits, increase reliance on sun sensors during desaturation, and tighten exclusion zone logic.\n9. Continue 24\u202fh post\u2011recovery monitoring to ensure sustained nominal operation; log anomaly closure.",
+      "confidence": "0.95",
+      "internal_reasoning": "I followed the stepwise analysis: collected aligned telemetry, correlated wheel spikes with tracker exclusion, assessed gyro drift impact, accounted for telemetry gap, evaluated degraded wheels, and constructed a logical recovery sequence that restores attitude knowledge, corrects biases, desaturates wheels via thrusters, and updates autonomy to prevent recurrence.",
+      "_metrics": {
+        "tokens": 1796,
+        "prompt_tokens": 1361,
+        "completion_tokens": 435,
+        "latency_ms": 2871.12,
+        "cost_usd": 0.000177,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "You are solving a task. You have your own step-by-step analysis.\nYou have NO prior experience and NO recalled skills.\n\nDOMAIN: general\nTASK: {'domain': 'satellite_ground_ops', 'task': \"Monitor a GEO communications satellite's attitude determination and control subsystem (star trackers, gyroscopes, sun sensors, reaction wheels, and Hall-effect thrusters) during a scheduled station-keeping maneuver. Diagnose why the spacecraft entered safe-hold mode 47 seconds into the maneuver by correlating: reaction wheel speed telemetry showing unexpected torque spikes, a star tracker exclusion zone event triggered by sun intrusion on the secondary tracker, gyroscope bias drift rates that diverged from the onboard calibration model by 0.003\u00b0/hr (within spec but at the 3\u03c3 boundary), and a 23-second telemetry gap from the ground station due to a transmitter waveguide fault. Two of the four reaction wheels have been operating in a degraded momentum management mode since a previous anomaly 8 months ago. Execute recovery: ground-commanded attitude re-acquisition using sun-sensor-only coarse pointing, gyroscope bias recalibration, reaction wheel momentum desaturation via thruster firing, and return to nominal attitude control mode with updated onboard autonomy parameters.\"}\n\nYOUR ANALYSIS:\n1. **Collect all telemetry around the safe\u2011hold trigger** \u2013 Gather reaction wheel speed, star tracker status, gyroscope bias, and transmitter logs from -60\u202fs to +120\u202fs relative to the maneuver start.\n   *Why:* Establish a baseline and identify anomalies coincident with the safe\u2011hold.\n   *Result:* A time\u2011aligned dataset showing wheel spikes at 47\u202fs, star tracker exclusion at 45\u202fs, gyro bias drift of 0.003\u00b0/hr, and a 23\u202fs data gap starting at 50\u202fs.\n\n2. **Correlate reaction wheel torque spikes with star tracker exclusion** \u2013 Overlay wheel speed vs. star tracker event timestamps.\n   *Why:* Determine if the wheel acceleration caused attitude error that triggered the sun\u2011intrusion exclusion.\n   *Result:* Confirmation that a sudden spin\u2011up of Wheel\u202fA at 47\u202fs exceeded the control bandwidth, leading to pointing drift into the secondary tracker\u2019s exclusion zone.\n\n3. **Assess gyro bias drift impact** \u2013 Compare the measured 0.003\u00b0/hr drift against the calibration model and its 3\u03c3 limit.\n   *Why:* Verify whether gyro errors contributed to attitude misestimation during the maneuver.\n   *Result:* Drift is within spec but at the upper bound, implying reduced confidence in attitude estimate when combined with wheel spikes.\n\n4. **Evaluate transmitter gap effect** \u2013 Map the 23\u202fs telemetry loss against command and health packet flow.\n   *Why:* Identify if missing data prevented timely fault detection or commanded recovery.\n   *Result:* The gap coincided with the safe\u2011hold initiation, preventing ground\u2011side confirmation of the attitude error until after the event.\n\n5. **Diagnose degraded wheels** \u2013 Review wheel health logs for Wheels\u202fC and D operating in momentum\u2011management mode.\n   *Why:* Degraded wheels may limit corrective torque authority during desaturation.\n   *Result:* Wheels\u202fC/D have reduced maximum torque, necessitating thruster assistance for full momentum removal.\n\n6. **Plan ground\u2011commanded recovery** \u2013 Draft a command sequence: (a) switch to sun\u2011sensor\u2011only coarse pointing; (b) initiate gyro bias recalibration; (c) command reaction wheel desaturation via Hall\u2011effect thrusters; (d) return to nominal attitude control with updated autonomy parameters.\n   *Why:* Sequentially restore attitude knowledge, correct sensor biases, and free momentum before resuming normal operations.\n   *Result:* A recovery plan ready for uplink within the next ground window.\n\n7. **Execute recovery commands** \u2013 Send the command packet during the next available contact.\n   *Why:* Immediate action reduces risk of further anomalies.\n   *Result:* Successful re\u2011acquisition of attitude, gyro bias reset to nominal, wheel speeds stabilized, and safe\u2011hold cleared.\n\n8. **Update autonomy parameters** \u2013 Upload revised momentum management thresholds accounting for degraded wheels and recent sensor behavior.\n   *Why:* Prevent recurrence by tightening safety margins.\n   *Result:* Onboard autonomy now triggers earlier desaturation and uses sun sensors preferentially during similar events.\n\n9. **Post\u2011recovery verification** \u2013 Monitor telemetry for 24\u202fh to confirm stable attitude, wheel operation within limits, and absence of further safe\u2011holds.\n   *Why:* Ensure the issue is fully resolved before resuming routine operations.\n   *Result:* Continuous nominal performance observed; anomaly logged as closed.\n\nSolve the task using only your own analysis.\n\nReturn JSON with:\n- \"response\": your complete solution\n- \"domain\": the domain\n- \"task\": brief description\n- \"steps\": array of {\"action\": \"...\", \"expected_outcome\": \"...\"}\n- \"used_recalled_skill\": false\n- \"recalled_skill_name\": \"none\"\n- \"adaptation_notes\": \"N/A\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": reflection on approach",
+      "trace_id": "cf94ae07-bede-47da-9d0a-a5908a35ad02",
+      "execution_time_ms": 2873.133659362793
+    },
+    "task_result": {
+      "response": {
+        "domain": "satellite_ground_ops",
+        "task": "Diagnose and recover a GEO comms satellite that entered safe\u2011hold 47\u202fs into a station\u2011keeping maneuver due to wheel torque spikes, star\u2011tracker exclusion, gyro bias drift at 3\u03c3, and a 23\u2011s telemetry gap.",
+        "solution_steps": [
+          {
+            "step_id": 1,
+            "description": "Collect all relevant telemetry from \u201360\u202fs to +120\u202fs around the maneuver: wheel speeds, star\u2011tracker status, gyro biases, transmitter logs, and thruster firings."
+          },
+          {
+            "step_id": 2,
+            "description": "Align timestamps. Confirm a reaction wheel speed spike at ~47\u202fs coincident with a sun\u2011intrusion exclusion on the secondary tracker (~45\u202fs)."
+          },
+          {
+            "step_id": 3,
+            "description": "Verify gyro bias drift of +0.003\u00b0/hr, within spec but at the 3\u03c3 boundary, reducing attitude confidence during the event."
+          },
+          {
+            "step_id": 4,
+            "description": "Note a 23\u2011second telemetry gap starting at ~50\u202fs caused by a transmitter waveguide fault, preventing immediate ground confirmation of safe\u2011hold."
+          },
+          {
+            "step_id": 5,
+            "description": "Review wheel health: Wheels C and D have been in degraded momentum\u2011management mode for 8\u202fmonths, limiting corrective torque capability."
+          },
+          {
+            "step_id": 6,
+            "description": "Prepare recovery command sequence:",
+            "substeps": [
+              "Switch to sun\u2011sensor\u2011only coarse pointing to regain attitude knowledge.",
+              "Initiate on\u2011board gyro bias recalibration using the latest calibration model.",
+              "Command Hall\u2011effect thrusters to desaturate reaction wheels, removing excess momentum accumulated during the anomaly.",
+              "Return to nominal attitude control mode with updated autonomy parameters that account for degraded wheels and recent sensor behavior."
+            ]
+          },
+          {
+            "step_id": 7,
+            "description": "Uplink the recovery packet during the next ground contact. Monitor immediate telemetry to confirm: attitude re\u2011acquisition, gyro bias reset, wheel speed stabilization, and safe\u2011hold clearance."
+          },
+          {
+            "step_id": 8,
+            "description": "Update onboard autonomy thresholds: lower momentum limits for wheels C/D, increase reliance on sun sensors during desaturation, tighten exclusion zone logic to prevent future star\u2011tracker intrusions."
+          },
+          {
+            "step_id": 9,
+            "description": "Continue 24\u202fh post\u2011recovery monitoring. Log all telemetry, confirm sustained nominal operation, and archive anomaly closure data for future reference."
+          }
+        ],
+        "quality_self_assessment": 0.95
+      },
+      "confidence": "0.95",
+      "internal_reasoning": "All steps directly address the evidence: wheel spikes, star\u2011tracker exclusion, gyro drift at 3\u03c3, telemetry gap, and degraded wheels. The recovery plan follows standard procedures for attitude re\u2011acquisition, bias recalibration, momentum desaturation, and autonomy update.",
+      "_metrics": {
+        "tokens": 1639,
+        "prompt_tokens": 953,
+        "completion_tokens": 686,
+        "latency_ms": 4261.81,
+        "cost_usd": 0.000263,
+        "model": "openai/gpt-oss-20b",
+        "provider": "lm_studio"
+      },
+      "formatted_prompt": "Produce the FINAL structured output for this task.\n\nDOMAIN: general\nTASK: {'domain': 'satellite_ground_ops', 'task': \"Monitor a GEO communications satellite's attitude determination and control subsystem (star trackers, gyroscopes, sun sensors, reaction wheels, and Hall-effect thrusters) during a scheduled station-keeping maneuver. Diagnose why the spacecraft entered safe-hold mode 47 seconds into the maneuver by correlating: reaction wheel speed telemetry showing unexpected torque spikes, a star tracker exclusion zone event triggered by sun intrusion on the secondary tracker, gyroscope bias drift rates that diverged from the onboard calibration model by 0.003\u00b0/hr (within spec but at the 3\u03c3 boundary), and a 23-second telemetry gap from the ground station due to a transmitter waveguide fault. Two of the four reaction wheels have been operating in a degraded momentum management mode since a previous anomaly 8 months ago. Execute recovery: ground-commanded attitude re-acquisition using sun-sensor-only coarse pointing, gyroscope bias recalibration, reaction wheel momentum desaturation via thruster firing, and return to nominal attitude control mode with updated onboard autonomy parameters.\"}\n\nSOLUTION:\n1. Gather telemetry from \u201360\u202fs to +120\u202fs around the maneuver start: wheel speeds, star\u2011tracker status, gyro bias, transmitter logs.\n2. Align timestamps and confirm a reaction wheel speed spike at 47\u202fs coincident with a sun\u2011intrusion exclusion on the secondary tracker at ~45\u202fs.\n3. Verify gyro bias drift of 0.003\u00b0/hr is within spec but at the 3\u03c3 limit, reducing attitude confidence during the event.\n4. Note a 23\u2011second telemetry gap beginning at 50\u202fs caused by a transmitter waveguide fault, preventing immediate ground confirmation of the safe\u2011hold.\n5. Review wheel health: Wheels\u202fC and D have been in degraded momentum\u2011management mode for 8\u202fmonths, limiting corrective torque.\n6. Prepare recovery command sequence:\n   - Switch to sun\u2011sensor\u2011only coarse pointing to regain attitude knowledge.\n   - Initiate on\u2011board gyro bias recalibration.\n   - Command Hall\u2011effect thrusters to desaturate reaction wheels and remove excess momentum.\n   - Return to nominal attitude control with updated autonomy parameters that account for degraded wheels and recent sensor behavior.\n7. Uplink the recovery packet during the next ground contact; monitor immediate telemetry to confirm attitude re\u2011acquisition, gyro bias reset, wheel speed stabilization, and safe\u2011hold clearance.\n8. Update onboard autonomy thresholds: lower momentum limits, increase reliance on sun sensors during desaturation, and tighten exclusion zone logic.\n9. Continue 24\u202fh post\u2011recovery monitoring to ensure sustained nominal operation; log anomaly closure.\n\nReturn JSON with:\n- \"response\": comprehensive structured solution\n- \"domain\": the domain\n- \"task\": brief description\n- \"solution_steps\": array of concrete solution steps\n- \"quality_self_assessment\": 0.0-1.0 with brief justification\n- \"brain_assisted\": false\n- \"recalled_skill\": \"none\"\n- \"confidence\": 0.0-1.0\n- \"internal_reasoning\": final reflection",
+      "trace_id": "af103ec2-0e6a-469f-932a-a41df83c9596",
+      "execution_time_ms": 4262.807846069336
+    }
+  }
+}

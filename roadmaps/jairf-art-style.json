@@ -1,0 +1,32 @@
+{
+  "name": "jairf-art-style",
+  "description": "JAIRF art style roadmap (per 01_Art_Style_Guide.md). Stylized Fantasy: readable silhouettes, exaggerated-but-believable proportions, clear material definition. Palette: warm earth primary, magical purple/gold/cyan accents, desaturated red/orange danger. Soft GI + strong key lights, sparse emissive. Forbidden: realism gore, extreme photorealism, busy noise. Generator keyword: 'stylized fantasy, clean shapes, game-ready, readable silhouette, soft PBR, slightly exaggerated proportions'.",
+  "phases": [
+    {
+      "name": "1. Style lock: visual direction, palette, lighting rules",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Character guidelines (silhouette, materials, T/A-pose)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Environment guidelines (modular, landmarks, walkable contrast)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Builder asset visual rules (topology, pivots, selection feedback)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Generator keyword consistency + cross-pipeline audits",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

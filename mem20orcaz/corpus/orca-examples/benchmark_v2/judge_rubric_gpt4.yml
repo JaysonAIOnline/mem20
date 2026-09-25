@@ -1,0 +1,56 @@
+# ═══════════════════════════════════════════════════════════════════════
+# Benchmark v2 — LLM-as-Judge: Rubric Scoring (GPT-4 variant)
+# ═══════════════════════════════════════════════════════════════════════
+#
+# Optional external judge — use via:
+#   python judge_benchmark.py --judge-workflow judge_rubric_gpt4.yml --output-tag gpt4
+# ═══════════════════════════════════════════════════════════════════════
+
+orchestrator:
+  id: judge-rubric-gpt4
+  strategy: sequential
+  agents:
+    - rubric_judge
+
+agents:
+  - id: rubric_judge
+    type: openai-gpt-4
+    prompt: |
+      You are an expert evaluator. Score the following task output on 6 dimensions.
+      Each dimension is scored from 1 (poor) to 10 (excellent).
+
+      DOMAIN: {{ input.domain | default('general') }}
+      TASK: {{ input.task | default('unknown') }}
+      TRACK: {{ input.track | default('unknown') }}
+
+      OUTPUT TO EVALUATE:
+      {{ input.output | default('No output provided') }}
+
+      SCORING RUBRIC:
+
+      1. REASONING QUALITY (1-10)
+      2. STRUCTURAL COMPLETENESS (1-10)
+      3. DEPTH OF ANALYSIS (1-10)
+      4. ACTIONABILITY (1-10)
+      5. DOMAIN ADAPTABILITY (1-10)
+      6. CONFIDENCE CALIBRATION (1-10)
+
+      Return ONLY a JSON object with:
+      - "reasoning_quality": integer 1-10
+      - "reasoning_quality_justification": one sentence
+      - "structural_completeness": integer 1-10
+      - "structural_completeness_justification": one sentence
+      - "depth_of_analysis": integer 1-10
+      - "depth_of_analysis_justification": one sentence
+      - "actionability": integer 1-10
+      - "actionability_justification": one sentence
+      - "domain_adaptability": integer 1-10
+      - "domain_adaptability_justification": one sentence
+      - "confidence_calibration": integer 1-10
+      - "confidence_calibration_justification": one sentence
+      - "overall_score": float (average of all 6 dimensions)
+      - "overall_impression": two to three sentences summarizing the output quality
+    params:
+      model: gpt-4-turbo
+      temperature: 0.1
+      max_tokens: 1000

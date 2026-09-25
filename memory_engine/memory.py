@@ -42,8 +42,10 @@ from __future__ import annotations
 import ast as _ast
 
 import argparse
+import copy
 import json
 import os
+import random
 import re
 import shutil
 import sys
@@ -51,6 +53,7 @@ import time
 import glob
 import hashlib
 from datetime import datetime, timezone, timedelta
+from dataclasses import dataclass
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -143,21 +146,130 @@ SUPERSEDED = "[SUPERSEEDED]"
 # =============================================================================
 
 PINNED_FILE = os.path.join(STORE_DIR, "pinned_blocks.json")
+def _not_pure_hex(text: str) -> bool:
+    """A 40-char run of hex is overwhelmingly a git SHA-1 or content hash, not a secret."""
+    stripped = text.strip()
+    if len(stripped) != 40:
+        return False
+    return not all(c in "0123456789abcdefABCDEF" for c in stripped)
+
+
+def _not_pure_alpha(text: str) -> bool:
+    stripped = text.strip()
+    if len(stripped) != 40:
+        return False
+    return not stripped.isalpha()
+
+
+def _has_mixed_charset(text: str) -> bool:
+    stripped = text.strip()
+    return (
+        any(c.islower() for c in stripped)
+        and any(c.isupper() for c in stripped)
+        and any(c.isdigit() for c in stripped)
+    )
+
+
+_TB = r"(?<![A-Za-z0-9+/_-])"
+_TA = r"(?![A-Za-z0-9+/_-])"
+_TB_ALNUM = r"(?<![A-Za-z0-9])"
+_TA_ALNUM = r"(?![A-Za-z0-9])"
+
 SECRET_PATTERNS = [
-    (r"sk-[a-zA-Z0-9]{48}", "OpenAI API key"),
-    (r"sk-ant-[a-zA-Z0-9]{95}", "Anthropic API key"),
-    (r"ghp_[a-zA-Z0-9]{36}", "GitHub Personal Access Token"),
-    (r"ghs_[a-zA-Z0-9]{36}", "GitHub Secret"),
-    (r"gho_[a-zA-Z0-9]{36}", "GitHub OAuth Token"),
-    (r"xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24}", "Slack Bot Token"),
-    (r"xoxp-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24}", "Slack User Token"),
-    (r"AKIA[0-9A-Z]{16}", "AWS Access Key ID"),
-    (r"[0-9a-zA-Z/+]{40}", "AWS Secret Access Key (base64)"),
-    (r"Bearer\s+[a-zA-Z0-9\-._~+/]+=*", "Bearer token"),
-    (r"password\s*[=:]\s*[^\s]+", "Password assignment"),
-    (r"secret\s*[=:]\s*[^\s]+", "Secret assignment"),
-    (r"api[_-]?key\s*[=:]\s*[^\s]+", "API key assignment"),
+    (r"sk-ant-" + _TB_ALNUM + r"[A-Za-z0-9_\-]{80,140}" + _TA, "Anthropic API key", "high", None),
+    (r"sk-proj-" + _TB_ALNUM + r"[A-Za-z0-9_\-]{40,120}" + _TA, "OpenAI project API key", "high", None),
+    (r"sk-" + _TB_ALNUM + r"[A-Za-z0-9]{32,64}" + _TA, "OpenAI-style API key", "high", None),
+    (r"ghp_" + _TB_ALNUM + r"[A-Za-z0-9]{36}" + _TA, "GitHub Personal Access Token", "high", None),
+    (r"ghs_" + _TB_ALNUM + r"[A-Za-z0-9]{36}" + _TA, "GitHub Secret", "high", None),
+    (r"gho_" + _TB_ALNUM + r"[A-Za-z0-9]{36}" + _TA, "GitHub OAuth Token", "high", None),
+    (r"github_pat_" + _TB_ALNUM + r"[A-Za-z0-9_]{50,100}" + _TA, "GitHub fine-grained PAT", "high", None),
+    (r"xoxb-[0-9]{11}-[0-9]{11}-[A-Za-z0-9]{24}" + _TA, "Slack Bot Token", "high", None),
+    (r"xoxp-[0-9]{11}-[0-9]{11}-[A-Za-z0-9]{24}" + _TA, "Slack User Token", "high", None),
+    (r"(?<![A-Za-z0-9])AKIA[0-9A-Z]{16}" + _TA, "AWS Access Key ID", "high", None),
+    (r"(?<![A-Za-z0-9])AIza[0-9A-Za-z_\-]{35}" + _TA, "Google API Key", "high", None),
+    (r"Bearer\s+[A-Za-z0-9\-._~+/]{16,}={0,2}", "Bearer token", "medium", None),
+    (
+        _TB + r"[A-Za-z0-9+/]{40}" + _TA,
+        "AWS Secret Access Key (base64)",
+        "low",
+        lambda t: _not_pure_hex(t) and _not_pure_alpha(t) and _has_mixed_charset(t),
+    ),
+    (r"(?i)\bpassword\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "Password assignment", "low", None),
+    (r"(?i)\bsecret\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "Secret assignment", "low", None),
+    (r"(?i)\bapi[_-]?key\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "API key assignment", "low", None),
 ]
+
+_CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
+
+
+@dataclass(frozen=True)
+class SecretFinding:
+    label: str
+    confidence: str
+    offset: int
+    preview: str
+
+
+def detect_secrets(content: str, min_confidence: str = "low") -> list[SecretFinding]:
+    """Detect secrets in content. Pure inspection: never mutates or returns a modified string."""
+    floor = _CONFIDENCE_RANK.get(min_confidence, 0)
+    seen: set[tuple[int, int]] = set()
+    findings: list[SecretFinding] = []
+    for pattern, label, confidence, validator in SECRET_PATTERNS:
+        if _CONFIDENCE_RANK[confidence] < floor:
+            continue
+        for match in re.finditer(pattern, content):
+            text = match.group(0)
+            if validator is not None and not validator(text):
+                continue
+            span = match.span()
+            if span in seen:
+                continue
+            seen.add(span)
+            findings.append(
+                SecretFinding(
+                    label=label,
+                    confidence=confidence,
+                    offset=span[0],
+                    preview=text[:8] + "..." if len(text) > 8 else "...",
+                )
+            )
+    findings.sort(key=lambda f: f.offset)
+    return findings
+
+
+def redact_secrets(content: str, min_confidence: str = "low") -> tuple[str, list[SecretFinding]]:
+    """Return (redacted_copy, findings). For producing safe OUTPUT only.
+
+    Storage paths must use detect_secrets() and keep the caller's original text;
+    silently rewriting stored content corrupts real data.
+    """
+    findings = detect_secrets(content, min_confidence)
+    if not findings:
+        return content, []
+    spans: list[tuple[int, int, str]] = []
+    for pattern, label, confidence, validator in SECRET_PATTERNS:
+        if _CONFIDENCE_RANK[confidence] < _CONFIDENCE_RANK.get(min_confidence, 0):
+            continue
+        for match in re.finditer(pattern, content):
+            text = match.group(0)
+            if validator is not None and not validator(text):
+                continue
+            spans.append((match.start(), match.end(), f"[REDACTED {label}]"))
+    spans.sort(key=lambda s: (s[0], -s[1]))
+    merged: list[tuple[int, int, str]] = []
+    for start, end, label in spans:
+        if merged and start < merged[-1][1]:
+            continue
+        merged.append((start, end, label))
+    out: list[str] = []
+    cursor = 0
+    for start, end, label in merged:
+        out.append(content[cursor:start])
+        out.append(label)
+        cursor = end
+    out.append(content[cursor:])
+    return "".join(out), findings
 
 
 def _load_pinned() -> dict:
@@ -177,17 +289,27 @@ def _save_pinned(data: dict) -> None:
 
 
 def _scrub_secrets(content: str) -> tuple[str, list[str]]:
-    """Detect and optionally redact secrets in content. Returns (cleaned_content, detected_secrets)."""
-    detected = []
-    cleaned = content
-    for pattern, label in SECRET_PATTERNS:
-        matches = re.findall(pattern, content)
-        if matches:
-            for match in matches:
-                detected.append(f"{label}: {match[:20]}...")
-            # Redact the match
-            cleaned = re.sub(pattern, f"[REDACTED {label}]", cleaned)
-    return cleaned, detected
+    """Backwards-compatible redaction helper. Returns (redacted_copy, detected_labels).
+
+    Retained for explicit redact-on-output callers (e.g. memory_scan_pii).
+    Store paths must NOT use this — they use detect_secrets() and persist the
+    caller's original text unchanged.
+    """
+    redacted, findings = redact_secrets(content)
+    return redacted, [f"{f.label}: {f.preview}" for f in findings]
+
+
+def _detect_only(content: str) -> list[str]:
+    """Non-destructive detection for store paths. Returns human-readable labels."""
+    findings = detect_secrets(content)
+    if not findings:
+        return []
+    labels: list[str] = []
+    for finding in findings:
+        entry = f"{finding.label}: {finding.preview} ({finding.confidence})"
+        if entry not in labels:
+            labels.append(entry)
+    return labels
 
 
 def pin_block(block_id: str, content: str, reason: str = "", actor: str = "agent") -> dict:
@@ -315,13 +437,14 @@ def remember(topic: str, content: str, tags: list[str] | None = None,
     os.makedirs(ENTRIES, exist_ok=True)
     now = _now()
     
-    # Scrub secrets if requested
     cleaned_content = content
-    detected_secrets = []
-    if scrub_secrets:
-        cleaned_content, detected_secrets = _scrub_secrets(content)
-        if detected_secrets:
-            print(f"Warning: {len(detected_secrets)} secret(s) detected and redacted", file=sys.stderr)
+    detected_secrets = _detect_only(content) if scrub_secrets else []
+    if detected_secrets:
+        print(
+            f"Warning: {len(detected_secrets)} possible secret(s) detected; "
+            "stored text left unmodified",
+            file=sys.stderr,
+        )
     
     rec = {
         "id": f"{int(time.time()*1000):x}{os.urandom(2).hex()}",
@@ -412,9 +535,17 @@ def recall_at(as_of: str | None = None, topic: str | None = None,
     Returns facts that were valid at the given time (valid_from <= as_of < valid_to).
     """
     recs = _load_ledger()
-    # Filter to remember actions, exclude superseded
+    # Filter to remember actions, exclude superseded (content marker OR
+    # supersede-event reference — supersede() appends an event with
+    # supersedes_id pointing at the original row rather than rewriting it).
+    superseded_ids = {
+        str(r.get("supersedes_id"))
+        for r in recs
+        if r.get("action") == "supersede" and r.get("supersedes_id")
+    }
     recs = [r for r in recs if r.get("action") == "remember"
-            and SUPERSEDED not in r.get("content", "")]
+            and SUPERSEDED not in r.get("content", "")
+            and str(r.get("id")) not in superseded_ids]
 
     if include_simulated:
         sim = [r for r in _load_simulated_ledger()
@@ -815,13 +946,14 @@ def remember(topic: str, content: str, tags: list[str] | None = None,
     os.makedirs(ENTRIES, exist_ok=True)
     now = _now()
     
-    # Scrub secrets if requested
     cleaned_content = content
-    detected_secrets = []
-    if scrub_secrets:
-        cleaned_content, detected_secrets = _scrub_secrets(content)
-        if detected_secrets:
-            print(f"Warning: {len(detected_secrets)} secret(s) detected and redacted", file=sys.stderr)
+    detected_secrets = _detect_only(content) if scrub_secrets else []
+    if detected_secrets:
+        print(
+            f"Warning: {len(detected_secrets)} possible secret(s) detected; "
+            "stored text left unmodified",
+            file=sys.stderr,
+        )
     
     rec = {
         "id": f"{int(time.time()*1000):x}{os.urandom(2).hex()}",
@@ -1278,7 +1410,14 @@ def remember_simulated(topic: str, content: str, tags: list[str] | None = None,
       - TTL / decay window via valid_to
     """
     now = _now()
-    cleaned, detected = _scrub_secrets(content)
+    detected_sim = _detect_only(content)
+    if detected_sim:
+        print(
+            f"Warning: {len(detected_sim)} possible secret(s) detected; "
+            "simulated text left unmodified",
+            file=sys.stderr,
+        )
+    cleaned = content
     rec = {
         "id": f"{int(time.time()*1000):x}{os.urandom(2).hex()}",
         "ts": now,
@@ -1300,7 +1439,7 @@ def remember_simulated(topic: str, content: str, tags: list[str] | None = None,
         "sim_type": sim_type,
         "promoted_to": None,           # immutable link once promoted
         "quarantined": False,
-        "secrets_detected": detected or None,
+        "secrets_detected": detected_sim or None,
     }
     _append_simulated_ledger(rec)
     return rec
@@ -1742,12 +1881,15 @@ class WorldModel:
         })
     
     def simulate_step(self, steps: int = 1) -> list[dict]:
-        """Run simulation steps and return state trajectory."""
+        """Run simulation steps and return state trajectory.
+
+        Each recorded state is the state AFTER that step's transition rules are
+        applied, so ``trajectory[-1]`` is the state after all ``steps``
+        transitions. Recording before the rules fire would make every report
+        under-count by one step.
+        """
         trajectory = []
         for _ in range(steps):
-            state = {name: var["value"] for name, var in self.state_variables.items()}
-            trajectory.append(state.copy())
-            
             # Apply transition rules
             for rule in self.transition_rules:
                 # Safe condition evaluation (no eval()); AST-restricted to a
@@ -1756,13 +1898,36 @@ class WorldModel:
                     rule["condition"],
                     {**{k: v["value"] for k, v in self.state_variables.items()}},
                 )
-                
-                if condition_met:
+
+                probability = float(rule.get("probability", 1.0))
+                if probability >= 1.0:
+                    fires = condition_met
+                elif probability <= 0.0:
+                    fires = False
+                else:
+                    fires = condition_met and random.random() < probability
+
+                if fires:
                     for var, change in rule["effect"].items():
-                        if var in self.state_variables:
-                            self.state_variables[var]["value"] += change
-                            self.state_variables[var]["history"].append(self.state_variables[var]["value"])
-        
+                        numeric_change = isinstance(change, (int, float)) and not isinstance(change, bool)
+                        if var not in self.state_variables:
+                            seed = 0 if numeric_change else change
+                            self.state_variables[var] = {
+                                "value": seed,
+                                "dynamics": "derived",
+                                "history": [seed],
+                            }
+                        current = self.state_variables[var]["value"]
+                        if numeric_change and isinstance(current, (int, float)) and not isinstance(current, bool):
+                            new_value = current + change
+                        else:
+                            new_value = change
+                        self.state_variables[var]["value"] = new_value
+                        self.state_variables[var]["history"].append(new_value)
+
+            state = {name: var["value"] for name, var in self.state_variables.items()}
+            trajectory.append(state.copy())
+
         return trajectory
 
     def do(self, variable, value, label=None) -> dict:
@@ -1784,7 +1949,7 @@ class WorldModel:
         ``steps`` forward, and reports whether ``condition`` holds at the end.
         The live world model is snapshot-restored, so counterfactual queries do
         not mutate the actual state (unlike predictive :meth:`predict`)."""
-        snapshot = {k: dict(v) for k, v in self.state_variables.items()}
+        snapshot = copy.deepcopy(self.state_variables)
         try:
             for var, val in (interventions or {}).items():
                 if var in self.state_variables:
@@ -1802,30 +1967,39 @@ class WorldModel:
             self.state_variables = snapshot
 
     def predict(self, query: str, horizon: int = 5) -> dict:
-        """Answer predictive queries about future states."""
-        trajectory = self.simulate_step(horizon)
-        
-        # Simple query evaluation
-        if "will" in query.lower() and "exceed" in query.lower():
-            # Extract variable and threshold
-            import re
-            match = re.search(r"(\w+)\s+exceed\s+([\d.]+)", query, re.IGNORECASE)
-            if match:
-                var, threshold = match.group(1), float(match.group(2))
-                final_val = trajectory[-1].get(var, 0) if trajectory else 0
-                return {
-                    "query": query,
-                    "prediction": final_val > threshold,
-                    "final_value": final_val,
-                    "threshold": threshold,
-                    "trajectory": [t.get(var, 0) for t in trajectory],
-                }
-        
-        return {
-            "query": query,
-            "trajectory": trajectory,
-            "final_state": trajectory[-1] if trajectory else {},
-        }
+        """Answer predictive queries about future states.
+
+        Non-mutating: the simulation runs against a deep snapshot and the live
+        state is restored before returning, so asking a question never advances
+        the real world model (same contract as :meth:`counterfactual`).
+        """
+        snapshot = copy.deepcopy(self.state_variables)
+        try:
+            trajectory = self.simulate_step(horizon)
+
+            # Simple query evaluation
+            if "will" in query.lower() and "exceed" in query.lower():
+                # Extract variable and threshold
+                import re
+                match = re.search(r"(\w+)\s+exceed\s+([\d.]+)", query, re.IGNORECASE)
+                if match:
+                    var, threshold = match.group(1), float(match.group(2))
+                    final_val = trajectory[-1].get(var, 0) if trajectory else 0
+                    return {
+                        "query": query,
+                        "prediction": final_val > threshold,
+                        "final_value": final_val,
+                        "threshold": threshold,
+                        "trajectory": [t.get(var, 0) for t in trajectory],
+                    }
+
+            return {
+                "query": query,
+                "trajectory": trajectory,
+                "final_state": trajectory[-1] if trajectory else {},
+            }
+        finally:
+            self.state_variables = snapshot
     
     def to_dict(self) -> dict:
         """Serialize world model for persistence."""
@@ -2172,12 +2346,20 @@ def _save_affective(data: dict) -> None:
 
 
 _affective_state = None
+_affective_state_mtime = None
 
 def _get_affective() -> AffectiveState:
-    global _affective_state
-    if _affective_state is None:
+    global _affective_state, _affective_state_mtime
+    mtime = None
+    try:
+        if os.path.exists(AFFECTIVE_FILE):
+            mtime = os.path.getmtime(AFFECTIVE_FILE)
+    except Exception:
+        mtime = None
+    if _affective_state is None or mtime != _affective_state_mtime:
         data = _load_affective()
         _affective_state = AffectiveState.from_dict(data)
+        _affective_state_mtime = mtime
     return _affective_state
 
 

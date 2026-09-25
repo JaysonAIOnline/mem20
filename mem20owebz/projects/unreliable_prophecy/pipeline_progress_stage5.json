@@ -1,0 +1,11 @@
+{
+  "stage": "Stage 5 - FINAL_POLISH",
+  "status": "completed",
+  "next": "Stage 6 - RELEASE_PACKAGE",
+  "artifacts": [
+    "qa/reports/final_qa_report.json",
+    "engine_project/Assets/ProjectSettings/build_config.json",
+    "qa/checklist.json",
+    "engine_project/README.md"
+  ]
+}

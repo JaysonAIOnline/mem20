@@ -1,0 +1,47 @@
+{
+  "name": "jairf-exec",
+  "description": "AI/HUM ROADMAP EXECUTION - the executable spine to build JAIRF. Sequential order; each phase defines concrete deliverables, dependencies, who (AI/HUM) does what, and a human sign-off gate. Fixes ordering issues found in roadmap verification (P0 bootstrap first; foundation gates before Q1; per-quarter production kits before the quarter they feed; QA swarm bootstrapped before first QA). Nothing references an asset or system that isn't already built upstream.",
+  "phases": [
+    {
+      "name": "P0 Bootstrap & swarm tooling",
+      "status": "completed",
+      "notes": "DELIVERABLES: Unity 6 project + render pipeline; git repo (main/develop/content/experimental) + CI; master asset folder tree (3D/Audio/UI/VFX/Animation/Data per specs 05+08); Addressables groups; headless Play Mode test harness + logging/screenshot/telemetry capture; mem20/MCP wiring for the swarm; end-of-day build channel. DEPS: none. AI: scaffold repo, CI, harness, folder tree. HUM GATE: repo+CI green, harness runs a smoke scene headless, agents confirmed to have read every .md in /home/jayson/Desktop/2/ in full. [AGENT UPDATE 2026-09-12]: All AI deliverables complete locally + GitHub CI green. Awaiting human HUM GATE sign-off: agents confirmed to have read every .md in /home/jayson/Desktop/2/ in full (read-all compliance proof) + repo accepted. [HUM GATE APPROVED 2026-09-12 by Jayson: 'P0 approved']."
+    },
+    {
+      "name": "P1 Foundation gates",
+      "status": "completed",
+      "notes": "HUM GATE: Approved by Jayson after confirming rebuilt dev client renders the starter zone (launched on :0.0, seen and closed by user). All P1 deliverables done: SO base classes, localization keys+table+L.T, art style lock, tech budgets/naming, beta supervisor+probe+pool, versioning policy+stamp 0.1.0, CI p1-standards job, validator/config fixes (DATA_/json/csv, M underscore, SO StringTable, PascalCase regex), starter zone foundation (camera/sun/floor/landmarks) fixing black screen. 4/4 PlayMode tests green, commit b019697 pushed to develop."
+    },
+    {
+      "name": "P2 Q1 production kits",
+      "status": "in_progress",
+      "notes": "[AI UPDATE 2026-09-13] P2 import+integration vertical slice COMPLETE and green: (1) Unity 6000.5.9f1 has no native .glb importer -> added com.unity.cloud.gltfast@6.9.1 (registry), GlTFast ScriptedImporter imports all 73 GLBs as mesh/material/texture/AnimationClip sub-assets (GameAvatar 27 clips, Goblin 17, Wolf 12, Dragonling 8, OrcWarlord 14); deleted stale DefaultImporter metas. (2) 73 prefabs built via JAIRFDressScene.BuildAllPrefabs, normalized to PF_<Name>. (3) Q1_StarterZone dressed with 21 art instances (player GameAvatar w/ CharacterController+motor+AC_Player_GameAvatar 27-clip controller, VillageElder, VendorNPC, 2 goblins, wolf, dragonling + props). (4) Tools/validate_repo.py PASSES (fixed 85 naming + 3 magic-number violations: prefab naming, 6 UI sheets UI_Sheet_->UI_Panel_, 5 VFX builder .cs moved to Scripts/Pack/Vfx, standards.json SO allowlist +settings SOs, SO_MovementSettings.SpeedDeadZone, WalletRuntime.MinCurrencyDelta, QuestRuntime.MinRewardCurrency). (5) 4/4 PlayMode tests PASS. (6) Linux dev build OK (Builds/Linux, 403MB). REMaining for P2 gate: Addressables groups + freeze asset reference list, canon-JSON->SO data factory wiring, localization keys (lore + Q1_MAIN), animation retarget mapping (28-joint Mixamo) applied, full Q1 kit budget/naming validation per track (audio buses/ducking, UI core HUD/inventory/status slice), human HUM GATE."
+    },
+    {
+      "name": "P3 Q1 Build + QA + sign-off",
+      "status": "planned",
+      "notes": "DELIVERABLES per jairf-1: character creation, movement, basic combat core, inventory, simple progression, one starter zone, basic UI, local co-op (local networking only; no accounts - that is Q2). DEPS: P2 kits. AI: full implementation + compile + Play Mode validation. QA: beta swarm Explorer + Combatant archetypes on Q1 build (NO Builder archetype yet - builder is Q3). HUM GATE: Q1 milestone verdict per framework plan sec 8 (weekly checkpoints + sign-off); issues triaged into tickets."
+    },
+    {
+      "name": "P4 Q2 Build + QA + sign-off",
+      "status": "planned",
+      "notes": "DELIVERABLES per jairf-2: account system + auth, networking + dedicated server, multiple zones + shared world state, parties + chat, early economy. PREREQ KITS (built before build, like P2): Q2 asset set, Q2 audio, enemy/NPC animation (wolf/bandit/skeleton/vendor), multiplayer VFX, social UI; data-arch save/network schemas (ph5); liveops accessibility slice for UI. DEPS: P3. AI: server + client networking implementation, world-state persistence. QA: Social/Economy + Long-Session archetypes on multiplayer; MP stability + stress. HUM GATE: sign-off on Q2 (stability + fun verdict)."
+    },
+    {
+      "name": "P5 Q3 Build + QA + sign-off",
+      "status": "planned",
+      "notes": "DELIVERABLES per jairf-3: full classes/progression, quest system (from jairf-quests ph1-4 data + dialogue), deeper economy/crafting, guilds/housing basics, internal builder core (on jairf-builder-constraints + creations persistence schema), builder sharing + moderation hooks. PREREQ KITS: class animations, class VFX, Q3 audio, builder UI + icons, Q3 asset set incl. modular builder pieces, builder-constraints track, data-arch content types. DEPS: P4. AI: builder core + quests + classes implementation. QA: Builder archetype joins (create/persist/share), Combatant on all classes, Social on guilds/trade. HUM GATE: sign-off on Q3 (builder usability + content depth verdict)."
+    },
+    {
+      "name": "P6 Q4 Build + QA + soft-launch",
+      "status": "planned",
+      "notes": "DELIVERABLES per jairf-4: performance/optimization to budgets, anti-cheat foundations, advanced builder features, simulation-driven balancing, content volume pass, packaging, soft-launch readiness; live-ops events/monetization/moderation (jairf-liveops ph3-5); hero assets + biome expansion + advanced builder pieces (assets ph5). DEPS: P5. AI: optimization + balancing sim + packaging automation + live-ops hooks. QA: full archetype fleet incl. Griefer/Edge + Long-Session; perf gate 60 FPS mid-range; economy health checks. HUM GATE: soft-launch readiness verdict; go/no-go."
+    },
+    {
+      "name": "P7 Live, LTP, retro",
+      "status": "planned",
+      "notes": "DELIVERABLES: continuous beta swarm (overnight, post-integration, stress before human QA - jairf-beta ph3-7); telemetry + analytics review; live-ops calendar + feature flags; changelog + semver content packs; evolution of test agent prompts/memory from successful reports; roadmap retro + backlog groom for the post-launch roadmap. DEPS: P6 + sustained CI/CD. HUM GATE: ongoing live review cadence; signal-vs-noise improvements to the swarm."
+    }
+  ],
+  "created": "1789100773.0305686"
+}

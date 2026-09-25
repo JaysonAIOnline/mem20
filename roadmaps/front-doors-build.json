@@ -1,0 +1,79 @@
+{
+  "name": "front-doors-build",
+  "description": "BUILD MODE (2026-09-08): construction todos for the THREE unified front doors. No underlying systems are built here — this is the todo list for construction. All branding stripped from the unified vision; every audited feature retained; mem20 is the substrate.",
+  "created": "2026-09-08",
+  "status": "build-todos",
+  "root_conditions": {
+    "only_todos": true,
+    "no_underlying_systems_yet": true,
+    "all_features_retained": true,
+    "branding_stripped": true,
+    "mem20_is_substrate": true
+  },
+  "shard": "TO-DO LISTS ONLY \u2014 underlying systems build starts after imagination response + per-door kickoff",
+  "doors": [
+    {
+      "door": 1,
+      "name": "THE REAL ONE",
+      "role": "primary human surface \u2014 office/forge/dashboard/web",
+      "build_todos": [
+        "T1.1 derive door-1 spec from front-door-audit.json merge_directive + imagination output",
+        "T1.2 map every audited live entry point (openwebui, dashboard, office, interstice, tt3d-ui, kanban, mem20-dashboard) to a door-1 route",
+        "T1.3 map every planned feature door to a door-1 route (plugin workspace, agent control center, workflow canvas, prompt library MCP, channels, artifact KV, calendar/notes surfaces, arena, eval tasks, IAM admin, tool-policy console, model router, voice/TTS)",
+        "T1.4 decide door-1 topology: single SPA vs gatewayed ports vs reverse-proxy mesh \u2014 pick ONE authoritative base URL",
+        "T1.5 define door-1 auth: SSO/IAM (casdoor pattern) as the single sign-on for all surfaces",
+        "T1.6 stub door-1 shell (nav: office / forge / dashboard / tools / state / arena)",
+        "T1.7 stub door-1 routes serving EXISTING live surfaces (no rewrites yet)",
+        "T1.8 wire door-1 to mem20-as-substrate (all state read/write via mem20 surfaces)",
+        "T1.9 branding pass: strip all product names from door-1 chrome \u2014 neutral unified identity",
+        "T1.10 door-1 acceptance checklist vs audit (every live + planned feature reachable)"
+      ]
+    },
+    {
+      "door": 2,
+      "name": "OPENCODE GODMODE",
+      "role": "full creative access \u2014 terminal/agent entrance",
+      "build_todos": [
+        "T2.1 define godmode contract: what 'full creative access' means (all opencode tooling, filesystem, services)",
+        "T2.2 map audited planned features to godmode surfaces (control center parity, canvas compile, eval tasks, local daemon, self-reset playground)",
+        "T2.3 stub godmode launcher/alias that enters the unified system with creative permissions",
+        "T2.4 route godmode through the SAME IAM/SSO as door 1 (no second auth island)",
+        "T2.5 grant godmode read/write on mem20 substrate surfaces (ledger/store/cog)",
+        "T2.6 define escalation boundary: creative vs destructive gates (tool-policy approvals)",
+        "T2.7 branding pass: neutral identity, no product names",
+        "T2.8 godmode acceptance: every feature reachable within an opencode session"
+      ]
+    },
+    {
+      "door": 3,
+      "name": "QUEST 3D V-WORLD",
+      "role": "immersive 3D entrance \u2014 agents visible as natives",
+      "build_todos": [
+        "T3.1 derive door-3 spec from INTERSTICE visual guide + imagination output",
+        "T3.2 map audited live surfaces into the 3D world (agents as natives: profiles/gateway/dashboard/office/tt3d-ui)",
+        "T3.3 map planned features into the 3D world (channels as shared rooms, workflow canvas as spatial graph, arena as live colosseum, artifact KV as world objects)",
+        "T3.4 decide delivery: existing tt3d-nim-ui/office pipeline for Quest 3 (WebXR) \u2014 no new engine",
+        "T3.5 stub 3D world shell: spatial nav, agent-native rendering, room system",
+        "T3.6 wire world state to mem20 substrate (world facts = grounded ledger facts)",
+        "T3.7 branding pass: neutral unified identity in-world",
+        "T3.8 door-3 acceptance: agent presence, world-object surfaces, Quest 3 reachable"
+      ]
+    }
+  ],
+  "shared_foundation_todos": [
+    "F1 produce ONE unified system model from imagination output (containment of all audited features)",
+    "F2 define unified identity + stripped branding tokens (no product names anywhere)",
+    "F3 adopt unified IAM/SSO as the single auth across all 3 doors",
+    "F4 standardize feature access matrix: which door exposes which live+planned feature",
+    "F5 keep all live services running during construction; doors reference, never replace",
+    "F6 single source of truth = mem20 substrate; every door reads/writes through it"
+  ],
+  "refs": [
+    "/opt/mem20/roadmaps/front-door-audit.json",
+    "/opt/mem20/roadmaps/front-doors-build.json",
+    "/opt/mem20/roadmaps/hypo-map-1.json",
+    "/opt/mem20/roadmaps/interstice.json",
+    "/root/notebooks/research/mem20_takeover_biglist.json"
+  ],
+  "next_step": "await imagination response, then T1.1/T2.1/T3.1 derive specs and begin the shell todos"
+}

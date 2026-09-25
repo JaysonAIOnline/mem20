@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20crewz"
+version = "0.1.0"
+description = "cleanroom mem20 crews on mem20"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+mem20crewz = "mem20crewz.cli:main"
+
+# Flat layout: the project directory is itself the package, so the package
+# name has to be mapped back onto "." or setuptools discovery finds nothing.
+[tool.setuptools]
+packages = ["mem20crewz", "mem20crewz.demo"]
+package-dir = { "mem20crewz" = "." }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

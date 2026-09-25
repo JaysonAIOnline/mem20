@@ -1,0 +1,92 @@
+{
+  "name": "JAIRF",
+  "description": "JAIRF MMORPG master roadmap. Four vertical quarters (jairf-1..4), cross-quarter production tracks (assets, audio, art style, animation, VFX, UI, budgets, builder constraints, quests, data arch, live-ops), beta testing swarm (jairf-beta), and the executable execution spine (jairf-exec). Parent map; each phase links to a child roadmap. Hybrid human + 300-agent swarm development in Unity 6.",
+  "phases": [
+    {
+      "name": "AI/HUM ROADMAP EXECUTION (jairf-exec) — EXECUTION SPINE",
+      "status": "planned",
+      "notes": "THE OPERATIONAL SEQUENCE. Follow this phase order for all work; supersedes the parallel parent listing. Every child roadmap feeds into it at its ordered step."
+    },
+    {
+      "name": "Q1 Core Playable Foundation (jairf-1)",
+      "status": "planned",
+      "notes": "Character creation, movement, combat, inventory, progression, starter zone, UI, local co-op"
+    },
+    {
+      "name": "Digital Assets - 3D (jairf-assets)",
+      "status": "planned",
+      "notes": "Runs before/parallel to each quarter; Meshy text-to-3D pipeline"
+    },
+    {
+      "name": "Audio (jairf-audio)",
+      "status": "planned",
+      "notes": "Per-quarter SFX + music; SFX_/MUS_/AMB_ naming"
+    },
+    {
+      "name": "Art Style (jairf-art-style)",
+      "status": "planned",
+      "notes": "Stylized fantasy lock; generator keyword consistency"
+    },
+    {
+      "name": "Animation (jairf-animation)",
+      "status": "planned",
+      "notes": "Humanoid rig, locomotion, combat, class, emotes, builder gestures, enemy/NPC"
+    },
+    {
+      "name": "VFX (jairf-vfx)",
+      "status": "planned",
+      "notes": "Combat, class abilities, feedback, environment, builder, UI, multiplayer"
+    },
+    {
+      "name": "UI / Icons / HUD (jairf-ui-icons)",
+      "status": "planned",
+      "notes": "Core HUD, inventory, skills, builder mode, social, system, status icons"
+    },
+    {
+      "name": "Tech Budgets & Naming (jairf-tech-budgets)",
+      "status": "planned",
+      "notes": "Poly/LOD, textures, performance targets, naming conventions, enforcement"
+    },
+    {
+      "name": "Q2 Persistent Multiplayer World (jairf-2)",
+      "status": "planned",
+      "notes": "Accounts, networking, dedicated server, zones, shared world, parties, chat, early economy"
+    },
+    {
+      "name": "Builder Constraints (jairf-builder-constraints)",
+      "status": "planned",
+      "notes": "Safety, budgets, permissions, persistence, moderation, safeguards"
+    },
+    {
+      "name": "Q3 Depth + Internal Builder (jairf-3)",
+      "status": "planned",
+      "notes": "Classes, quests, economy, guilds/housing, internal builder core + sharing"
+    },
+    {
+      "name": "Quest & Content Framework (jairf-quests)",
+      "status": "planned",
+      "notes": "Quest types, data schema, dialogue, content pillars, authoring rules"
+    },
+    {
+      "name": "Data Architecture (jairf-data-arch)",
+      "status": "planned",
+      "notes": "ScriptableObject-first, content data types, save/network schemas"
+    },
+    {
+      "name": "Q4 Polish, Scale & Live-Service (jairf-4)",
+      "status": "planned",
+      "notes": "Optimization, anti-cheat, advanced builder, balancing, packaging, soft-launch"
+    },
+    {
+      "name": "Localization / Accessibility / Live-Ops (jairf-liveops)",
+      "status": "planned",
+      "notes": "L10n, a11y, events, monetization, UGC moderation, CI/CD"
+    },
+    {
+      "name": "Beta Testing Swarm (jairf-beta)",
+      "status": "planned",
+      "notes": "Continuous across all quarters per Autonomous_Beta_Testing_Agents.md"
+    }
+  ],
+  "created": "1789100773.0305686"
+}

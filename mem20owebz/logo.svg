@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
+  <!-- Orange status dot -->
+  <circle cx="12" cy="24" r="5" fill="#ff6b35"/>
+  
+  <!-- Jayson wordmark -->
+  <text x="28" y="31" 
+        font-family="Inter, system-ui, -apple-system, sans-serif" 
+        font-size="22" 
+        font-weight="500" 
+        letter-spacing="-0.5"
+        fill="#ffffff">
+    Jayson
+  </text>
+</svg>

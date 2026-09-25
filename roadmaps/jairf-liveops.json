@@ -1,0 +1,37 @@
+{
+  "name": "jairf-liveops",
+  "description": "JAIRF localization, accessibility, live-ops, monetization & moderation roadmap (per 09_Localization_Accessibility_LiveOps.md). Localization: string keys everywhere, Unity Localization, pluralization/variables, multi-language, font support. Accessibility: colorblind palettes, scalable UI, remappable controls, subtitles/CC, screen reader, motion options, non-color-only feedback. Live-ops: timed events, calendar, event quests/rewards, announcements, feature flags, analytics. Monetization (ethical): cosmetics/comfort/builder extras over power, clear separation, seasons optional. Moderation: reporting, automated filters, review queue, quarantine/rollback, guidelines, rate limiting, GM tools. CI/CD: branching, validation, Addressables pipeline, tests, review gates, semantic versioning.",
+  "phases": [
+    {
+      "name": "1. Localization foundation (string keys, tables, fonts)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Accessibility suite (palette, scaling, remap, captions, motion options)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Live-ops & events (features flags, calendar, announcements, analytics)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Ethical monetization framework",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. UGC moderation & safety (filters, review queue, GM tools)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. CI/CD + version control for the agent swarm",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

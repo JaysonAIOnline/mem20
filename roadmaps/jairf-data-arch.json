@@ -1,0 +1,37 @@
+{
+  "name": "jairf-data-arch",
+  "description": "JAIRF data architecture roadmap (per 08_Data_Architecture_Notes.md). ScriptableObject + data tables first; no hard-coded values. Data types: SO_Item, SO_Equipment, SO_Skill, SO_Recipe, SO_BuilderPiece, SO_Quest, SO_NPC, SO_Enemy, SO_LootTable, SO_StatusEffect, SO_Class/SO_Progression. Organization by category, Addressables groups, runtime-mutable data kept separate. Agent guidelines: create SO + link assets, no magic numbers, composition over inheritance. Save/network: player, builder creations, world state schemas.",
+  "phases": [
+    {
+      "name": "1. ScriptableObject-first foundation (no magic numbers)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Core data types: items/equipment/skills/recipes",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Content data types: quests/NPC/enemy/loot/status/class",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Organization, Addressables groups, runtime-mutable separation",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Save/network data schemas (player, creations, world state)",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Agent authoring rules + enforcement",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

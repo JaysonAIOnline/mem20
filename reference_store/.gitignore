@@ -1,0 +1,4 @@
+# Fountain runtime data (append-only ledger + blobs + head). Never commit.
+data/
+__pycache__/
+*.pyc

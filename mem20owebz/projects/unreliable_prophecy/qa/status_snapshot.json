@@ -1,0 +1,12 @@
+{
+  "project": "unreliable_prophecy",
+  "stage_name": "ASSET_PRODUCTION",
+  "stage_id": 3,
+  "engine": "Unity 6 LTS + URP",
+  "genre": "Adventure",
+  "fidelity_avg": 85,
+  "criticals": [],
+  "verdict": "IN_PROGRESS",
+  "blockers": [],
+  "next_action": "Import GLBs into Unity, create scenes, build Windows standalone"
+}

@@ -101,7 +101,12 @@ class RoadmapToolsMixin:
         
         result = "Roadmaps:\n"
         for rm in roadmaps:
-            data = json.loads(rm.read_text())
+            try:
+                data = json.loads(rm.read_text())
+            except (json.JSONDecodeError, OSError):
+                continue
+            if "phases" not in data:
+                continue
             result += f"  - {data['name']}: {data['description']} ({len(data['phases'])} phases)\n"
         return result
     async def _roadmap_get(self, args: Dict) -> str:
@@ -111,6 +116,8 @@ class RoadmapToolsMixin:
             return f"Roadmap '{name}' not found."
         
         data = json.loads(roadmap_file.read_text())
+        if "phases" not in data:
+            return f"'{name}' is not a roadmap (no phases key)."
         result = f"Roadmap: {data['name']}\nDescription: {data['description']}\n\nPhases:\n"
         for i, phase in enumerate(data['phases'], 1):
             result += f"  {i}. {phase['name']} - {phase['status']}\n"
@@ -128,6 +135,8 @@ class RoadmapToolsMixin:
             return f"Roadmap '{roadmap_name}' not found."
         
         data = json.loads(roadmap_file.read_text())
+        if "phases" not in data:
+            return f"'{roadmap_name}' is not a roadmap (no phases key)."
         for phase in data['phases']:
             if phase['name'] == phase_name:
                 phase['status'] = status

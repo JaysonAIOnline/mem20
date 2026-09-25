@@ -1,0 +1,166 @@
+# Boolean-Based Scoring System Demo
+# Demonstrates deterministic, auditable scoring with LoopValidatorNode
+#
+# ROBUSTNESS IMPROVEMENTS:
+# - Explicit output format requirements in all prompts
+# - Fallback score and timeout handling
+# - Lower, realistic thresholds for local LLMs
+# - Multiple score extraction patterns
+# - Consistent temperature settings (evaluators: 0.1, generators: 0.5-0.7)
+
+orchestrator:
+  id: boolean-scoring-demo
+  strategy: sequential
+  agents:
+    - path_proposer
+    - path_validator_strict
+    - path_validator_moderate
+    - improvement_loop
+
+agents:
+  # Step 1: Propose a path
+  - id: path_proposer
+    type: local_llm
+    model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.5
+    timeout: 60
+    prompt: |
+      TASK: Propose an agent execution path for this query.
+      QUERY: {{ input }}
+      
+      REQUIRED OUTPUT FORMAT:
+      AGENT_SEQUENCE:
+      1. [Agent Name]: [Purpose]
+      2. [Agent Name]: [Purpose]
+      3. [Agent Name]: [Purpose]
+      
+      DATA_FLOW:
+      - Input → [Agent1] → [Agent2] → Output
+      
+      ERROR_HANDLING:
+      - [Scenario]: [Fallback action]
+      
+      Be specific and actionable. Keep response under 500 words.
+  
+  # Step 2: Validate with STRICT preset (production-critical)
+  - id: path_validator_strict
+    type: plan_validator
+    llm_model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.1
+    timeout: 60
+    scoring_preset: strict
+    # Strict: threshold 0.90, emphasizes safety and completeness
+
+  # Step 3: Validate with MODERATE preset (balanced)
+  - id: path_validator_moderate
+    type: plan_validator
+    llm_model: openai/gpt-oss-20b
+    model_url: http://localhost:1234
+    provider: lm_studio
+    temperature: 0.1
+    timeout: 60
+    scoring_preset: moderate
+    # Moderate: threshold 0.85, balanced weights
+
+  # Step 4: Improvement loop with boolean scoring
+  - id: improvement_loop
+    type: loop
+    max_loops: 3
+    score_threshold: 0.50
+    fallback_score: 0.10
+    timeout_score: 0.05
+    persist_across_runs: false
+    
+    # Boolean scoring with custom weights
+    scoring:
+      preset: moderate
+      context: loop_convergence
+      custom_weights:
+        improvement.better_than_previous: 0.30
+        improvement.approaching_target: 0.20
+        stability.consistent_direction: 0.20
+        convergence.within_tolerance: 0.30
+    
+    # Multiple score extraction strategies for robustness
+    score_extraction_config:
+      strategies:
+        - type: pattern
+          patterns:
+            - "SCORE:\\s*([0-9]+\\.?[0-9]*)"
+            - "Score:\\s*([0-9]+\\.?[0-9]*)"
+            - "score:\\s*([0-9]+\\.?[0-9]*)"
+        - type: pattern
+          patterns:
+            - "([0-9]\\.[0-9]+)\\s*/\\s*1\\.0"
+            - "(0\\.[5-9][0-9]?)"
+    
+    past_loops_metadata:
+      loop_number: "{{ get_loop_number() }}"
+      score: "{{ score }}"
+      timestamp: "{{ timestamp }}"
+      insights: "{{ insights }}"
+      improvements: "{{ improvements }}"
+      mistakes: "{{ mistakes }}"
+    
+    internal_workflow:
+      orchestrator:
+        id: improvement-cycle
+        strategy: sequential
+        agents: [improver, boolean_evaluator]
+      
+      agents:
+        - id: improver
+          type: local_llm
+          model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          temperature: 0.6
+          timeout: 60
+          prompt: |
+            TASK: Improve the proposed execution path.
+            
+            ORIGINAL QUERY: {{ get_input() }}
+            
+            {% if has_past_loops() %}
+            PREVIOUS ATTEMPTS: {{ get_past_loops() | length }}
+            {% for past_loop in get_past_loops() %}
+            Loop {{ past_loop.loop_number }}: Score {{ past_loop.score }}
+            Issues: {{ past_loop.mistakes | default('None identified') }}
+            {% endfor %}
+            
+            ADDRESS THESE SPECIFIC ISSUES in your improved path.
+            {% endif %}
+            
+            REQUIRED OUTPUT FORMAT:
+            IMPROVED_PATH:
+            1. [Agent]: [Purpose] - [How it addresses feedback]
+            2. [Agent]: [Purpose] - [How it addresses feedback]
+            
+            IMPROVEMENTS_MADE:
+            - [Specific improvement 1]
+            - [Specific improvement 2]
+            
+            Keep response focused and under 400 words.
+        
+        # Robust boolean evaluation with built-in parsing
+        - id: boolean_evaluator
+          type: loop_validator
+          llm_model: openai/gpt-oss-20b
+          model_url: http://localhost:1234
+          provider: lm_studio
+          scoring_preset: moderate
+          scoring_context: loop_convergence
+          evaluation_target: improver
+          temperature: 0.1
+          timeout: 60
+
+# Benefits of Boolean Scoring:
+# 1. DETERMINISTIC: Same booleans always produce same score
+# 2. AUDITABLE: See exactly which criteria passed/failed
+# 3. CONSISTENT: Different LLMs agree more on true/false than numeric scores
+# 4. TUNABLE: Adjust weights without retraining
+# 5. TESTABLE: Easy to write unit tests with exact expected scores

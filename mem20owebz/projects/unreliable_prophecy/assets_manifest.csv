@@ -1,0 +1,73 @@
+# Asset Manifest - The Unreliable Prophecy
+## Vertical Slice v0.5.0
+
+---
+
+## Characters & Creatures (P0)
+
+| Asset ID | Description | Poly Budget | Textures | Rig | Source |
+|----------|-------------|-------------|----------|-----|--------|
+| CH_PC1 | Player body + idle/walk/run/attack | ≤20k tris | A/N/M | Yes | AI gen/artist |
+| CH_Wizard | Old Wizard companion | ≤20k | A/N/M | Yes | AI gen/human |
+| CH_Companion2 | Second companion placeholder | ≤20k | A/N/M | Yes | Placeholder OK |
+| CH_Bureaucrat | Celestial bureaucrat NPC | ≤20k | A/N/M | Yes | AI gen/human |
+| EN_MisfiledSkeleton | Tier-1 enemy | ≤10k | A/N/M | Yes | AI gen/stock |
+| EN_ComplianceOfficer | Elite enemy | ≤15k | A/N/M | Yes | AI gen |
+| CR_PaperElemental | Mini-boss | Higher | A/N/M | Yes | AI gen |
+
+---
+
+## Props & Items (P0)
+
+| Asset ID | Description | Budget | Source |
+|----------|-------------|--------|--------|
+| PR_Binder | Prophecy Binder (world + UI art) | Low | AI/human |
+| PR_FilingCabinet | Hills/Archives modular | Medium | AI/kit |
+| PR_Desk | Bureaucrat desks | Low | AI |
+| PR_Forms | Loose forms, stamps | Low | AI |
+| WP_BasicMelee | Player starter weapon | Low | AI |
+| MUS_Menu | Main menu music | Short | TTS |
+
+---
+
+## Environment Kits (P0)
+
+| Kit ID | Biome/Region | Modular pieces |
+|--------|--------------|----------------|
+| ENV_Quietvale | Starter village | House, gate, woods, path |
+| ENV_Hills | Bureaucracy Hills | Ground, props, departments |
+
+---
+
+## Materials (Shared)
+
+| Mat ID | Type | Maps | Resolution |
+|--------|------|------|------------|
+| MAT_Parchment | UI/Binder/forms | A/N/M | 1k-2k |
+| MAT_Wood | Desks/furniture | A/R/M/N | 1k-2k |
+| MAT_Ink | VFX/enemies | A/E | 512-1k |
+
+---
+
+## Validation Status
+
+| Asset ID | Status | QA Notes |
+|----------|--------|----------|
+| CH_PC1 | Pending | Need animator |
+| CH_Wizard | Pending | Need voice lines |
+| EN_MisfiledSkeleton | Pending | VFX needed |
+| PR_Binder | Pending | UI animation |
+| All others | N/A | Not in Scope |
+
+---
+
+## Ingestion Rules
+
+1. Drop in `projects/unreliable_prophecy/_incoming/`
+2. Assign unique ID
+3. Manifest row completed
+4. QA check before integration
+5. Move to `assets/` folder when validated
+
+**Total P0 Assets Required:** 15-20
+**Currently in Scope:** 6 characters, 5 props, 2 kits = 13+ assets needed

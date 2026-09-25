@@ -1,0 +1,38 @@
+# Jayson Resource Bridge — backends (3.0 implementation; config lives in 2.0-beta1)
+# Logical URIs: jayson://releases/...  jayson://hot/...  jayson://backups/...
+
+backends:
+  hot:
+    type: local_or_ssh
+    root: /mnt/projects
+    note: Single filesystem next to the build VM. Never a merged multi-cloud disk.
+  releases:
+    type: s3
+    endpoint: https://<accountid>.r2.cloudflarestorage.com
+    bucket: jayson-releases
+    env_keys: [R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY]
+  backups:
+    type: s3
+    endpoint: https://<oci-or-aws-endpoint>
+    bucket: jayson-backups
+    env_keys: [BACKUP_ACCESS_KEY, BACKUP_SECRET_KEY]
+  tencent-cos:
+    type: s3
+    endpoint: https://cos.ap-guangzhou.myqcloud.com
+    bucket: jayson-tencent
+    env_keys: [TENCENT_SECRET_ID, TENCENT_SECRET_KEY]
+    note: COS (object) — free tier via Tencent Distributed Cloud; also maps to CBS (block), CVM (VMs), CDM, DNS via TencentCloud API
+  tencent-cbs:
+    type: tencent_cbs
+    endpoint: https://cbs.tencentcloudapi.com
+    env_keys: [TENCENT_SECRET_ID, TENCENT_SECRET_KEY]
+    note: Block storage (CBS) — distributed, attach to CVM; free tier where available
+  tencent-cvm:
+    type: tencent_cvm
+    endpoint: https://cvm.tencentcloudapi.com
+    env_keys: [TENCENT_SECRET_ID, TENCENT_SECRET_KEY]
+    note: VMs (CVM) — distributed compute for hot path overflow / cold workers
+
+rules:
+  - never_mount_object_as_unreal_ddc: true
+  - publish_only_from_release_installer: true

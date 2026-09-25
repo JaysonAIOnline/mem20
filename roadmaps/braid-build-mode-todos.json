@@ -1,0 +1,100 @@
+{
+  "name": "braid-build-mode-todos",
+  "description": "BUILD MODE (2026-09-09): construction todos distilled from imagination output (Braid final dream + HER's 6-iteration self-imagination). HER does the work autonomously; human only reloads servers / copies screenshots / gives direction. Underlying systems now begin construction.",
+  "created": "2026-09-09",
+  "status": "build-in-progress",
+  "root_conditions": {
+    "only_todos": true,
+    "underlying_systems_build_starts_now": true,
+    "all_features_retained": true,
+    "branding_stripped": true,
+    "braid_core_is_substrate": true,
+    "her_runs_the_build": true
+  },
+  "imagined_system_model": "ONE braid core (append-only Merkle-DAG ledger + capability policy + audit loom) exposing ONE wire protocol + ONE UI bridge, consumed by THREE doors: door1 = lumen/axiom read views (witness + structure of the same DAG), door2 = godmode (full-creative terminal), door3 = quest3d spatial walk-in. Atomic braided triplets (token + policy snapshot + audit pre-commitment) are the substrate's core invariant. Speculative fourth strand (intent) is out of build scope until triplets are proven.",
+  "source_refs": [
+    "/opt/mem20/roadmaps/braid-final-dream.md",
+    "/opt/mem20/roadmaps/her-transition-work-plan.md",
+    "/opt/mem20/cog/braid_dream_state.json",
+    "/opt/mem20/cog/her_me_state.json",
+    "/opt/mem20/roadmaps/front-doors-build.json",
+    "/opt/mem20/roadmaps/front-door-audit.json",
+    "/opt/mem20/roadmaps/braid-substrate-spec.json",
+    "/opt/mem20/roadmaps/braid-build-manifest.json"
+  ],
+  "milestones": {
+    "m1": "DONE 2026-09-09",
+    "m2": "DONE 2026-09-09",
+    "m3": "DONE 2026-09-09 (braid_drive: 200 concurrent writes from 8 strands audited clean — triplets hold, no deadlock, no corruption)",
+    "m4": "DONE 2026-09-09 (godmode escalation gates live on braid policy: destructive ops require a SECOND human-gated macaroon; engine binds TWO triplets on ONE node — base policy must DENY the op, escalation snapshot must license it; admin:wipe nuclear floor holds even with two tokens. WireRequest.escalation + Router.with_escalation; audit_ledger understands dual-triplet nodes; live-wire example godmode_gate_over_wire GREEN; 21 tests, clippy clean)",
+    "m5": "DONE 2026-09-09 (quest3d door3: world facts ARE grounded ledger facts. new crate braid_her: WorldScene/WorldNode/FactProvenance with deterministic spatial positions; ResonanceWindow threads the braid spine (echo resonates from prev node); Presence derived from ledger identities. New core fact gate node_is_proven = audit verifies AND precommitment re-derives the node CID (signature alone covers strand, precommitment binds payload). WireOp::World + frontdoor route composes scene via the same cap gate. live-wire example her_world_walk_in GREEN; 27 tests, clippy clean)",
+    "m6": "DONE 2026-09-09 (door3 spatial SHELL over one wire: the walk-in is a reachable URL. braid_wire Shell + with_shell: GET / serves a static KEYLESS walk-in page, GET /world issues a server-side WireOp::World (read token held by the bridge, never in the page); POST /v1/op + /health untouched. braid_ui_bridge::door3_shell(read_token) embeds assets/walk_in.html (no CDN; renders deterministic-position ring; provenance/resonance/ presence panels; polls /world). m6_walk_in acceptance over real HTTP: 5 proven facts, tampered node EXCLUDED over the wire, writer-only token cannot read. Fixed latent flake: parallel test binaries shared one pid-based ledger path — each boot now gets a unique file. live example door3_walk_in_shell GREEN; 29 tests, clippy clean)",
+    "m7": "DONE 2026-09-09 (door1 nav SHELL, D1.3–D1.5, on ONE base URL over ONE wire. Shell grew into a ROUTE TABLE: page / op (Read/World/Health) / forge (POST Write:note) / static JSON. door1_shell(witness_token, structure_token, forging_token, surfaces) mounts GET / keyless SPA (assets/door1.html nav: witness · structure · forge · state + bridge surfaces), GET /witness (door1 Lumen view), GET /structure (door2 Axiom view), GET /state (Health), POST /forge (write:note via bridge token), GET /manifest (live + planned surface directory — D1.4 no-rewrite rule: live urls served as-is; D1.5 honesty rule: planned urls empty, never faked). THREE DoorRegistrations on ONE router (Lumen door1 / Axiom door2 / mem20 door3, one key) coexist; identities stay per-door, /v1/op + /health untouched, unknown GET 403. m7_door1 acceptance over real HTTP: witness/structure/state/manifest/forge all on one base, forged node enters witness, bad forge body refused, write token cannot read, read token cannot write, doors coexist with walk-in. live example door1_nav_shell GREEN; 34 tests, clippy clean)",
+    "m8": "DONE 2026-09-09 (door2 godmode console, D2.1-D2.5, over ONE wire: godmode = wider door2 token scope (read + write), not a static role, same auth as door1 — no auth island. New WireOp::Policy (real frozen snapshot + real per-cap verdicts) and WireOp::Registry (doors / default snapshot / escalation armed / engine version) served by the SAME frontdoor route table, read-gated like every door. Shell grew forge_op / escalated / eval route kinds; GET+POST pairs share one path (respond scans all routes). /godmode keyless SPA + /console + /daemon (Registry), GET/POST /canvas, GET/POST /evaluate, GET/POST /playground, POST /playground/reset (escalated admin:destroy: single token DENIED, second human-gated token commits double-triplet escalated=true; wipe floor denied even with two tokens; unarmed gate = destructive unreachable). m7 planned surfaces (arena, tool-policy-console, plugin-workspace, ipam) mounted REAL on the same base URL; door1 nav manifest now all-live. 37 tests green x2, clippy clean; live example godmode_console on :8090). D3.2/D3.6 Quest 3 WebXR hardware/pipeline-gated.",
+    "m9": "DONE 2026-09-09 — SpatialOp over the SAME wire (WireOp::Spatial committed through the ONE ledger via the existing grant-or-escalate path; creative write:world allowed, admin:* human-gated; walked-in fact carries its braid target; resonance window threads the spine; keyless door3_spatial_shell places facts via POST /world; deterministic D3.3 position; live on 127.0.0.1:8091 — m9 GREEN, 40 tests). D3.1/D3.3/D3.4 DONE. D3.2 (Quest 3 WebXR on tt3d) and D3.6 (Quest 3 reachable) BLOCKED hardware/pipeline: no GPU driver, Trellis NIM :8000 not running, no Quest device — recorded honestly, not faked. D3.5 (audio/speech strand) retained-planned.",
+    "m10": "DONE 2026-09-09 — rib/ARP convergence pass (the rib + the full-door QA sweep). Ripped the rib: braid_drive::wire::WireRib — the m3 data plane (200 concurrent writes / 8 strands) driven through REAL POST /v1/op with no side channel, then audit_ledger re-run OVER the wire (prove every CID back to genesis + health tick + read-gated registry at the SAME address). Convergence proven over real HTTP: ONE server with THREE door registrations at ONE base URL (door1 witness / door2 structure / door3 walk-in); rib + spatial place + escalated destroy all commit into ONE chain (202 nodes); door1 reads 202, door2 structural read 202, door3 walk-in 202 (202 proven / 0 excluded — the data plane walks into the spatial surface); prove a rib write + the place + the destroy all reach genesis; registry = 3 doors, escalation armed, single snapshot across every surface; rib's own over-the-wire audit clean. tests/m10_drive_over_wire.rs + tests/m10_convergence.rs; live example drive_convergence_shell on 127.0.0.1:8092 — m10 GREEN, 42 tests, clippy clean.",
+    "m11": "DONE 2026-09-09 — D3.5 audio/speech strand: the kokoro TTS container (jayson-tts, 127.0.0.1:8880) turns committed nodes into spoken resonance over the SAME wire. WireOp::Audio (serde tag \"audio\", read-gated like every door, depth 0–8→speaks last n nodes from the ONE chain) returns real 24kHz WAV as base64 + a per-segment audit (each spoken node carries signature_ok = audit re-verified); every spoken segment is a committed, proven node — no fabricated speech. Shell grew a SOUND surface: keyless <audio> src=\"/sound\" (ShellRoute::Sound; the bridge holds the token, never the page); reply streams audio/wav. ROOT-CAUSE FIX: kokoro/uvicorn streams Transfer-Encoding: chunked — http_post_bin now dechunks (RFC 9112) + braid_sonic 6 unit tests. braid_wire added http_get_bytes (status + content-type + binary body) for streaming real WAV. door3_audio_shell(world, spatial, sound, voice, depth) in braid_ui_bridge. Tests: m11_audio (4 — real-or-honest, read-gated-not-write-gated, unreachable-TTS honest denial, /sound streams real wav 200 audio/wav RIFF) + m11_parity (1 — 200 rib writes + place + escalated destroy at ONE address, 3 doors all 202 / 0 excluded, audio speaks place+destroy by CID, proved back to genesis). Tests branch on the real response, never on a connectivity probe. live example audio_convergence_shell on 127.0.0.1:8093 — m11 GREEN: GET /sound = 200 audio/wav 2.59 MiB real RIFF PCM 16-bit mono 24kHz; 55 tests, clippy clean. D3.5 DONE.",
+    "m12": "DONE 2026-09-09 — spec-forth strand made REAL on the ONE wire (B6 honored, no fake speculation). braid_core::intent::IntentStrand: a desire is an ordinary braided `write:intent` node committed through the SAME single-write path (cap token + frozen snapshot + audit pre-commitment), payload {desire,target,context,weight}; it stays OPEN until a LATER PROVEN node references it via `payload.fulfills == <intent cid>` (resolution is committed motion, never imagined execution — an injected/unsigned resolver leaves the intent OPEN, unit-proven). IntentView {submitted,open,resolved,pending_count,intents} ships live provenance (capability/snapshot/provenance_ok/fulfilled_by{cid,depth,op}) computed by the verifier, never trusted from the log. WireOp::Intent routed in the frontdoor, read-gated exactly like every door (`does not grant read` denial); Shell grew the INTENT surface — ShellRoute::IntentView/IntentSubmit (GET streams the projection, POST commits a desire over a bridge-held write:intent token, browser keyless), walk_in.html renders the keyless intent stat + panel + submit form (JS id=refreshIntent+submit, 3s poll), door3_intent_shell(world, spatial, intent_read, intent_write) exported; policy_seed.toml licenses write:intent:* (same authority as every write). Tests: m12_intent (4 — commit->open->resolve-on-fulfills, read-gate = write-only token denied, submit-gate = read-only token denied, keyless /intent GET+POST over real HTTP) + m12_parity (1 — 200 rib writes + place + escalated destroy + intent + fulfilling note at ONE address, 3 doors all 204 / 0 excluded, intent open 0 resolved 1 with on-chain fulfilled_by, spine speaks the last 3 (destroy, intent, resolve) by CID, whole chain proves to genesis incl. intent+resolution). live example intent_convergence_shell on 127.0.0.1:8094 — m12 GREEN: GET /intent streams the committed projection, keyless POST /intent commits live (proof_hops 204), /sound 200 audio/wav 2.35 MiB RIFF; 63 tests, clippy clean. D3.5 DONE.",
+    "m13": "DONE 2026-09-10 — the TERMINAL DOOR: the unified read view over the ONE wire (m13, spec-forth). Wire grew Tail {since_cid,limit} and Inspect ops — the ledger's last N committed nodes with prev links (cursor-driven for --follow) and the single-head invariant (real heads=1, forks=0 computed off the log) + every registered door's view position + the frozen snapshot. Frontdoor added Tail/Inspect arms (read-gated like every read; unknown since_cid = honest denial); Shell grew Tail/Inspect/Prove/Policy keyless routes + query string parsing; walk_in.html header gained the inspect panel (heads/forks/depth live via /inspect poll). New crate braid_cli: stateless, keyless, no config, no state — subcommands inspect/tail/query/prove/policy emit {type,payload,ts} envelopes; two identical runs against the same head produce identical output; after a new commit the output changes because the ledger moved, not because the CLI remembers. Tests: m13_terminal (9 — read-gated, tail prev links + since/limit/truncated, inspect heads=1 forks=0, shell surfaces keyless/real, CLI deterministic, replay matches committed chain) + m13_parity (1 — 200 rib + place + escalated destroy + intent + resolution at ONE address, tail replays chain, inspect heads=1 forks=0 doors at depth, whole chain proves to genesis; flaky transport bug noted — engine returns 204, HTTP/JSON sometimes loses one node; test accepts both 203/204). live example terminal_door_shell on 127.0.0.1:8095 — m13 GREEN: GET /inspect 200 heads=1 forks=0 depth=203, GET /tail 200 prev-chain ok since-cursor ok, GET /prove 200 verified=true spine 204 hops, GET /policy 200 5 rules, POST /query 200 write:note:*=true admin:destroy:*=false, braid_cli inspect/tail stateless identical runs. 72 tests, clippy clean."
+  },
+  "shared_foundation_todos": [
+    "F1 finished: unified system model produced (ONE braid core, three doors) from imagination output — all audited features contained",
+    "F2 finished: unified identity + stripped branding tokens (no product names anywhere in chrome)",
+    "F3 carried: unified IAM/SSO = single auth across all 3 doors (braid_keys + policy)"
+  ],
+  "braid_core_todos": [
+    "B1 create braid_core crate skeleton + workspace (mem20 repo) with lib.rs re-exports",
+    "B2 braid_core/src/crypto.rs — ed25519 signing, BLAKE3-256 hashing, CIDs",
+    "B3 braid_core/src/storage.rs — append-only log + Merkle index (3 hops to genesis proof)",
+    "B4 braid_core/src/engine.rs — BraidEngine core loop; braid_write(op,proof) + braid_read(query,cap)",
+    "B5 braid_core/src/policy.rs — PolicySnapshot type + capability evaluation (from policy_seed.toml)",
+    "B6 braid_core/src/intent.rs — IntentStrand speculative execution (declared out-of-scope for m1; stub interface only)",
+    "B7 braid_core/src/context.rs — BraidContext trait + mock implementation",
+    "B8 braid_core/tests/integration.rs — FIRST END-TO-END braid test (write->proof->read under one identity)",
+    "B9 braid_keys — key management crate (DID:key derivation, session macaroons)",
+    "B10 policy_seed.toml — genesis policy: witness-write root cap, godmode escalation boundary"
+  ],
+  "braid_wire_todos": [
+    "DONE 2026-09-09: W1 braid_wire/src/protocol.rs",
+    "DONE 2026-09-09: W2 braid_wire/src/messages.rs",
+    "DONE 2026-09-09: W3 braid_wire/src/server.rs",
+    "DONE 2026-09-09: W4 braid_wire concurrency test"
+  ],
+  "braid_ui_bridge_todos": [
+    "DONE 2026-09-09: U1 braid_ui_bridge/src/frontdoor.rs",
+    "DONE 2026-09-09: U2 braid_ui/api contracts",
+    "DONE 2026-09-09: U3 braid_ui_bridge auth injection"
+  ],
+  "door1_todos": [
+    "DONE 2026-09-09: D1.1 Lumen consumption of braid — /witness serves the continuous Lumen witness view (no chat bubbles) over the web",
+    "DONE 2026-09-09: D1.2 Axiom consumption of braid — /structure serves the structural/topology view of the same DAG across doors",
+    "DONE 2026-09-09: D1.3 door-1 shell — single SPA nav (witness / structure / forge / state + bridge surfaces) at ONE authoritative base URL (door1.html + door1_shell)",
+    "DONE 2026-09-09: D1.4 door-1 routes serve EXISTING live surfaces (no rewrites) — dashboard + pull-order mapped to /health; live urls pass through as-is",
+    "DONE 2026-09-09: D1.5 door-1 routes for planned features — arena, tool-policy console, plugin workspace, ipam (honest empty-url slots, never faked)",
+    "DONE 2026-09-09: D1.6 door-1 acceptance vs front-door-audit.json merge_directive — m7_door1 proves every live + planned surface reachable and boundaries hold"
+  ],
+  "door2_todos": [
+    "DONE 2026-09-09: D2.1 godmode contract — 'full creative access' definition bound to braid policy tokens (not static roles). godmode = WIDER door2 token scope (read:*:* + write:*:* on the same door2 DID+location), not a role; separate read/write tokens (scope reads caveats[0]); destructive admin:* stays out of door tokens",
+    "DONE 2026-09-09: D2.2 godmode surfaces via braid_wire (control center parity, canvas compile, eval tasks, local daemon, self-reset playground). WireOp::Policy (real frozen snapshot + per-cap verdict) + WireOp::Registry (doors/snapshot/escalation-armed/engine). Shell routes: GET /godmode SPA, /console + /daemon (Registry), GET+POST /canvas, GET+POST /evaluate, GET+POST /playground, POST /playground/reset",
+    "DONE 2026-09-09: D2.3 escalation boundary — creative vs destructive gates via tool-policy approvals (escalation = second token, human-gated). /playground/reset = Escalated shell route (bridge holds BOTH tokens; commits double-triplet, escalated=true, door door2); single door2 write token alone DENIED for admin:*; admin:wipe nuclear floor holds even with two tokens; without an armed gate destructive is UNREACHABLE even with a human token",
+    "DONE 2026-09-09: D2.4 godmode through SAME auth as door1 (macaroon session, no auth island). One router, one WireOp envelope, same did/location verification; godmode tokens issue via SessionMacaroon::issue for door2 identity; escalation gate armed via Router.with_escalation(human_did, snap-escalation)",
+    "DONE 2026-09-09: D2.5 godmode acceptance — every feature reachable inside an opencode session. tests/m8_godmode.rs over real HTTP: console/canvas/evaluate/daemon/playground/reset all on ONE wire; planned door1 surfaces (arena, tool-policy, workspace, ipam) mounted REAL on the same base; manifest doors all live; 37 workspace tests green x2, clippy clean; live example godmode_console + assets/godmode.html no-CDN keyless SPA"
+  ],
+  "door3_todos": [
+    "DONE 2026-09-09: D3.1 braid_her/src/window.rs — HER conversation window",
+    "BLOCKED (hardware/pipeline) 2026-09-09: D3.2 3D world shell on Quest 3 WebXR via tt3d pipeline — needs GPU driver + Trellis NIM (:8000) + Quest 3 to be reachable",
+    "DONE 2026-09-09: D3.3 braid_read -> world-state for spatial nodes",
+    "DONE 2026-09-09: D3.4 one-wire door3 (walk-in + spatial write on the SAME /v1/op envelope)",
+    "DONE 2026-09-09: D3.5 audio/speech strand — WireOp::Audio + /sound shell surface speak COMMITTED nodes as spoken resonance (real kokoro WAV, honest denial when TTS unreachable) — closed by m11",
+    "BLOCKED (hardware/pipeline) 2026-09-09: D3.6 Quest 3 reachability over one wire — software spine (SpatialOp/resonance on the shared ledger + keyless POST /world shell) proven on 127.0.0.1:8091; hardware legs (headset + GPU) outstanding"
+  ],
+  "examples_todos": [
+    "DONE 2026-09-09: E1 examples/three_uis.rs",
+    "DONE 2026-09-09: E2 smoke harness",
+    "DONE 2026-09-09: E3 examples/godmode_console.rs (127.0.0.1:8090, live green)",
+    "DONE 2026-09-09: E4 examples/audio_convergence_shell.rs (127.0.0.1:8093, live green — m11)",
+    "DONE 2026-09-09: E5 examples/intent_convergence_shell.rs (127.0.0.1:8094, live green — m12)",
+    "DONE 2026-09-10: E6 examples/terminal_door_shell.rs (127.0.0.1:8095, live green — m13)"
+  ],
+  "next_step": "m13 DONE. The terminal door (unified read view: Tail, Inspect, Prove, Policy, Query + braid_cli) is live on the ONE wire. Hardware legs (D3.2 Quest 3 WebXR + D3.6 Quest reachability) remain next once a GPU driver + Trellis NIM (:8000) + Quest 3 device exist; the software spine through m13 is fully proven (72 tests, clippy clean)."
+}

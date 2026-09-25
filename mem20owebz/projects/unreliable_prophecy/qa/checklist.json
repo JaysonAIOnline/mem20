@@ -1,0 +1,60 @@
+{
+  "critical_path": [
+    {
+      "id": "tutorial_complete",
+      "description": "Complete Quietvale tutorial",
+      "status": "pending"
+    },
+    {
+      "id": "first_combat",
+      "description": "Win first combat encounter",
+      "status": "pending"
+    },
+    {
+      "id": "binder_obtained",
+      "description": "Obtain Prophecy Binder",
+      "status": "pending"
+    },
+    {
+      "id": "hills_exit",
+      "description": "Reach Bureaucracy Hills exit",
+      "status": "pending"
+    }
+  ],
+  "quality_gates": [
+    {
+      "id": "fps_maintained",
+      "description": "\u226555 FPS on target hardware",
+      "status": "pending"
+    },
+    {
+      "id": "ui_responsive",
+      "description": "UI responds within 200ms",
+      "status": "pending"
+    },
+    {
+      "id": "save_load",
+      "description": "Save/Load round-trip works",
+      "status": "pending"
+    },
+    {
+      "id": "no_crashes",
+      "description": "No crashes during 30min play",
+      "status": "pending"
+    }
+  ],
+  "sign_offs": [
+    {
+      "id": "level_design",
+      "signoff_required": true
+    },
+    {
+      "id": "art",
+      "signoff_required": true
+    },
+    {
+      "id": "progression",
+      "signoff_required": true
+    }
+  ]
+}

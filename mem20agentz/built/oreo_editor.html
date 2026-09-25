@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>GraphLang — ears and voice</title>
+  <style>
+    :root {
+      --bg:#070b12; --panel:#101826; --ink:#eaf1ff; --muted:#8ea2bb;
+      --line:#243246; --page:#5aa8ff; --db:#3ee09a; --auth:#ffb43a; --inc:#9eb0c2;
+      --ear:#ff5d7a; --ok:#3ee09a;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:ui-sans-serif,system-ui,sans-serif; background:var(--bg); color:var(--ink); }
+    header { display:flex; align-items:center; gap:16px; padding:14px 20px; border-bottom:1px solid var(--line); }
+    .mark { width:28px; height:28px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #7cb6ff, #2f6fed); box-shadow:0 0 18px #2f6fed88; }
+    header h1 { margin:0; font-size:18px; letter-spacing:.02em; }
+    header p { margin:0; color:var(--muted); font-size:13px; }
+    .grow { flex:1; }
+    .pill { border:1px solid var(--line); background:#0c1420; color:var(--ink); border-radius:999px; padding:8px 14px; cursor:pointer; }
+    .pill.live { border-color:var(--ear); color:var(--ear); box-shadow:0 0 18px #ff5d7a55; }
+    .pill.voice { border-color:#5aa8ff; }
+    main { display:grid; grid-template-columns:320px 1fr 360px; height:calc(100vh - 58px); }
+    aside { padding:16px; overflow:auto; border-right:1px solid var(--line); }
+    .canvas-wrap { position:relative; }
+    canvas { width:100%; height:100%; display:block; background:
+      radial-gradient(circle at 20% 15%, #163050 0%, transparent 32%),
+      radial-gradient(circle at 80% 80%, #10261c 0%, var(--bg) 40%); }
+    h2 { margin:18px 0 8px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+    h2:first-child { margin-top:0; }
+    textarea { width:100%; min-height:88px; border:1px solid var(--line); background:#0c1420; color:var(--ink); border-radius:12px; padding:10px; }
+    button.primary { width:100%; margin-top:8px; border:0; border-radius:12px; padding:10px; background:#2f6fed; color:white; cursor:pointer; font-weight:600; }
+    .hint { color:var(--muted); font-size:12px; line-height:1.45; }
+    .row { display:flex; gap:8px; align-items:center; }
+    .legend { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid var(--line); }
+    .chip.page{color:var(--page)} .chip.db{color:var(--db)} .chip.auth{color:var(--auth)} .chip.inc{color:var(--inc)}
+    pre { white-space:pre-wrap; background:#0c1420; border:1px solid var(--line); border-radius:12px; padding:10px; font-size:12px; }
+    .heard { min-height:42px; border:1px dashed var(--line); border-radius:12px; padding:10px; color:var(--muted); }
+    .heard.hot { border-color:var(--ear); color:var(--ink); }
+    .wave { display:flex; gap:3px; height:18px; align-items:flex-end; }
+    .wave span { width:3px; background:var(--ear); animation:eq 1s infinite ease-in-out; }
+    .wave span:nth-child(2){animation-delay:.1s} .wave span:nth-child(3){animation-delay:.2s}
+    .wave span:nth-child(4){animation-delay:.3s} .wave span:nth-child(5){animation-delay:.15s}
+    @keyframes eq { 0%,100%{height:4px} 50%{height:16px} }
+    .status { position:absolute; left:16px; bottom:16px; background:#0c1420cc; border:1px solid var(--line); border-radius:12px; padding:10px 12px; max-width:60%; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="mark"></div>
+  <div>
+    <h1>GraphLang</h1>
+    <p>Talk while you draw. The words name the line.</p>
+  </div>
+  <div class="grow"></div>
+  <button class="pill" id="listenBtn" onclick="toggleListen()">Ear</button>
+  <button class="pill voice" onclick="toggleVoice()">Voice</button>
+  <button class="pill" id="viewBtn" onclick="toggleView()">Model</button>
+  <button class="pill" onclick="playIntro()">Intro</button>
+</header>
+<main>
+  <aside>
+    <h2>Talk</h2>
+    <div class="hint">Press Ear and speak. Or type like you would ask a person.</div>
+    <div class="heard" id="heard">Try: add a checkout page</div>
+    <textarea id="speech" placeholder="Add a checkout page"></textarea>
+    <button class="primary" onclick="say()">Tell GraphLang</button>
+    <h2>Draw</h2>
+    <div class="hint">Say what the line is for, then tap two things.</div>
+    <label class="hint"><input id="secure" type="checkbox" checked /> Keep new database lines secure</label>
+    <div class="legend">
+      <span class="chip page">Page</span>
+      <span class="chip db">Database</span>
+      <span class="chip auth">Auth</span>
+      <span class="chip inc">Include</span>
+    </div>
+    <h2>Lines</h2>
+    <pre id="ascii"></pre>
+  </aside>
+  <section class="canvas-wrap">
+    <canvas id="cv"></canvas>
+    <div class="status">
+      <div class="row">
+        <div class="wave" id="eq" hidden><span></span><span></span><span></span><span></span><span></span></div>
+        <div id="voiceLine">Voice is ready.</div>
+      </div>
+    </div>
+  </section>
+  <aside>
+    <h2>GraphLang says</h2>
+    <pre id="spoken">Graph Lang is listening.</pre>
+    <div id="offer" hidden>
+      <button class="primary" onclick="acceptOffer()">Yes, make it right</button>
+      <button class="pill" style="width:100%;margin-top:8px" onclick="dismissOffer()">Not now</button>
+    </div>
+    <details style="margin-top:24px;color:#8ea2bb">
+      <summary>Builder view</summary>
+      <h2>Last intent</h2>
+      <pre id="intent">Hidden from people using GraphLang.</pre>
+      <h2>Cypher</h2>
+      <pre id="cypher"></pre>
+    </details>
+  </aside>
+</main>
+<audio id="intro" src="/voice/intro.mp3" preload="auto"></audio>
+<script>
+const initial = {"nodes": [{"id": "db_maindb", "label": "Database", "created_at": "2026-09-24T17:02:32.650069+00:00", "engine": "neo4j", "name": "MainDB"}, {"id": "inc_footer", "label": "Include", "created_at": "2026-09-24T17:02:32.650111+00:00", "name": "Footer"}, {"id": "inc_header", "label": "Include", "created_at": "2026-09-24T17:02:32.650105+00:00", "name": "Header"}, {"id": "page_dashboard", "label": "Page", "created_at": "2026-09-24T17:02:32.650092+00:00", "name": "Dashboard", "path": "/dashboard"}, {"id": "page_landing", "label": "Page", "created_at": "2026-09-24T17:02:32.650085+00:00", "name": "Landing", "path": "/"}, {"id": "page_settings", "label": "Page", "created_at": "2026-09-24T17:02:32.650099+00:00", "name": "Settings", "path": "/settings"}], "relationships": []};
+const colors = {Page:"#5aa8ff", Database:"#3ee09a", Auth:"#ffb43a", Include:"#9eb0c2"};
+let graph = initial;
+let positions = {};
+let selected = null;
+let listening = false;
+let voiceOn = true;
+let rec = null;
+let viewMode = "graph";
+let shapeModel = null;
+const canvas = document.getElementById("cv");
+const ctx = canvas.getContext("2d");
+
+function iso(p){
+  const ox = canvas.width*0.28, oy = 80;
+  return [ox + p[0] - p[2]*0.55, oy + p[1]*0.52 + p[2]*0.38];
+}
+function paintModel(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const m = shapeModel || {solids:[], struts:[], faces:[]};
+  ctx.fillStyle = "#3ee09a22";
+  for (const f of m.faces||[]) {
+    if (f.points.length<3) continue;
+    ctx.beginPath();
+    f.points.forEach((p,i)=>{ const q=iso(p); i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]); });
+    ctx.closePath(); ctx.fill();
+  }
+  for (const s of m.struts||[]) {
+    const a=iso(s.from), b=iso(s.to);
+    ctx.strokeStyle = s.secure ? "#ffb43acc" : s.type==="INCLUDES" ? "#5aa8ff99" : "#3ee09aaa";
+    ctx.lineWidth = s.secure ? 7 : 4;
+    ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+  }
+  for (const s of m.solids||[]) {
+    const p = iso(s.at);
+    ctx.fillStyle = ({Page:"#5aa8ff",Database:"#3ee09a",Auth:"#ffb43a",Include:"#9eb0c2",Service:"#c084fc",Function:"#67e8f9"}[s.label]||"#eaf1ff");
+    ctx.beginPath();
+    if (s.kind==="cylinder") { ctx.ellipse(p[0],p[1],22,12,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#0b1"; ctx.stroke(); }
+    else if (s.kind==="diamond") { ctx.moveTo(p[0],p[1]-22); ctx.lineTo(p[0]+16,p[1]); ctx.lineTo(p[0],p[1]+22); ctx.lineTo(p[0]-16,p[1]); ctx.closePath(); ctx.fill(); }
+    else if (s.kind==="plate") { ctx.fillRect(p[0]-24,p[1]-6,48,12); }
+    else if (s.kind==="hex") {
+      ctx.moveTo(p[0]+18,p[1]);
+      for (let i=1;i<6;i++){ const a=i*Math.PI/3; ctx.lineTo(p[0]+Math.cos(a)*18,p[1]+Math.sin(a)*18); }
+      ctx.closePath(); ctx.fill();
+    } else { ctx.fillRect(p[0]-16,p[1]-14,32,28); }
+    ctx.fillStyle="#eaf1ff"; ctx.font="12px sans-serif"; ctx.fillText(s.name, p[0]+20, p[1]+4);
+  }
+}
+function toggleView(){
+  viewMode = viewMode==="graph" ? "model" : "graph";
+  document.getElementById("viewBtn").textContent = viewMode==="model" ? "Graph" : "Model";
+  paint();
+}
+
+function layout() {
+  const groups = {Page:[], Database:[], Auth:[], Include:[]};
+  for (const n of graph.nodes || []) (groups[n.label] || groups.Include).push(n);
+  const width = canvas.width || 900;
+  const cols = {Page: width*0.18, Database: width*0.48, Auth: width*0.72, Include: width*0.84};
+  Object.entries(groups).forEach(([label, list]) => {
+    list.forEach((n, i) => {
+      positions[n.id] = {
+        x: cols[label] || width*0.5,
+        y: 110 + i * Math.min(130, ((canvas.height||700)-180) / Math.max(list.length,1))
+      };
+    });
+  });
+}
+function resize(){ canvas.width=canvas.clientWidth; canvas.height=canvas.clientHeight; layout(); paint(); }
+window.addEventListener("resize", resize);
+
+function paint() {
+  if (viewMode === "model") { paintModel(); return; }
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (const r of graph.relationships || []) {
+    const a = positions[r.from], b = positions[r.to];
+    if (!a || !b) continue;
+    ctx.strokeStyle = r.type === "CONNECTS_TO" ? "#3ee09a99" : r.type === "AUTHENTICATES_WITH" ? "#ffb43a99" : "#5aa8ff77";
+    ctx.lineWidth = r.type === "CONNECTS_TO" ? 2.4 : 1.4;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    ctx.fillStyle = "#9eb0c2"; ctx.font = "11px sans-serif";
+    const label = r.type==="CONNECTS_TO" ? "talks to" : r.type==="AUTHENTICATES_WITH" ? "secure path" : r.type==="INCLUDES" ? "includes" : r.type;
+    ctx.fillText(label, (a.x+b.x)/2+8, (a.y+b.y)/2-6);
+  }
+  for (const n of graph.nodes || []) {
+    const p = positions[n.id]; if (!p) continue;
+    ctx.beginPath();
+    ctx.fillStyle = colors[n.label] || "#9eb0c2";
+    ctx.shadowColor = colors[n.label] || "#000";
+    ctx.shadowBlur = selected===n.id ? 18 : 8;
+    ctx.arc(p.x,p.y, selected===n.id?24:18, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#eaf1ff"; ctx.font = "13px sans-serif";
+    ctx.fillText(n.name || n.id, p.x+28, p.y+4);
+  }
+  document.getElementById("ascii").textContent = (graph.relationships||[]).map(r => `${r.from_name} → ${r.type} → ${r.to_name}`).join("\n") || "(no lines yet)";
+}
+
+function hit(x,y){
+  for (const n of graph.nodes||[]) {
+    const p = positions[n.id]; if(!p) continue;
+    const dx=p.x-x, dy=p.y-y; if (dx*dx+dy*dy<=26*26) return n;
+  }
+  return null;
+}
+canvas.addEventListener("click", ev => {
+  const rect = canvas.getBoundingClientRect();
+  const n = hit(ev.clientX-rect.left, ev.clientY-rect.top);
+  if (!n) { selected=null; paint(); return; }
+  if (!selected) {
+    selected=n.id; paint();
+    speak((n.name || n.id) + " selected. Say what this line is for, then click the target.");
+    return;
+  }
+  if (selected===n.id) { selected=null; paint(); return; }
+  const src = graph.nodes.find(x => x.id===selected);
+  selected=null;
+  const purpose = (document.getElementById("speech").value || document.getElementById("heard").textContent || "").trim();
+  post("/api/draw", {src_id:src.id,dst_id:n.id,src_label:src.label,src_name:src.name,dst_label:n.label,dst_name:n.name,secure:document.getElementById("secure").checked, purpose});
+});
+
+function speak(text){
+  document.getElementById("spoken").textContent = text || "";
+  document.getElementById("voiceLine").textContent = text || "Voice is ready.";
+  if (!voiceOn || !text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.02; u.pitch = 1;
+  window.speechSynthesis.speak(u);
+}
+function toggleVoice(){ voiceOn = !voiceOn; speak(voiceOn ? "Voice on." : "Voice muted."); }
+function playIntro(){ const a=document.getElementById("intro"); a.currentTime=0; a.play().catch(()=>{}); }
+
+function toggleListen(){
+  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = document.getElementById("listenBtn");
+  const eq = document.getElementById("eq");
+  const heard = document.getElementById("heard");
+  if (!Speech) { heard.textContent = "This browser has no speech recognition. Type instead."; return; }
+  if (listening) { rec && rec.stop(); listening=false; btn.classList.remove("live"); eq.hidden=true; return; }
+  rec = new Speech();
+  rec.lang = "en-US"; rec.interimResults = true; rec.continuous = true;
+  rec.onresult = (ev) => {
+    let text = "";
+    for (const res of ev.results) text += res[0].transcript + " ";
+    text = text.trim();
+    heard.textContent = text;
+    document.getElementById("speech").value = text;
+  };
+  rec.onend = () => {
+    if (listening) { try { rec.start(); } catch (e) {} return; }
+    btn.classList.remove("live"); eq.hidden=true;
+  };
+  rec.start();
+  listening=true; btn.classList.add("live"); eq.hidden=false;
+  heard.classList.add("hot"); heard.textContent = "Listening…";
+}
+
+async function say(){
+  const text = document.getElementById("speech").value.trim();
+  if (!text) return;
+  await post("/api/say", {text});
+}
+async function acceptOffer(){ await post("/api/yes", {}); }
+function dismissOffer(){ document.getElementById("offer").hidden = true; }
+
+async function post(url, body){
+  try {
+    const res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+    const data = await res.json();
+    graph = data.graph || graph;
+    if (data.model) shapeModel = data.model;
+    layout(); paint();
+    document.getElementById("intent").textContent = JSON.stringify(data.intents || data.intent || data, null, 2);
+    document.getElementById("cypher").textContent = (data.optimized && data.optimized.script) || data.ascii || "";
+    speak(data.spoken || "Done.");
+    const offer = document.getElementById("offer");
+    offer.hidden = !(data.suggestions && data.suggestions.length);
+  } catch (err) {
+    document.getElementById("intent").textContent = "Start the live editor:\npython3 -m graphlang.visual\n\n"+err;
+    speak("The live server is not running. I can still show the last saved graph.");
+  }
+}
+
+document.getElementById("ascii").textContent = "GRAPH\n  Database: MainDB\n  Include: Footer, Header\n  Page: Dashboard, Landing, Settings\n  RELS:\n    (none)";
+document.getElementById("spoken").textContent = "Graph Lang is listening. Draw a line, or speak.";
+resize();
+</script>
+</body>
+</html>

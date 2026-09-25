@@ -1,0 +1,26 @@
+{
+  "npcId": "pip_gossip",
+  "npcDisplayName": "Pip Quicktongue",
+  "coreBackstory": "Pip inherited the tavern from her aunt and turned it into the town's information hub.",
+  "greetings": [
+    "Well, well! If it isn't my favorite mystery! What'll it be — ale or answers?",
+    "You're just in time. I was about to tell the BEST story. Sit, sit!",
+    "Fresh batch of stew, and fresher gossip. Which are you here for?"
+  ],
+  "idleChatter": [
+    "They say the mayor's been meeting with strangers after hours. I say... well, I say nothin'. Yet.",
+    "Did you hear about the Miller's cat? Found it in the rafters, just... staring. For hours.",
+    "I've got three versions of that story. The true one, the interesting one, and the one that'll get me in trouble.",
+    "Business is good. People drink when they're worried, and lately, everyone's worried."
+  ],
+  "farewells": [
+    "Don't be a stranger! And if you hear anything interesting... you know where to find me.",
+    "Walk safe. And remember — anything said in this tavern stays in this tavern. Mostly.",
+    "Come back tomorrow. I'll have new stories and possibly new bruises from carrying all this knowledge."
+  ],
+  "reactiveComments": [
+    "Oh, you've been to the old ruins? Tell me everything. Off the record, of course.",
+    "You look like trouble. My favorite kind. What do you need to know?",
+    "Word of advice: don't trust the quiet ones. They're always listening."
+  ]
+}

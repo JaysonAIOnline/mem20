@@ -1,0 +1,42 @@
+{
+  "name": "jairf-ui-icons",
+  "description": "JAIRF UI/2D icon & HUD roadmap (per 04_UI_Icon_HUD_List.md). Core HUD (health/mana/XP bars, minimap, quest tracker, target frames, buffs, hotbar, chat, party), inventory & items (slots, rarity borders, currency, equipment, categories), skills & classes, builder mode UI (toolbar, snap, filters, save/share/publish, validation errors), social/multiplayer, system & menus, feedback/status icons (damage types, CC, objectives, interaction prompts). Style: consistent line weight, high contrast, color-coded, PNG + alpha, Sprite Atlas.",
+  "phases": [
+    {
+      "name": "1. Core HUD element set",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "2. Inventory & item icons",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "3. Skills & class icons",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "4. Builder mode UI set",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "5. Social/system/menu icon sets",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "6. Feedback & status indicators",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "7. Style pass + export (atlases, contrast, PNG transparency)",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789100773.0305686"
+}

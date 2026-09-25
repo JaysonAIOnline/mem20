@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toolchest"
+version = "0.1.0"
+description = "mem20 tool inventory registry — real discovery over the mem20 MCP server tools, on-box CLI binaries, and native mem20*z subsystems, with a query CLI (refresh/list/search/show)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "inventory", "registry", "mcp", "tools"]
+dependencies = []
+
+[project.scripts]
+toolchest = "toolchest.cli:main"
+
+[tool.setuptools]
+packages = ["toolchest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

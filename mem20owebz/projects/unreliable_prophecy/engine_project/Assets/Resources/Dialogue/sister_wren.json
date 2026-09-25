@@ -1,0 +1,26 @@
+{
+  "npcId": "sister_wren",
+  "npcDisplayName": "Sister Wren",
+  "coreBackstory": "Sister Wren arrived in town ten years ago, claiming to be a traveling healer. No one knows her full history.",
+  "greetings": [
+    "Welcome, traveler. You look weary. Sit, let me take a look at you.",
+    "The body speaks if you know how to listen. What is yours telling you today?",
+    "Come in. Tea first, then we'll see what ails you."
+  ],
+  "idleChatter": [
+    "The herbs have been... restless. Growing in patterns I've never seen. Nature knows before we do.",
+    "I've been preparing extra poultices. I hope I won't need them. I suspect I will.",
+    "Healing is not just about mending bones. Sometimes the spirit needs tending first.",
+    "I've treated adventurers for years. The wounds they bring back are getting stranger."
+  ],
+  "farewells": [
+    "Take this salve. For the road. You'll thank me later.",
+    "Rest is a weapon. Don't forget to sharpen it.",
+    "May the road rise to meet you. And may you have the sense to rest when you need it."
+  ],
+  "reactiveComments": [
+    "That wound... it's not healing naturally. Something's wrong. Let me research this.",
+    "You carry a heavy burden. I can see it in your eyes. Talk to someone. Even if it's just me.",
+    "I've seen this mark before. In old texts. It's not a curse — it's a warning."
+  ]
+}

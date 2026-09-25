@@ -1,0 +1,32 @@
+{
+  "name": "mem20_platform",
+  "description": "Build the mem20-platform SaaS: multi-tenant dashboard + API + cloud agent runner. Phases executed in order: 5 (Templates Catalog) -> 3 (Cloud Runner) -> 2 (Memory) -> 1 (Base Agent) -> 10 (Billing), then E2E + dashboard integration. Code at /root/mem20-platform.",
+  "phases": [
+    {
+      "name": "templates_catalog",
+      "status": "completed",
+      "notes": "Phase 5 done 2026-09-16. Dashboard AgentTemplateCatalog (apps/dashboard/src/data/templates_catalog.json, 131 entries) + API templates router (GET /, /categories, /{id}, POST /{id}/use). Golang\u2192TypeScript port of the catalog. verified: dashboard catalog intact, API serves categories/templates."
+    },
+    {
+      "name": "cloud_runner",
+      "status": "completed",
+      "notes": "Phase 3 done 2026-09-17. Full execution lifecycle: RunnerHeartbeat model (runner_heartbeats), DB-backed agents router (CRUD, soft-delete, org scoping, PaginatedResponse agent list contract {agents,total,page,page_size}), executions router (create/list/get/logs/cancel), runner service at services/runner (package 'runner', NAMED runner not app to avoid import collision). Direct Groq httpx client (NOT litellm - litellm strips groq/ prefix; model groq/compound verified real). Claim loop QUEUED->RUNNING->COMPLETED/FAILED with output+usage+credits_used+error+duration_ms, ExecutionLog rows, heartbeat every 15s (psutil cpu/mem) with >60s stale->offline in admin /runners. E2E verified: 2 real Groq executions COMPLETED (RUNNER-OK), 1 failure path (bad model->FAILED with 404 detail), cancel path CANCELLED, admin /runners + /metrics live. Caveats: JWT RS256 keypair generated per-process so tokens invalidate on API restart (dev only); login endpoint has lazy-load MissingGreenlet on org_member.organization when no org (500)."
+    },
+    {
+      "name": "memory",
+      "status": "completed",
+      "notes": "Phase 2 done 2026-09-17. Full memory API at /api/memory: namespaces CRUD (org-scoped, scope validation agent/user/org/skill/shared, unique org+scope+scope_id+name), entries (PUT upsert 201/200 with version bump, GET/list with key_prefix+tag filters, PATCH version bump, DELETE 204, TTL/expiry -> 410 hidden by default, include_expired flag). Scope guard: agent scope_id must be a real org agent; org scope_id must equal org_id. UUID->str before-validators added to schemas/memory.py (PG_UUID returns UUID objects). Fixed MemoryEntryWrite body (key removed from body \u2014 comes from path). Tag filter fixed: JSON .contains() compiled to broken LIKE on sqlite, now MemoryEntry.tags.cast(String).like('%\"tag\"%'). Runner integration: services/runner/runner/memory.py auto-creates agent-memory namespace (scope=AGENT, scope_id=agent.id) on first execution, injects entries into system prompt as Persistent memory, persists last_execution {timestamp,status,output,model,usage} after every completed run. E2E proven: exec1 'remember favorite color is teal' -> MEMORIZED, persisted v1; exec2 'what is my favorite color?' -> 'teal' from injected memory; last_execution version auto-bumped 1->2. Memory tables created by runner init_db (models now in runner/db.py exports)."
+    },
+    {
+      "name": "base_agent",
+      "status": "completed",
+      "notes": "Phase 1 done 2026-09-17. Base Agent = full agent lifecycle spine on top of existing CRUD (models/tables already existed; endpoints were missing). Added to brokers/agents.py: POST /agents/{id}/deploy (created/deploying->idle, is_cloud=True, deployed_at set; 409 if running/deploying), POST /agents/{id}/start (->running, last_active_at set; 409 if already running), POST /agents/{id}/stop (->stopped; 409 if already stopped); version endpoints POST /agents/{id}/versions (snapshot current config, version=next int, changelog), GET list (desc), GET /versions/{version}, POST /versions/{version}/restore (applies config + pre-restore snapshot bump); checkpoint endpoints POST /agents/{id}/checkpoints (version bump per agent, state + optional memory_snapshot + optional execution_id), GET list (desc by created_at), GET /checkpoints/{id}. Added CheckpointCreate schema; fixed AgentVersionResponse missing before-mode UUID->str validators (500 on warning response). Membership checks by _get_agent_for_member helper (403 cross-org). E2E verified with fresh user base2@runner.dev: deploy->idle->running->stopped chain OK, versions 2->3 restore->snapshot v4 OK, checkpoints v1->v2 list/get OK, wrong id 404, cross-org 403. NOTE: leftover AgentVersion row from a 500 (pre-validator-fix commit) demonstrates commit-before-serialize behavior."
+    },
+    {
+      "name": "billing",
+      "status": "completed",
+      "notes": "Phase 10 Billing E2E verified (bill3@runner.dev, org 33706184-73b3-490e-8d8f-02149ed8e89c): POST /api/billing/charge works (MissingGreenlet fixed by removing rollback+detached lazy access in routers/billing.py charge_usage; added _account_balance helper). New ng: create_agent ignored ?org_id= (grab first OrgMember limit(1)) -> agents landed in registration org; fixed by honoring optional org_id query param with 403 when not member. Paid path: funded 100.0 via add_credits(PURCHASE), agent exec charged 0.0358 (2.0 credits/min x 1073ms) -> balance 99.9642, USAGE txn with execution_id in meta. Guardrail path: active credits_daily limit 0.001 -> runner logged 'guardrail blocked charge', balance unchanged, execution still completed with credits_used=0.0. Ledger + guardrails CRUD + subscription auto-create + webhook 501 (stripe not configured) all verified. Stripe webhook handler coded but untested (no key)."
+    }
+  ],
+  "created": "1789604765.3759632"
+}

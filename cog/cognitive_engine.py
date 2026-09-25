@@ -976,7 +976,7 @@ async def aimagination_critique(concept, perspectives=None, refine=True) -> str:
                         {"role": "user", "content": user}], max_tokens=1500)
 
 
-def imagination_dream(prompt, iterations=3, output_mode="concepts", memory_topics=None) -> str:
+def imagination_dream(prompt, iterations=5, output_mode="concepts", memory_topics=None) -> str:
     memory_topics = memory_topics or []
     seed = prompt
     log = [f"DREAM starting from: {prompt}\n"]
@@ -988,7 +988,7 @@ def imagination_dream(prompt, iterations=3, output_mode="concepts", memory_topic
         user += "Produce the next creative concept elaboration (concepts mode)."
         try:
             out = chat([{"role": "system", "content": _img_system("dream loop")},
-                        {"role": "user", "content": user}], max_tokens=900)
+                        {"role": "user", "content": user}], max_tokens=2000)
         except LLMError as e:
             log.append(f"[iteration {i}] LLM unavailable: {e}")
             break
@@ -997,7 +997,7 @@ def imagination_dream(prompt, iterations=3, output_mode="concepts", memory_topic
     return "\n".join(log)
 
 
-async def aimagination_dream(prompt, iterations=3, output_mode="concepts", memory_topics=None) -> str:
+async def aimagination_dream(prompt, iterations=5, output_mode="concepts", memory_topics=None) -> str:
     memory_topics = memory_topics or []
     seed = prompt
     log = [f"DREAM starting from: {prompt}\n"]
@@ -1009,7 +1009,7 @@ async def aimagination_dream(prompt, iterations=3, output_mode="concepts", memor
         user += "Produce the next creative concept elaboration (concepts mode)."
         try:
             out = await achat([{"role": "system", "content": _img_system("dream loop")},
-                               {"role": "user", "content": user}], max_tokens=900)
+                               {"role": "user", "content": user}], max_tokens=2000)
         except LLMError as e:
             log.append(f"[iteration {i}] LLM unavailable: {e}")
             break
