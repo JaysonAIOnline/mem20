@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from toolchest import catalog  # noqa: E402
 
 MEM20_ROOT = Path("/opt/mem20")
@@ -99,10 +99,42 @@ def test_subsystem_runtime_truthfulness(inventory):
             if e["kind"] == "subsystem"}
     # mem20corez is installed in the root venv → ok
     assert subs["mem20corez"]["runtime_status"] == "ok"
-    # mem20crewz is NOT installed anywhere → degraded/missing install check
+    # An installed subsystem must be reported as installed. This used to assert
+    # the opposite for mem20crewz, which was written when crewz was not
+    # installed; it now is, so asserting "not installed" would enshrine a lie
+    # about the host. Cross-check the real environment rather than a snapshot.
+    from importlib.metadata import PackageNotFoundError, version
+
     crewz = subs["mem20crewz"]
-    assert not crewz["meta"]["installed"]
+    try:
+        installed_version = version("mem20crewz")
+    except PackageNotFoundError:
+        installed_version = None
+    assert bool(crewz["meta"]["installed"]) is (installed_version is not None)
+    if installed_version is not None:
+        assert crewz["meta"]["installed"]["version"] == installed_version
     assert crewz["meta"]["version"]  # declared version still present
+
+
+def test_import_probe_is_not_shadowed_by_source_directories(inventory):
+    """Installed subsystems must not read as un-importable.
+
+    The import probe used to run from /opt/mem20, where each subsystem's source
+    directory shadows the installed package as a namespace package with a None
+    origin - which made every one of them look un-importable.
+    """
+    subs = {e["name"]: e for e in inventory["entries"]
+            if e["kind"] == "subsystem"}
+    for name in ("mem20ops", "mem20controlz"):
+        entry = subs.get(name)
+        if entry is None:
+            continue
+        if entry["meta"].get("installed"):
+            assert entry["runtime_status"] == "ok", (
+                f"{name} is installed but reported {entry['runtime_status']}: "
+                f"{entry.get('runtime_detail')}"
+            )
+            assert "importable=True" in entry.get("runtime_detail", "")
 
 
 def test_write_load_roundtrip(tmp_path):
@@ -126,3 +158,46 @@ def test_mcp_dump_script_is_runnable():
     for t in tools:
         assert t["name"] and t["description"]
         assert "input_schema_props" in t
+
+class TestImportCandidates:
+    """`[tool.setuptools.packages.find]` must not yield a module called `find`."""
+
+    def test_finder_form_uses_include_globs(self):
+        from toolchest.catalog import _import_candidates
+
+        data = {"tool": {"setuptools": {"packages": {"find": {
+            "where": ["."], "include": ["mem20kilnz*"]}}}}}
+        assert _import_candidates("mem20kilnz", data) == ["mem20kilnz"]
+
+    def test_explicit_list_form_still_works(self):
+        from toolchest.catalog import _import_candidates
+
+        data = {"tool": {"setuptools": {"packages": ["mem20crewz"]}}}
+        assert _import_candidates("mem20crewz", data) == ["mem20crewz"]
+
+    def test_falls_back_to_normalised_distribution_name(self):
+        from toolchest.catalog import _import_candidates
+
+        assert _import_candidates("mem20-orchestration", {}) == ["mem20_orchestration"]
+
+    def test_py_modules_are_included(self):
+        from toolchest.catalog import _import_candidates
+
+        data = {"tool": {"setuptools": {"packages": {"find": {"include": ["pkg*"]}},
+                                        "py-modules": ["loose_mod"]}}}
+        assert _import_candidates("whatever", data) == ["pkg", "loose_mod"]
+
+    def test_never_reports_the_literal_name_find(self):
+        from toolchest.catalog import _import_candidates
+
+        data = {"tool": {"setuptools": {"packages": {"find": {
+            "where": ["src"], "include": ["realpkg*"]}}}}}
+        assert "find" not in _import_candidates("somepkg", data)
+
+    def test_subpackage_shorthand_glob_yields_one_clean_name(self):
+        """`include = ["pkg", "pkg.*"]` must not produce a module named `pkg.`"""
+        from toolchest.catalog import _import_candidates
+
+        data = {"tool": {"setuptools": {"packages": {"find": {
+            "include": ["mem20agentz", "mem20agentz.*"]}}}}}
+        assert _import_candidates("mem20agentz", data) == ["mem20agentz"]

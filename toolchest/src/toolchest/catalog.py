@@ -29,6 +29,7 @@ import os
 import socket
 import subprocess
 import sys
+import tempfile
 import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,6 +39,11 @@ MEM20_ROOT = Path("/opt/mem20")
 MCP_DIR = MEM20_ROOT / "mcp"
 ROOT_VENV = Path("/root/.venv")
 CLI_DIRS = [ROOT_VENV / "bin", Path("/usr/local/bin")]
+# Import probes must not run from a directory that is the parent of a
+# subsystem's source tree. From /opt/mem20, `mem20controlz` resolves to the
+# source *directory* as a namespace package whose origin is None, which reads as
+# "not importable" for every installed subsystem that lives here.
+_PROBE_CWD = Path(tempfile.gettempdir())
 
 # ---------------------------------------------------------------------------
 # Category map — from the AGENTS.md subsystem crosscheck table (verbatim rows).
@@ -480,7 +486,8 @@ def _find_spec(candidates: List[str], py: Path) -> List[Dict[str, Any]]:
     )
     try:
         run = subprocess.run([str(py), "-c", script, *candidates],
-                             capture_output=True, text=True, timeout=30)
+                             capture_output=True, text=True, timeout=30,
+                             cwd=str(_PROBE_CWD))
     except Exception:
         return found
     res: Dict[str, bool] = {}
@@ -517,7 +524,8 @@ def _find_specs_batch(groups: List[tuple]) -> Dict[str, List[Dict[str, Any]]]:
     try:
         run = subprocess.run([str(ROOT_VENV / "bin" / "python"), "-c", script,
                               *unique],
-                             capture_output=True, text=True, timeout=90)
+                             capture_output=True, text=True, timeout=90,
+                             cwd=str(_PROBE_CWD))
         lookup = json.loads(run.stdout or "{}")
     except Exception:
         pass
@@ -526,12 +534,42 @@ def _find_specs_batch(groups: List[tuple]) -> Dict[str, List[Dict[str, Any]]]:
 
 
 def _import_candidates(name: str, data: Dict[str, Any]) -> List[str]:
+    """Top-level module names to test for importability.
+
+    ``[tool.setuptools.packages]`` is either an explicit list of package names or
+    a mapping of finder tables (``[tool.setuptools.packages.find]``), which is
+    the most common setuptools idiom. Treating the mapping as a list yields its
+    *keys* as module names, so a package declared that way was reported under a
+    phantom module called ``find``. Handle both shapes.
+    """
     candidates: List[str] = []
     st = data.get("tool", {}).get("setuptools", {})
-    candidates += st.get("packages", [])
-    candidates += st.get("py-modules", [])
+
+    packages = st.get("packages", [])
+    if isinstance(packages, dict):
+        # Finder form: `[tool.setuptools.packages.find]`. The names are in the
+        # finder's `include` globs, so take the literal part of each pattern.
+        includes: List[str] = []
+        for finder in packages.values():
+            if isinstance(finder, dict):
+                includes += [g for g in finder.get("include", []) if isinstance(g, str)]
+        for pattern in includes:
+            # A glob may be `pkg*` (setuptools glob) or `pkg.*` (subpackage
+            # shorthand). Both denote the same top-level package, so trim the
+            # wildcard and any trailing separator.
+            literal = pattern.split("*", 1)[0].strip().rstrip(".").strip()
+            if literal and literal not in candidates:
+                candidates.append(literal)
+    elif isinstance(packages, (list, tuple)):
+        candidates += [p for p in packages if isinstance(p, str)]
+
+    py_modules = st.get("py-modules", [])
+    if isinstance(py_modules, (list, tuple)):
+        candidates += [p for p in py_modules if isinstance(p, str)]
+
     if not candidates:
-        candidates.append(name)
+        # Normalise a dashed distribution name to its module spelling.
+        candidates.append(name.replace("-", "_"))
     return candidates
 
 

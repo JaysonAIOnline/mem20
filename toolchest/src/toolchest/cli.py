@@ -22,7 +22,21 @@ from toolchest.catalog import (
     REQUIRED_FIELDS, build_inventory, load_inventory, write_inventory,
 )
 
-DEFAULT_INVENTORY = Path(__file__).resolve().parent.parent / "inventory.json"
+def _locate_inventory() -> Path:
+    """Find the project-root inventory.json without hardcoding a parent depth.
+
+    The package lives at <root>/src/<pkg>/, but walking a fixed number of parents
+    breaks the moment the layout changes, so probe the nearby parents in order.
+    """
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "inventory.json"
+        if candidate.is_file():
+            return candidate
+    return here.parent.parent / "inventory.json"
+
+
+DEFAULT_INVENTORY = _locate_inventory()
 
 
 def _entry_matches(e: Dict[str, Any], category: str, kind: str,

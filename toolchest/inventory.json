@@ -1,7 +1,7 @@
 {
   "format": "mem20-toolchest-inventory",
   "format_version": 1,
-  "generated_at": "2026-09-25T01:09:39.258143+00:00",
+  "generated_at": "2026-09-26T14:14:42.555096+00:00",
   "toolchest_version": "0.1.0",
   "host": "jnet1",
   "sources": [
@@ -11,9 +11,9 @@
   ],
   "counts": {
     "mcp": 253,
-    "cli": 281,
-    "subsystem": 29,
-    "total": 563
+    "cli": 290,
+    "subsystem": 36,
+    "total": 579
   },
   "categories": {
     "agent-platform": {
@@ -23,7 +23,7 @@
       ]
     },
     "cli": {
-      "count": 281,
+      "count": 290,
       "subcategories": [
         "cloud",
         "data-db",
@@ -80,7 +80,7 @@
       ]
     },
     "other": {
-      "count": 10,
+      "count": 17,
       "subcategories": [
         "native-subsystem"
       ]
@@ -10880,6 +10880,38 @@
       }
     },
     {
+      "id": "cli:fs",
+      "kind": "cli",
+      "name": "fs",
+      "category": "cli",
+      "subcategory": "generic",
+      "description": "fs \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/fs",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/fs"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 167,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/fs"
+      }
+    },
+    {
       "id": "cli:fs-cv",
       "kind": "cli",
       "name": "fs-cv",
@@ -11840,6 +11872,38 @@
       }
     },
     {
+      "id": "cli:kiln",
+      "kind": "cli",
+      "name": "kiln",
+      "category": "cli",
+      "subcategory": "generic",
+      "description": "kiln \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/kiln",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/kiln"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 167,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/kiln"
+      }
+    },
+    {
       "id": "cli:lin",
       "kind": "cli",
       "name": "lin",
@@ -12288,6 +12352,102 @@
       }
     },
     {
+      "id": "cli:mem20-cli",
+      "kind": "cli",
+      "name": "mem20-cli",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20-cli \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20-cli",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20-cli"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 162,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20-cli"
+      }
+    },
+    {
+      "id": "cli:mem20-control",
+      "kind": "cli",
+      "name": "mem20-control",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20-control \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20-control",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20-control"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 175,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20-control"
+      }
+    },
+    {
+      "id": "cli:mem20-dream",
+      "kind": "cli",
+      "name": "mem20-dream",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20-dream \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20-dream",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20-dream"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 173,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20-dream"
+      }
+    },
+    {
       "id": "cli:mem20-mcp",
       "kind": "cli",
       "name": "mem20-mcp",
@@ -12381,6 +12541,38 @@
         "size": 176,
         "symlink": false,
         "resolved_target": "/root/.venv/bin/mem20-orchestration"
+      }
+    },
+    {
+      "id": "cli:mem20-shop",
+      "kind": "cli",
+      "name": "mem20-shop",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20-shop \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20-shop",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20-shop"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 172,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20-shop"
       }
     },
     {
@@ -12637,6 +12829,38 @@
         "size": 169,
         "symlink": false,
         "resolved_target": "/root/.venv/bin/mem20googlez"
+      }
+    },
+    {
+      "id": "cli:mem20kilnz",
+      "kind": "cli",
+      "name": "mem20kilnz",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20kilnz \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20kilnz",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20kilnz"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 167,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20kilnz"
       }
     },
     {
@@ -12925,6 +13149,70 @@
         "size": 168,
         "symlink": false,
         "resolved_target": "/root/.venv/bin/mem20verify"
+      }
+    },
+    {
+      "id": "cli:mem20wasmz",
+      "kind": "cli",
+      "name": "mem20wasmz",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20wasmz \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20wasmz",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20wasmz"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 166,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20wasmz"
+      }
+    },
+    {
+      "id": "cli:mem20webgpuz",
+      "kind": "cli",
+      "name": "mem20webgpuz",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20webgpuz \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20webgpuz",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20webgpuz"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 168,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20webgpuz"
       }
     },
     {
@@ -15977,7 +16265,7 @@
         "type": "script",
         "shebang": "/bin/bash",
         "executable": true,
-        "size": 2095,
+        "size": 2096,
         "symlink": false,
         "resolved_target": "/usr/local/bin/bigpickle-open.sh"
       }
@@ -18459,7 +18747,7 @@
       "description": "mem20 agent platform \u2014 all known agent features, built directly into mem20",
       "source": "/opt/mem20/mem20agentz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20agentz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=2 declared, 2 on PATH",
+      "runtime_detail": "pkg=mem20agentz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=2 declared, 2 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -18488,8 +18776,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20agentz=y"
         }
       ],
       "meta": {
@@ -18519,8 +18807,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20agentz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -18535,7 +18823,7 @@
       "description": "Native mem20 OpenAI Agents SDK absorption \u2014 Agent, Runner, Tools, Handoffs, Guardrails, Tracing",
       "source": "/opt/mem20/mem20agentz_sdk/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20agentz_sdk v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20agentz_sdk v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -18564,8 +18852,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20agentz_sdk=y"
         }
       ],
       "meta": {
@@ -18593,8 +18881,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20agentz_sdk",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -18609,7 +18897,7 @@
       "description": "Native mem20 AutoUE absorption \u2014 Unreal Engine automation, Python API, asset pipeline, blueprint generation",
       "source": "/opt/mem20/mem20autouez/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20autouez v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20autouez v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -18638,8 +18926,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20autouez=y"
         }
       ],
       "meta": {
@@ -18667,11 +18955,151 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20autouez",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
+      }
+    },
+    {
+      "id": "subsystem:mem20cliz",
+      "kind": "subsystem",
+      "name": "mem20cliz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "Shared machine contract for mem20 fleet CLIs: a json_main decorator that adds --json to any CLI without changing its human output.",
+      "source": "/opt/mem20/mem20cliz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20cliz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20cliz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20cliz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "130 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20cliz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20cliz",
+        "version": "0.1.0",
+        "pyproject": "/opt/mem20/mem20cliz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20-cli",
+            "target": "mem20cliz:main",
+            "on_path": true
+          }
+        ],
+        "dependencies": [],
+        "installed": {
+          "env": "root-venv",
+          "version": "0.1.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20cliz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
+      "id": "subsystem:mem20controlz",
+      "kind": "subsystem",
+      "name": "mem20controlz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "Unified control plane for the mem20 fleet: per-subsystem panels (REST-first, CLI fallback) plus the Websites manager for deploys, health, logs and Cloudflare DNS.",
+      "source": "/opt/mem20/mem20controlz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20controlz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20controlz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20controlz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "162 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20controlz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20controlz",
+        "version": "0.1.0",
+        "pyproject": "/opt/mem20/mem20controlz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20-control",
+            "target": "mem20controlz.__main__:main",
+            "on_path": true
+          }
+        ],
+        "dependencies": [
+          "fastapi>=0.110",
+          "uvicorn>=0.27",
+          "mem20ops"
+        ],
+        "installed": {
+          "env": "root-venv",
+          "version": "0.1.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20controlz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
       }
     },
     {
@@ -18683,7 +19111,7 @@
       "description": "Native mem20 CoreAI absorption \u2014 real model serving (tensor engine + ollama LLM), real batching, quantization, distillation, evaluation",
       "source": "/opt/mem20/mem20corez/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20corez v0.2.0; installed 0.2.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20corez v0.2.0; installed 0.2.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -18712,8 +19140,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20corez=y"
         }
       ],
       "meta": {
@@ -18742,8 +19170,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20corez",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -18830,7 +19258,7 @@
       "description": "mem20 Computer-Vision-inference subsystem (imagined by mem20, built real) \u2014 classical CV feature inference (numpy/PIL), deterministic contract simulator, braid-journaled results, UCG-capable descriptor",
       "source": "/opt/mem20/mem20cviz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20cviz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20cviz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -18859,8 +19287,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20cviz=y"
         }
       ],
       "meta": {
@@ -18885,8 +19313,78 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20cviz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
+      "id": "subsystem:mem20dreamz",
+      "kind": "subsystem",
+      "name": "mem20dreamz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "Dream engine for mem20: iteration that improves rather than condenses, judged by a panel where every member is a different model.",
+      "source": "/opt/mem20/mem20dreamz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20dreamz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20dreamz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20dreamz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "129 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20dreamz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20dreamz",
+        "version": "0.1.0",
+        "pyproject": "/opt/mem20/mem20dreamz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20-dream",
+            "target": "mem20dreamz.__main__:main",
+            "on_path": true
+          }
+        ],
+        "dependencies": [
+          "httpx"
+        ],
+        "installed": {
+          "env": "root-venv",
+          "version": "0.1.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20dreamz",
+            "importable": true
           }
         ],
         "categories_from": "auto-discovered (not in AGENTS.md table)"
@@ -18901,7 +19399,7 @@
       "description": "Native mem20 GameFactory-3A absorption \u2014 procgen, asset synthesis, level generation, narrative, playtesting",
       "source": "/opt/mem20/mem20factoryz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20factoryz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20factoryz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -18930,8 +19428,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20factoryz=y"
         }
       ],
       "meta": {
@@ -18955,8 +19453,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20factoryz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -18971,7 +19469,7 @@
       "description": "Native mem20 OpenGame absorption \u2014 Game agents, environments, reward shaping, curriculum, multi-agent, replay",
       "source": "/opt/mem20/mem20gamez/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20gamez v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20gamez v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19000,8 +19498,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20gamez=y"
         }
       ],
       "meta": {
@@ -19028,8 +19526,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20gamez",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19044,7 +19542,7 @@
       "description": "Real local Google ADK-style agents, tools, runners, sessions, memory, flows, and serving",
       "source": "/opt/mem20/mem20googlez/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20googlez v0.2.0; installed 0.2.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20googlez v0.2.0; installed 0.2.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19073,8 +19571,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20googlez=y"
         }
       ],
       "meta": {
@@ -19102,11 +19600,84 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20googlez",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
+      }
+    },
+    {
+      "id": "subsystem:mem20kilnz",
+      "kind": "subsystem",
+      "name": "mem20kilnz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "Native mem20 3D subsystem (KilNZ): AI-first cleanroom mesh and geometry modeler with a 103-op agent surface, procedural generation, glTF/OBJ import-export, rigging, text-to-3D asset pipeline, and a budget/naming validation gate",
+      "source": "/opt/mem20/mem20kilnz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20kilnz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=2 declared, 2 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20kilnz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20kilnz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "227 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20kilnz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20kilnz",
+        "version": "0.1.0",
+        "pyproject": "/opt/mem20/mem20kilnz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20kilnz",
+            "target": "mem20kilnz.cli:main",
+            "on_path": true
+          },
+          {
+            "console": "kiln",
+            "target": "mem20kilnz.cli:main",
+            "on_path": true
+          }
+        ],
+        "dependencies": [],
+        "installed": {
+          "env": "root-venv",
+          "version": "0.1.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20kilnz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
       }
     },
     {
@@ -19118,7 +19689,7 @@
       "description": "mem20kimiz \u2014 native Kimi Agent Swarm substrate for mem20 (parallel subagent fan-out, rate-limit-aware batched scheduling, resume, ordered result contract).",
       "source": "/opt/mem20/mem20kimiz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20kimiz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=0 declared, 0 on PATH",
+      "runtime_detail": "pkg=mem20kimiz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=0 declared, 0 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19147,8 +19718,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20kimiz=y"
         }
       ],
       "meta": {
@@ -19164,8 +19735,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20kimiz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19337,7 +19908,7 @@
         {
           "check": "import",
           "ok": false,
-          "detail": "find=n"
+          "detail": "mem20mktz=n"
         }
       ],
       "meta": {
@@ -19362,7 +19933,7 @@
         },
         "importable": [
           {
-            "name": "find",
+            "name": "mem20mktz",
             "importable": false
           }
         ],
@@ -19378,7 +19949,7 @@
       "description": "Native mem20 office \u2014 3D workspace, agent fleet, Phaser scenes, wellness checkin, mem20 dashboard",
       "source": "/opt/mem20/mem20officez/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20officez v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20officez v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19407,8 +19978,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20officez=y"
         }
       ],
       "meta": {
@@ -19435,8 +20006,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20officez",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19451,7 +20022,7 @@
       "description": "Reusable mem20 operational workflows: Cloudflare zone/Pages audits, stale-code detection, bounded verification, identity and namespace ACL inspection, lint deltas.",
       "source": "/opt/mem20/mem20ops/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20ops v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20ops v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=2 declared, 2 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19493,6 +20064,11 @@
             "console": "fs-ops",
             "target": "mem20ops.cli:main",
             "on_path": true
+          },
+          {
+            "console": "fs",
+            "target": "mem20ops.fleet:main",
+            "on_path": true
           }
         ],
         "dependencies": [],
@@ -19519,7 +20095,7 @@
       "description": "mem20orcaz \u2014 native, pure-stdlib port of OrKa's deterministic workflow orchestrator (sequential/parallel fork-join, routers, loops, failover, RAG nodes, YAML workflows).",
       "source": "/opt/mem20/mem20orcaz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20orcaz v0.9.17+mem20; installed 0.9.17+mem20 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20orcaz v0.9.17+mem20; installed 0.9.17+mem20 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19548,8 +20124,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20orcaz=y"
         }
       ],
       "meta": {
@@ -19571,8 +20147,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20orcaz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19587,7 +20163,7 @@
       "description": "OREO (absorbed) - Visual-first, natural-language-first programming language inside mem20",
       "source": "/opt/mem20/mem20oreo/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20oreo v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=0 declared, 0 on PATH",
+      "runtime_detail": "pkg=mem20oreo v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=0 declared, 0 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19616,8 +20192,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20oreo=y"
         }
       ],
       "meta": {
@@ -19642,8 +20218,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20oreo",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19658,7 +20234,7 @@
       "description": "mem20 chat front-end + model gateway \u2014 native re-home of the Open WebUI + LiteLLM bridge stack",
       "source": "/opt/mem20/mem20owebz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20owebz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20owebz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19687,8 +20263,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20owebz=y"
         }
       ],
       "meta": {
@@ -19713,8 +20289,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20owebz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19729,7 +20305,7 @@
       "description": "Native mem20 RPGAgent absorption \u2014 stats, combat, inventory, quests, world, multi-agent story-to-play",
       "source": "/opt/mem20/mem20rpgz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20rpgz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20rpgz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19758,8 +20334,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20rpgz=y"
         }
       ],
       "meta": {
@@ -19783,8 +20359,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20rpgz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -19859,20 +20435,20 @@
       }
     },
     {
-      "id": "subsystem:mem20sensez",
+      "id": "subsystem:mem20sensorz",
       "kind": "subsystem",
-      "name": "mem20sensez",
+      "name": "mem20sensorz",
       "category": "other",
       "subcategory": "native-subsystem",
       "description": "mem30 Phase 1 sense-organs: Capability Gap Mapper (RM-200), Dynamic Phase Replanner (RM-199), Personal Workflow Twin, Execution Digital Twin",
-      "source": "/opt/mem20/mem20sensez/pyproject.toml",
+      "source": "/opt/mem20/mem20sensorz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20sensez v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20sensez v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
           "ok": true,
-          "detail": "/opt/mem20/mem20sensez/pyproject.toml"
+          "detail": "/opt/mem20/mem20sensorz/pyproject.toml"
         },
         {
           "check": "name declared",
@@ -19896,14 +20472,14 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20sensez=y"
         }
       ],
       "meta": {
         "pkg_name": "mem20sensez",
         "version": "0.1.0",
-        "pyproject": "/opt/mem20/mem20sensez/pyproject.toml",
+        "pyproject": "/opt/mem20/mem20sensorz/pyproject.toml",
         "entry_points": [
           {
             "console": "fs-sense",
@@ -19921,8 +20497,80 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20sensez",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
+      "id": "subsystem:mem20shopz",
+      "kind": "subsystem",
+      "name": "mem20shopz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "mem20 storefront: catalog, Stripe Checkout, signature-verified webhooks and once-only auto-provisioning.",
+      "source": "/opt/mem20/mem20shopz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20shopz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20shopz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20shopz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "104 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20shopz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20shopz",
+        "version": "0.1.0",
+        "pyproject": "/opt/mem20/mem20shopz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20-shop",
+            "target": "mem20shopz.__main__:main",
+            "on_path": true
+          }
+        ],
+        "dependencies": [
+          "fastapi>=0.110",
+          "uvicorn>=0.27",
+          "stripe>=10"
+        ],
+        "installed": {
+          "env": "root-venv",
+          "version": "0.1.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20shopz",
+            "importable": true
           }
         ],
         "categories_from": "auto-discovered (not in AGENTS.md table)"
@@ -19937,7 +20585,7 @@
       "description": "mem20 RM-001 Universal Capability Graph (absorbed from FreeStack RM-001) \u2014 typed capability graph, composition planner, mesh, event plane",
       "source": "/opt/mem20/mem20ucgz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20ucgz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20ucgz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -19966,8 +20614,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20ucgz=y"
         }
       ],
       "meta": {
@@ -19989,8 +20637,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20ucgz",
+            "importable": true
           }
         ],
         "categories_from": "auto-discovered (not in AGENTS.md table)"
@@ -20005,7 +20653,7 @@
       "description": "Native mem20 UniKit AI absorption \u2014 Behavior trees, GOAP, utility AI, navigation, perception, blackboard",
       "source": "/opt/mem20/mem20unikitz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20unikitz v0.1.0; installed 0.1.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20unikitz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -20034,8 +20682,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20unikitz=y"
         }
       ],
       "meta": {
@@ -20063,8 +20711,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20unikitz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -20079,7 +20727,7 @@
       "description": "A real reinforcement-learning toolkit with grid environments, PPO, DQN, SAC, and cooperative PPO",
       "source": "/opt/mem20/mem20unitiz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20unitiz v0.2.0; installed 0.2.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20unitiz v0.2.0; installed 0.2.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -20108,8 +20756,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20unitiz=y"
         }
       ],
       "meta": {
@@ -20134,8 +20782,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20unitiz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -20210,6 +20858,142 @@
       }
     },
     {
+      "id": "subsystem:mem20wasmz",
+      "kind": "subsystem",
+      "name": "mem20wasmz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "WebAssembly component lab: language-neutral component compatibility analysis behind a shared zero-dependency runtime. mem30 Phase 4 incubator.",
+      "source": "/opt/mem20/mem20wasmz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20wasmz v1.0.0; installed 1.0.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20wasmz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20wasmz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "142 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 1.0.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 1.0.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20wasmz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20wasmz",
+        "version": "1.0.0",
+        "pyproject": "/opt/mem20/mem20wasmz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20wasmz",
+            "target": "mem20wasmz.core:cli",
+            "on_path": true
+          }
+        ],
+        "dependencies": [],
+        "installed": {
+          "env": "root-venv",
+          "version": "1.0.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20wasmz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
+      "id": "subsystem:mem20webgpuz",
+      "kind": "subsystem",
+      "name": "mem20webgpuz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "WebGPU compute studio: backend selection against probed real hardware; reports 'not_measured' rather than a fabricated speedup. mem30 Phase 4 incubator.",
+      "source": "/opt/mem20/mem20webgpuz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20webgpuz v1.0.0; installed 1.0.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20webgpuz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20webgpuz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "152 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 1.0.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 1.0.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20webgpuz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20webgpuz",
+        "version": "1.0.0",
+        "pyproject": "/opt/mem20/mem20webgpuz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "mem20webgpuz",
+            "target": "mem20webgpuz.core:cli",
+            "on_path": true
+          }
+        ],
+        "dependencies": [],
+        "installed": {
+          "env": "root-venv",
+          "version": "1.0.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20webgpuz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
       "id": "subsystem:mem20yetiz",
       "kind": "subsystem",
       "name": "mem20yetiz",
@@ -20218,7 +21002,7 @@
       "description": "Native mem20 Yeti Claw absorption \u2014 real 3D rigging, animation, BVH mocap, glTF and OBJ export",
       "source": "/opt/mem20/mem20yetiz/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20yetiz v0.2.0; installed 0.2.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20yetiz v0.2.0; installed 0.2.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -20247,8 +21031,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20yetiz=y"
         }
       ],
       "meta": {
@@ -20273,8 +21057,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20yetiz",
+            "importable": true
           }
         ],
         "categories_from": "AGENTS.md crosscheck table"
@@ -20289,7 +21073,7 @@
       "description": "mem20 RM-002 Zero-Install Microapp Runtime (absorbed from FreeStack RM-002) \u2014 signed portable microapps, no install/dependency pollution, capability-scoped process sandbox",
       "source": "/opt/mem20/mem20zimr/pyproject.toml",
       "runtime_status": "ok",
-      "runtime_detail": "pkg=mem20zimr v0.2.0; installed 0.2.0 via root-venv; importable=False (1 modules checked); scripts=1 declared, 1 on PATH",
+      "runtime_detail": "pkg=mem20zimr v0.2.0; installed 0.2.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
       "checks": [
         {
           "check": "pyproject present",
@@ -20318,8 +21102,8 @@
         },
         {
           "check": "import",
-          "ok": false,
-          "detail": "find=n"
+          "ok": true,
+          "detail": "mem20zimr=y"
         }
       ],
       "meta": {
@@ -20341,8 +21125,8 @@
         },
         "importable": [
           {
-            "name": "find",
-            "importable": false
+            "name": "mem20zimr",
+            "importable": true
           }
         ],
         "categories_from": "auto-discovered (not in AGENTS.md table)"
