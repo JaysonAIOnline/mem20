@@ -21,10 +21,13 @@ import sys
 from pathlib import Path
 
 from . import budgets as _budgets
+from . import catalogue as _catalogue
 from . import engine as _engine
+from . import ingest as _ingest
+from . import pipeline as _pipeline
 from . import secrets as _secrets
 from . import validate as _validate
-from .errors import EngineMissing, KilnError, OpFailed
+from .errors import EngineMissing, KilnError
 from .rpc import Kiln
 
 
@@ -126,101 +129,150 @@ def cmd_budgets(args) -> int:
     return 0
 
 
-def _build_one(k: Kiln, prompt: str, out_glb: Path, out_png: Path | None,
-               samples: int, family: str | None, gate_on: bool) -> dict:
-    out_glb.parent.mkdir(parents=True, exist_ok=True)
-    if out_png is not None:
-        out_png.parent.mkdir(parents=True, exist_ok=True)
-    k.reset()
-    result = k.command(prompt)
-    k.export(str(out_glb))
-    if out_png is not None:
-        k.render(str(out_png), samples=samples)
-    entry: dict = {
-        "prompt": prompt,
-        "glb": str(out_glb),
-        "glb_bytes": out_glb.stat().st_size if out_glb.is_file() else 0,
-        "engine_message": result.get("message", ""),
-    }
-    if out_png is not None and out_png.is_file():
-        entry["png"] = str(out_png)
-        entry["png_bytes"] = out_png.stat().st_size
-    if gate_on and out_glb.is_file():
-        report = _validate.gate(out_glb, family=family)
-        entry["gate"] = {"ok": report.ok, "triangles": report.total_triangles,
-                         "errors": len(report.errors), "warnings": len(report.warnings),
-                         "findings": [f.as_dict() for f in report.findings]}
-    return entry
-
-
-def cmd_build(args) -> int:
-    env = _secrets.engine_env()
-    if not env.get("KILN_API_KEY"):
+def _note_missing_credential() -> None:
+    if not _secrets.engine_env().get("KILN_API_KEY"):
         print(
             "note: no LLM credential found in "
             f"{_secrets.SECRETS_PATH}; the engine will use its built-in "
             "English and DSL agent, which handles simple shapes. Set "
-            "KILNZ_API_KEY (or OPENAI_API_KEY) in the secrets file for prompts "
+            "KILNZ_API_KEY (or OPENAI_API_KEY) in the secrets file for briefs "
             "that need a language model.",
             file=sys.stderr,
         )
+
+
+def cmd_build(args) -> int:
+    """One brief to an asset, a preview, a manifest, and a gate verdict."""
+    _note_missing_credential()
     outdir = Path(args.out)
-    stems = [args.name] if args.name else ["asset"]
-    entries = []
-    failed = False
-    with Kiln(env=env) as k:
-        for stem in stems:
-            glb = outdir / f"{stem}.glb"
-            png = outdir / f"{stem}.png" if args.preview else None
-            try:
-                entries.append(
-                    _build_one(k, args.prompt, glb, png, args.samples,
-                               args.family, not args.no_gate)
-                )
-            except OpFailed as exc:
-                failed = True
-                entries.append({"prompt": args.prompt, "ok": False, "error": exc.message,
-                                "code": exc.code})
-    _emit({"built": len(entries), "out": str(outdir), "entries": entries})
-    if failed:
+    outdir.mkdir(parents=True, exist_ok=True)
+    name = args.name or "asset"
+    with Kiln(env=_secrets.engine_env()) as k:
+        result = _pipeline.build(
+            _pipeline.BuildRequest(
+                brief=args.prompt,
+                out_dir=outdir,
+                name=name,
+                family=args.family,
+                preview=not args.no_preview,
+                samples=args.samples,
+                gate=not args.no_gate,
+                require_prefix=args.require_prefix,
+                lod=args.lod,
+            ),
+            kiln=k,
+        )
+    _emit({"built": 1, "out": str(outdir), "entries": [result.as_dict()]})
+    if result.error:
         return 1
-    for e in entries:
-        if e.get("gate") and not e["gate"]["ok"]:
-            return 2
-    return 0
+    return 0 if result.ok else 2
+
+
+def cmd_verify(args) -> int:
+    """Re-check a manifest against the artifacts it claims."""
+    report = _pipeline.verify(args.manifest)
+    _emit(report)
+    return 0 if report["ok"] else 1
 
 
 def cmd_batch(args) -> int:
+    """Many briefs in one engine session, each with its own manifest."""
     try:
-        prompts = json.loads(Path(args.file).read_text(encoding="utf-8"))
+        payload = json.loads(Path(args.file).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         print(f"cannot read {args.file}: {exc}", file=sys.stderr)
         return 1
-    if isinstance(prompts, dict):
-        prompts = prompts.get("prompts", [])
-    if not isinstance(prompts, list):
-        print("batch file must be a JSON list of strings, or {\"prompts\": [...]}", file=sys.stderr)
+    if isinstance(payload, dict):
+        payload = payload.get("prompts", [])
+    if not isinstance(payload, list):
+        print('batch file must be a JSON list of strings, or {"prompts": [...]}',
+              file=sys.stderr)
         return 1
-    env = _secrets.engine_env()
+
     outdir = Path(args.out)
-    results = []
-    failures = 0
-    with Kiln(env=env) as k:
-        for i, item in enumerate(prompts):
-            prompt = item if isinstance(item, str) else str(item.get("prompt", ""))
-            stem = (item.get("name") if isinstance(item, dict) else None) or f"asset_{i:03d}"
-            glb = outdir / f"{stem}.glb"
-            png = outdir / f"{stem}.png" if args.preview else None
-            try:
-                entry = _build_one(k, prompt, glb, png, args.samples,
-                                   args.family, not args.no_gate)
-                entry["ok"] = True
-            except OpFailed as exc:
-                entry = {"prompt": prompt, "ok": False, "error": exc.message, "code": exc.code}
-                failures += 1
+    outdir.mkdir(parents=True, exist_ok=True)
+    items: list[tuple[str, str]] = []
+    for i, item in enumerate(payload):
+        if isinstance(item, str):
+            items.append((item, f"asset_{i:03d}"))
+        elif isinstance(item, dict) and item.get("brief"):
+            items.append((str(item["brief"]), str(item.get("name") or f"asset_{i:03d}")))
+    if not items:
+        print("no usable briefs in the batch file", file=sys.stderr)
+        return 1
+
+    _note_missing_credential()
+    results: list[dict] = []
+    refused = 0
+    errored = 0
+    with Kiln(env=_secrets.engine_env()) as k:
+        for brief, name in items:
+            entry = _pipeline.build(
+                _pipeline.BuildRequest(
+                    brief=brief,
+                    out_dir=outdir,
+                    name=name,
+                    family=args.family,
+                    preview=not args.no_preview,
+                    samples=args.samples,
+                    gate=not args.no_gate,
+                    require_prefix=args.require_prefix,
+                    lod=args.lod,
+                ),
+                kiln=k,
+            ).as_dict()
+            if entry["error"]:
+                errored += 1
+            elif not entry["ok"]:
+                refused += 1
             results.append(entry)
-    _emit({"count": len(results), "failures": failures, "out": str(outdir), "results": results})
-    return 0 if failures == 0 else 1
+
+    _emit({
+        "count": len(results),
+        "errored": errored,
+        "refused_by_gate": refused,
+        "out": str(outdir),
+        "results": results,
+    })
+    if errored:
+        return 1
+    return 0 if refused == 0 else 2
+
+
+def cmd_probe(args) -> int:
+    """Measure an external file without modifying it."""
+    report = _ingest.probe(args.file, family=args.family, lod=args.lod)
+    _emit(report.as_dict())
+    return 0 if report.ok else 1
+
+
+def cmd_ingest(args) -> int:
+    """Import external meshes and record where each one came from."""
+    records = _ingest.convert(args.files, args.out, family=args.family,
+                              gate=not args.no_gate, lod=args.lod)
+    converted = sum(1 for r in records if r["converted"])
+    _emit({
+        "count": len(records),
+        "converted": converted,
+        "failed": len(records) - converted,
+        "out": str(args.out),
+        "records": records,
+    })
+    if converted != len(records):
+        return 1
+    return 0 if all(r.get("gate_ok") is not False for r in records) else 2
+
+
+def cmd_catalogue(args) -> int:
+    """Index built assets from their manifests."""
+    cat = _catalogue.Catalogue(args.root)
+    _emit({
+        "summary": cat.summary(),
+        "entries": [e.as_dict() for e in cat.entries],
+        "untracked_glb": cat.untracked,
+        "unreadable_manifests": cat.unreadable,
+    })
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -266,24 +318,57 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("budgets", help="print the budget and naming table")
     p.set_defaults(func=cmd_budgets)
 
-    p = sub.add_parser("build", help="run one prompt and export a GLB (and a preview)")
-    p.add_argument("prompt")
-    p.add_argument("--out", default="kilnz-out")
-    p.add_argument("--name", default=None)
-    p.add_argument("--preview", action="store_true", help="also render a PNG")
-    p.add_argument("--samples", type=int, default=2)
-    p.add_argument("--family", default=None)
-    p.add_argument("--no-gate", action="store_true", help="skip the validation gate")
+    def _add_build_args(target: argparse.ArgumentParser) -> None:
+        target.add_argument("--out", default="kilnz-out",
+                            help="output directory (default: kilnz-out)")
+        target.add_argument("--no-preview", action="store_true",
+                            help="skip the PNG preview render")
+        target.add_argument("--samples", type=int, default=2,
+                            help="preview samples, 1..16 (default: 2)")
+        target.add_argument("--family", default=None,
+                            help="asset family for the poly budget")
+        target.add_argument("--no-gate", action="store_true",
+                            help="skip the budget and naming gate")
+        target.add_argument("--require-prefix", action="store_true",
+                            help="treat a missing roadmap prefix as an error")
+        target.add_argument("--lod", type=int, default=0,
+                            help="LOD tier for the poly budget (default: 0)")
+
+    p = sub.add_parser("build",
+                       help="one brief to a GLB, a preview, and a manifest")
+    p.add_argument("prompt", help="the written brief")
+    p.add_argument("--name", default=None, help="asset name (default: asset)")
+    _add_build_args(p)
     p.set_defaults(func=cmd_build)
 
-    p = sub.add_parser("batch", help="run a JSON list of prompts")
+    p = sub.add_parser("batch",
+                       help="many briefs in one engine session, each with a manifest")
+    p.add_argument("file", help='JSON list of strings, or [{"brief": ..., "name": ...}]')
+    _add_build_args(p)
+    p.set_defaults(func=cmd_batch)
+
+    p = sub.add_parser("verify",
+                       help="re-check a manifest against the artifacts it claims")
+    p.add_argument("manifest")
+    p.set_defaults(func=cmd_verify)
+
+    p = sub.add_parser("probe", help="measure an external mesh without modifying it")
     p.add_argument("file")
-    p.add_argument("--out", default="kilnz-out")
-    p.add_argument("--preview", action="store_true")
-    p.add_argument("--samples", type=int, default=2)
+    p.add_argument("--family", default=None, help="asset family for the poly budget")
+    p.add_argument("--lod", type=int, default=0)
+    p.set_defaults(func=cmd_probe)
+
+    p = sub.add_parser("ingest", help="import external meshes with provenance")
+    p.add_argument("files", nargs="+")
+    p.add_argument("--out", default="kilnz-ingest")
     p.add_argument("--family", default=None)
     p.add_argument("--no-gate", action="store_true")
-    p.set_defaults(func=cmd_batch)
+    p.add_argument("--lod", type=int, default=0)
+    p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("catalogue", help="index built assets from their manifests")
+    p.add_argument("root", nargs="?", default="kilnz-out")
+    p.set_defaults(func=cmd_catalogue)
 
     args = ap.parse_args(argv)
     try:

@@ -106,9 +106,15 @@ are queued and listed explicitly so none can be forgotten.
 
 ## Phase 3 — Pipeline, gate, catalogue
 
-- [ ] prompt → GLB + preview PNG + manifest, with the op journal embedded.
-- [ ] `gate.validate` — real GLB structural validation. This already exists as
-      a one-off check; promote it to a shipped tool with tests.
+- [x] prompt → GLB + preview PNG + manifest, with the op journal embedded.
+      Required an engine journal first, since model-invented ops are invisible
+      to the client. Zero-geometry builds are failures, not gate refusals.
+- [x] `gate.validate` — real GLB structural validation, promoted to a shipped
+      tool with tests, and separated from the budget gate.
+- [x] `verify` — re-check a manifest against the bytes on disk.
+- [x] Asset catalogue over manifests, with untracked/unreadable reporting.
+- [x] External mesh ingest: read-only `probe` plus `convert` with manifests
+      marked `source: external`.
 - [ ] Poly / texture / material budgets from the `jairf-tech-budgets` roadmap,
       and naming-convention enforcement (`SM_` `SK_` `M_` `T_` `PF_` `A_`).
 - [ ] Ingest path: import external mesh → re-mesh to budget → fix normals →

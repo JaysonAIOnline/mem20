@@ -26,6 +26,15 @@ not a roadmap.
 - **A natural-language and JSON-RPC agent surface.** The engine prefers, in
   order: literal JSON, the kiln DSL, a built-in English intent handler, then an
   LLM.
+- **A provenance journal.** Every applied op is recorded with its verdict,
+  including the ones a language model invents internally and which never arrive
+  as client calls. `build` writes those into a manifest beside the asset, and
+  `verify` re-checks the manifest against the file's actual hash.
+- **An asset catalogue** that reads manifests only, so an entry cannot claim
+  more than the build produced, and reports untracked GLBs rather than
+  describing them from their filename.
+- **External mesh ingest** with a read-only `probe` and a `convert` that marks
+  imported assets as `source: external` with both input and output hashes.
 - **JAIRF budgets and naming validation** enforced as a read-only gate.
 - **Live engine builds** from source, so the binary is never a mystery artifact.
 
@@ -70,8 +79,12 @@ The command prints a JSON report and exits non-zero if the gate fails.
 | `mem20kilnz validate <file> --gate` | Structural check plus budget findings |
 | `mem20kilnz gate <file>` | Budget and naming gate for a glTF/GLB |
 | `mem20kilnz budgets` | The active JAIRF budgets |
-| `mem20kilnz build` | Brief to asset, through the agent |
-| `mem20kilnz batch` | Many briefs, one engine session |
+| `mem20kilnz build` | Brief to asset, preview, manifest, and gate verdict |
+| `mem20kilnz batch` | Many briefs in one engine session, each with a manifest |
+| `mem20kilnz verify <manifest>` | Re-check a manifest against the bytes on disk |
+| `mem20kilnz probe <file>` | Measure an external mesh without modifying it |
+| `mem20kilnz ingest <files...>` | Import external meshes with provenance records |
+| `mem20kilnz catalogue <root>` | Index built assets from their manifests |
 
 `doctor`, `budgets`, `build`, and `batch` emit JSON by default. `ops`,
 `validate`, and `gate` print a human report by default and take `--json` for
@@ -108,6 +121,12 @@ more capable than it is.
   a "weathered crate with iron bands" will often return a handful of primitives
   well under the triangle budget. The gate rejects these. This is the gate
   working, not a bug.
+- **`probe` does not measure OBJ geometry.** The structural validator asserts
+  against a single glTF/GLB and has nothing to check an OBJ against, so `probe`
+  reports `geometry not measured by this probe` instead of claiming zero
+  triangles.
+- **FBX cannot be read.** `.fbx` is refused by name, listing the formats the
+  importer does handle.
 - **No neural text-to-3D or text-to-video backends run on this host.** There is
   no CUDA device. Those paths report a named `blocked:` reason instead of
   pretending to infer.
@@ -115,7 +134,7 @@ more capable than it is.
 ## Tests
 
 ```bash
-python -m pytest tests/ -q      # 43 tests
+python -m pytest tests/ -q      # 87 tests
 python tests/check_op_sync.py engine engine/kiln
 ```
 

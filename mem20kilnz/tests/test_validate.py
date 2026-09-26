@@ -8,6 +8,7 @@ structurally perfect file reported FAIL because of a budget warning, and
 from __future__ import annotations
 
 import pytest
+from pathlib import Path
 
 from mem20kilnz import validate as V
 
@@ -56,10 +57,11 @@ def test_require_prefix_escalates_naming_to_an_error():
     assert any(f.code == "budget" and f.severity == "error" for f in strict)
 
 
-def test_truncated_file_fails_structurally():
-    tmp = pytest.importorskip("pathlib")
-    broken = tmp.Path("broken.glb")
-    broken.write_bytes(tmp.Path(DEMO).read_bytes()[:200])
+def test_truncated_file_fails_structurally(tmp_path):
+    # Must use tmp_path: writing into the working directory leaves debris in the
+    # repo that looks like a real artifact.
+    broken = tmp_path / "broken.glb"
+    broken.write_bytes(Path(DEMO).read_bytes()[:200])
     report = V.validate(broken)
     assert report.ok is False
     assert any(f.code == "length_mismatch" for f in report.errors)

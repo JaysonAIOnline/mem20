@@ -326,3 +326,87 @@ the engine, because Python's own HTTPS is Cloudflare-blocked (HTTP 403,
 
 7 providers are configured in the estate secrets file: groq, nvidia, together,
 deepseek, mistral, openrouter, cerebras. xAI stays disallowed by policy.
+
+## Phase 3 — pipeline, provenance, catalogue, ingest (2026-09-26)
+
+### The engine gained a journal
+
+There was no way for a client to learn which ops a language model applied,
+because those ops never arrive as separate RPC calls — the engine interprets
+the brief internally. The undo stack could not help: it stores document
+snapshots, not op records. So the manifest could not have been honest.
+
+Added a real journal (WORKED):
+
+- `Document::journal` plus `Document::record`, with a 4096-entry bound.
+- `apply_op` is now a thin funnel over `apply_op_impl`, so all ~30 early
+  returns are journaled, not just the paths that fall through.
+- `apply_ops` calls the funnel, so a batch journals each op individually.
+- New RPC method `journal`, supporting `{"clear": true}` and `{"since": n}`.
+  `clear` empties the journal without touching the scene.
+- The C++ build is still warning-free, the op surface is still 103 (the journal
+  is a method, not an op), and both demo md5s are unchanged.
+
+Verified: a failed op is journaled with `ok: false` rather than disappearing;
+`journal --clear` leaves the scene untouched.
+
+### brief -> asset -> receipts
+
+`mem20kilnz/pipeline.py` (WORKED). One brief produced real geometry and its own
+receipts:
+
+    created Pillar_L; created Pillar_R; created Arch
+
+768 triangles, 81,700-byte GLB, 41,309-byte PNG. The manifest recovered the
+three ops the model invented, with their parameters, none of which the client
+had sent:
+
+    create ok=True {"albedo": [0.5, 0.5, 0.5], "metallic": 0, "name": "Pillar_L", ...}
+    create ok=True {"albedo": [0.5, 0.5, 0.5], "metallic": 0, "name": "Pillar_R", ...}
+    create ok=True {"albedo": [0.5, 0.5, 0.5], "metallic": 0, "name": "Arch",    ...}
+
+`verify()` re-checks a manifest against the bytes on disk. Confirmed against
+three cases: untouched (ok), one appended byte (rejected, hashes differ), and a
+deleted asset (rejected, `glb missing`).
+
+### Catalogue
+
+`mem20kilnz/catalogue.py` (WORKED). Reads manifests only, never geometry, so
+an entry cannot claim more than the build produced. A `.glb` with no manifest is
+reported as `untracked_glb` rather than described from its filename. `passing()`
+requires ok **and** gate_ok **and** an intact artifact, so an asset built with
+`--no-gate` is not counted as passing.
+
+### External ingest
+
+`mem20kilnz/ingest.py` (WORKED). `probe` is read-only and measures: `demo.glb`
+reports 3 meshes, 1,626 verts, 542 triangles, normals and UVs present, and the
+real budget gap (542 against an LOD0 floor of 2,000). `convert` pushes the file
+through the engine, keeps all 542 triangles, and writes a manifest marked
+`kind: ingest` / `source: external` with both the input and output hashes, so an
+imported asset is never mistaken for a generated one. `.fbx` is refused by name
+with the supported list, rather than handed to the engine to fail obscurely.
+
+### Honest limits found while building this
+
+- The manifest only records what the engine journal holds. If the built-in
+  English agent acts without going through `apply_op`, that action is not in
+  the journal. The DSL and the LLM path both go through it.
+- OBJ is accepted for conversion but `probe` does not measure its geometry; it
+  says so in `reason` rather than reporting a triangle count of 0 as fact.
+- `probe` on an unsupported extension is refused by name. It does not attempt
+  FBX, which the engine cannot read.
+
+## toolchest — phantom `find` module (2026-09-26)
+
+`_import_candidates` did `st.get("packages", [])`. With
+`[tool.setuptools.packages.find]`, `packages` is a nested table, so extending a
+list with it contributed its **keys** — every such package was reported as
+having a module called `find`. 24 of 36 subsystems were affected, including
+`mem20kilnz` itself, which showed `importable=False` while importing fine.
+
+Fixed at the cause: the mapping form is now read for its finder `include`
+globs. A second defect surfaced immediately — `include = ["pkg", "pkg.*"]` is
+the subpackage shorthand, and trimming only `*` left a module named `pkg.` —
+so trailing separators are trimmed too. After the fix: 0 phantom names, and
+`mem20kilnz` reports `import | mem20kilnz=y`. 6 tests added, 18 pass.

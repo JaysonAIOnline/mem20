@@ -177,3 +177,52 @@ def test_undo_restores_the_previous_scene(kiln):
     assert len([n for n in kiln.describe()["nodes"] if n["type"] == "mesh"]) == 2
     run(kiln, "undo")
     assert len([n for n in kiln.describe()["nodes"] if n["type"] == "mesh"]) == 1
+
+
+def test_journal_records_applied_ops_in_order(kiln):
+    """The journal is the provenance record, including for failed ops."""
+    kiln.reset()
+    kiln.call("journal", {"clear": True})
+    kiln.command("create cube C")
+    kiln.op({"op": "subsurf", "levels": 1})
+    j = kiln.call("journal", {})
+    kinds = [e["op"]["op"] for e in j["entries"]]
+    assert kinds == ["create", "subsurf"]
+    assert j["count"] == 2
+    assert j["failed"] == 0
+
+
+def test_journal_records_a_failed_op_rather_than_hiding_it(kiln):
+    from mem20kilnz.errors import OpFailed
+
+    kiln.reset()
+    kiln.call("journal", {"clear": True})
+    with pytest.raises(OpFailed):
+        kiln.op({"op": "decimate", "ratio": 0.01})
+    j = kiln.call("journal", {})
+    assert j["failed"] == 1
+    assert j["entries"][-1]["ok"] is False
+    assert j["entries"][-1]["op"]["op"] == "decimate"
+
+
+def test_journal_clear_empties_it_without_touching_the_scene(kiln):
+    kiln.reset()
+    kiln.call("journal", {"clear": True})
+    kiln.op({"op": "create", "primitive": "cube", "name": "Keep"})
+    before = kiln.call("list", {})["count"]
+    cleared = kiln.call("journal", {"clear": True})
+    assert cleared["cleared"] == 1
+    assert kiln.call("journal", {})["total"] == 0
+    assert kiln.call("list", {})["count"] == before, "clearing the journal changed the scene"
+
+
+def test_journal_since_returns_only_new_entries(kiln):
+    kiln.reset()
+    kiln.call("journal", {"clear": True})
+    kiln.op({"op": "create", "primitive": "cube", "name": "A"})
+    mark = kiln.call("journal", {})["total"]
+    kiln.op({"op": "create", "primitive": "sphere", "name": "B"})
+    later = kiln.call("journal", {"since": mark})
+    assert later["count"] == 1
+    assert later["entries"][0]["op"]["name"] == "B"
+    assert later["total"] == 2

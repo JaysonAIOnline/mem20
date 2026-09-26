@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mem20kilnz"
 version = "0.1.0"
-description = "Native mem20 3D subsystem (KilNZ) — AI-first cleanroom modeler, agent op surface, glTF/OBJ interop, asset pipeline and validation gate"
+description = "Native mem20 3D subsystem (KilNZ): AI-first cleanroom mesh and geometry modeler with a 103-op agent surface, procedural generation, glTF/OBJ import-export, rigging, text-to-3D asset pipeline, and a budget/naming validation gate"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

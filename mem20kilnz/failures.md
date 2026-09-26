@@ -214,3 +214,79 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
   CONFWORK.md so they are not retried blindly.
 - **Note:** probes must go through the engine. Direct Python HTTPS to Groq is
   Cloudflare-blocked on this host (403, `error code: 1010`).
+
+## 2026-09-26 — An empty scene was reported as a built asset
+
+- **Attempt:** build a brief the engine could not act on.
+- **Actual error:** none. `exit=2` and a JSON report reading
+  `"glb_bytes": 240, "triangles": 0, "ok": false`, with `error` empty. The
+  export had succeeded, so the pipeline reported a *gate refusal* for a file
+  containing no geometry at all.
+- **Cause:** success was inferred from the export and the gate, neither of which
+  knows whether the brief was satisfied. The engine answers `no ops` and writes
+  a valid, geometry-free GLB; the gate then correctly complains about 0
+  triangles, which is a budget complaint, not the real problem.
+- **Why it matters:** this is the exact shape of a fake success. A caller
+  reading `ok: false` and a gate finding would conclude "under budget, needs
+  more detail", when the truth is "nothing was built".
+- **Next action:** the pipeline now measures the exported file and treats zero
+  triangles as a failure with a named reason
+  (`engine produced no geometry (message: no ops)`), regardless of the gate.
+  Covered by `test_empty_scene_is_a_failure_not_a_gate_refusal`, which uses
+  `create camera` — a valid op that yields a node and no triangles, so the
+  build and export both succeed and only the geometry check can catch it.
+
+## 2026-09-26 — toolchest reported 24 subsystems as having a module named `find`
+
+- **Attempt:** confirm `mem20kilnz` was importable in the toolchest inventory.
+- **Actual error:** `import | find=n`, `importable=False`, for a package that
+  imports without complaint.
+- **Cause:** `_import_candidates` did `candidates += st.get("packages", [])`.
+  Under `[tool.setuptools.packages.find]`, `packages` is a nested table, and
+  extending a list with a dict contributes its keys. So the finder key `find`
+  became the module name.
+- **Blast radius:** 24 of 36 subsystems, i.e. every package using the most
+  common setuptools idiom.
+- **Next action:** read the mapping form for its finder `include` globs. A
+  second defect then appeared: `include = ["pkg", "pkg.*"]` is the subpackage
+  shorthand, and trimming only `*` produced a module named `pkg.`; trailing
+  separators are now trimmed as well. 0 phantom names remain.
+
+## 2026-09-26 — The manifest could not have been honest
+
+- **Attempt:** write a provenance manifest listing the ops behind a generated
+  asset.
+- **Actual error:** not an error — an absence. The engine exposed no way to
+  ask what it had done.
+- **Cause:** ops a language model invents are applied inside the engine during
+  `command`; they never arrive from the client as separate RPC calls, so the
+  client cannot know them. The undo stack does not help: `Document::undo` holds
+  document snapshots, not op records.
+- **Next action:** added `Document::journal` and a `journal` RPC method, with
+  `apply_op` turned into a funnel over `apply_op_impl` so every early return is
+  recorded. A manifest written before this would have listed the prompt and
+  nothing else, which would have looked like complete provenance.
+
+## 2026-09-26 — `probe` reported a budget verdict it had not measured
+
+- **Attempt:** report OBJ geometry in `probe`.
+- **Actual error:** would have reported `triangles: 0` for every OBJ.
+- **Cause:** the structural validator asserts against a single glTF/GLB file and
+  has nothing to check an OBJ against.
+- **Next action:** OBJ is accepted for conversion, and `probe` states
+  `geometry not measured by this probe` in `reason` rather than presenting 0 as
+  a measurement.
+
+## 2026-09-26 — A test wrote a file into the repository
+
+- **Attempt:** run the suite and check `git status`.
+- **Actual error:** none. An unexplained `broken.glb`, 200 bytes, kept reappearing
+  in the project root after each run.
+- **Cause:** `test_truncated_file_fails_structurally` built its fixture with
+  `pathlib.Path("broken.glb")`, a path relative to the working directory,
+  instead of using the `tmp_path` fixture. It also reached for the file via
+  `importorskip("pathlib")` rather than importing pathlib properly.
+- **Why it matters:** a 200-byte truncated GLB sitting in the repo looks like a
+  real artifact, and it survived a debris cleanup before its cause was found.
+- **Next action:** the test now takes `tmp_path` and writes inside it. Verified
+  by running the suite and confirming the working tree stays clean.
