@@ -7,7 +7,6 @@ structurally perfect file reported FAIL because of a budget warning, and
 
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
 
 from mem20kilnz import validate as V

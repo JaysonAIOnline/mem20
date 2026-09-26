@@ -290,3 +290,19 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
   real artifact, and it survived a debris cleanup before its cause was found.
 - **Next action:** the test now takes `tmp_path` and writes inside it. Verified
   by running the suite and confirming the working tree stays clean.
+
+## 2026-09-26 — Ruff regression introduced while fixing the debris test
+
+- **Attempt:** replace `pytest.importorskip("pathlib")` with a proper import and
+  move the fixture into `tmp_path`.
+- **Actual error:** `tests/test_validate.py:10:8: F401 'pytest' imported but
+  unused` and `I001` on the import block.
+- **Cause:** `importorskip` was the only reason that file imported pytest. The
+  fix removed the call but left the import, and I committed before re-running
+  lint — the suite passed, so the tests did not catch it.
+- **Why it matters:** a green test suite is not evidence of a clean lint. The
+  two checks have to be run separately, and run *after* the last edit rather
+  than before it.
+- **Next action:** removed the unused import. `ruff check` clean, 87 tests pass.
+- **Process fix:** the post-commit verification now lints and tests as separate
+  steps, after the final edit, and the result is read rather than assumed.
