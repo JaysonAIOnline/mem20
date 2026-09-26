@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20kilnz"
+version = "0.1.0"
+description = "Native mem20 3D subsystem (KilNZ) — AI-first cleanroom modeler, agent op surface, glTF/OBJ interop, asset pipeline and validation gate"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+mem20kilnz = "mem20kilnz.cli:main"
+kiln = "mem20kilnz.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mem20kilnz*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+# The estate writes %-formatting throughout, including %-style report lines that
+# read better than f-strings in aligned tables. UP031 is a preference we
+# deliberately decline rather than a defect, so it is not enforced here.
+ignore = ["UP031"]
