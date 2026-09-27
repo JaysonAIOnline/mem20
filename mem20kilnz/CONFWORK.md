@@ -570,3 +570,40 @@ local bounds, and material with albedo, roughness and metallic. Measurement
 lives in the engine for the live scene and in `describe.py` for the exported
 file; the prose rendering exists only in `describe.py`, deliberately, so there
 is one implementation of the English rather than two that can drift.
+
+## 2026-09-27 — Shading, welding, and the decimator decision
+
+### Curved primitives are now smooth-shaded (WORKED)
+
+Welding corners on (position, normal, uv) cannot help a flat-shaded mesh,
+because every face has its own normal and no two corners ever match. The
+baseline was wrong, not the weld:
+
+| primitive | verts before | verts after | boundary edges | watertight |
+| --- | --- | --- | --- | --- |
+| sphere | 1,104 | **266** | 1,104 -> **0** | **yes** |
+| cylinder | 146 | **50** | -> 0 | **yes** |
+| torus | 1,152 | **288** | -> 0 | **yes** |
+| cube | 24 | 24 | 24 | no (correct: flat-shaded) |
+
+`shade_smooth` and `shade_flat` ops added; a sphere is smooth by default and
+`shade_flat` still puts it back to 1,104, so the opt-in works. Op surface
+104 -> 106.
+
+### QEM: implemented, measured, and refused
+
+`src/scene/decimate_qem.cpp` is real and three of its four defects are fixed.
+The priority-queue rewrite took it from 11.52s to **0.12s at 8,832 faces** and
+35,328 faces in 0.12s. The flip test now uses the real post-collapse normal, and
+nothing is compacted mid-loop.
+
+It is still not shippable, and the measurements are in failures.md. The
+outstanding defect is the hole retriangulation: the loop is built from every
+neighbour of the surviving vertex instead of the hole boundary, so it adds faces
+faster than collapses remove them and a 528-triangle sphere returns as **1,470**.
+
+`decimate` therefore defaults to `cluster`, the only method measured to keep
+the mesh watertight with zero degenerate and zero non-manifold faces, and
+`method: "qem"` refuses with that reason. The code is kept because the quadric,
+the flip test, the queue and the boundary bookkeeping all transfer; the missing
+piece is a correct link-condition boundary walk.

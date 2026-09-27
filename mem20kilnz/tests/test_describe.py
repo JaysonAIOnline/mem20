@@ -169,9 +169,11 @@ def test_describe_measures_a_real_export(kiln, tmp_path):
     assert d.ok is True
     assert len(d.parts) == 2
     assert d.total_triangles == 24
-    # The exporter writes a triangle soup: three vertices per triangle, no
-    # sharing. 24 triangles therefore means 72 exported positions, not 16.
-    assert d.total_vertices == 72
+    # Vertices are welded on (position, normal, uv), so the export is no longer
+    # a triangle soup. Two cubes sharing none: 24 welded corners, not the 72 a
+    # soup would write and not the 16 a position-only weld would give.
+    assert d.total_vertices == 48, "the export regressed to a triangle soup"
+    assert d.total_vertices < d.total_triangles * 3
 
 
 def test_dimensions_are_world_space_not_local(kiln, tmp_path):

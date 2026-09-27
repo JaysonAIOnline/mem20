@@ -281,6 +281,7 @@ def validate(path: str | Path) -> Report:
                     Finding("warning", "no_normals",
                             "no NORMAL attribute; shading will be flat or engine-derived", where)
                 )
+            idx = None
             if "indices" in prim:
                 idx, _ = doc.accessor(prim["indices"])
                 if idx is None:
@@ -300,8 +301,13 @@ def validate(path: str | Path) -> Report:
                 )
             if mode == 4:
                 mr.triangles += count // 3
+                # A non-indexed primitive has no `idx`; its indices are 0..n-1.
+                # Reading idx here unconditionally raised UnboundLocalError, so
+                # any non-indexed glTF crashed the validator instead of being
+                # reported.
+                idx_list = idx if idx is not None else list(range(count))
                 for i in range(0, count - 2, 3):
-                    a, b, c = int(idx[i]), int(idx[i + 1]), int(idx[i + 2])
+                    a, b, c = int(idx_list[i]), int(idx_list[i + 1]), int(idx_list[i + 2])
                     if max(a, b, c) >= mr.vertices or min(a, b, c) < 0:
                         mr.out_of_range += 1
                     elif a == b or b == c or a == c:

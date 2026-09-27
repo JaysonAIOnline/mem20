@@ -442,3 +442,63 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
 - **Next action:** keyed on the hue range directly, and widened, since brown is
   not a hue but a desaturated, not-bright orange-to-yellow. Regression-tested
   against both a vivid orange, which must stay orange, and a wood brown.
+
+## 2026-09-27 — QEM, second attempt: refused rather than shipped broken
+
+- **Attempt:** replace vertex clustering with quadric error metrics, addressing
+  all three defects recorded in the 2026-09-26 entry above.
+- **What was fixed and verified:**
+  - the flip guard now uses `cross(p-a, c-a)`, the actual post-collapse normal,
+    so candidates stop being rejected wholesale;
+  - nothing is compacted mid-loop. Faces carry an `alive` flag, vertices a
+    `dead` flag, and remapping happens once at the end, so no index can dangle.
+    The old segfault is gone;
+  - the loop is a priority queue with lazy validation instead of a rescan.
+    Measured 11.52s -> 0.12s at 8,832 faces, and 35,328 faces in 0.12s, so it
+    scales where the first version did not.
+- **What still failed, measured on a watertight 528-triangle sphere:**
+
+  | attempt | result |
+  | --- | --- |
+  | boundary quadrics computed once | 100-140 boundary edges, -93% volume at ratio 0.1 |
+  | boundary quadrics refreshed per collapse | 140 boundary edges, no better |
+  | link condition checked after collapsing | 564 triangles out of 528 in, +3% area, still holed |
+  | link condition checked before collapsing | 564 triangles out, unchanged |
+  | triangulate first, then collapse | **1,470 triangles out of 528, +2457% area** |
+
+- **Cause of the last row, and of the whole line:** the hole left by a collapse
+  must be retriangulated from the *hole boundary*, and the loop was being built
+  from every neighbour of the surviving vertex. That adds more faces than the
+  collapse removed, so the mesh grows. Two earlier lessons from this file were
+  repeated along the way: the link condition is undefined on n-gons, so the mesh
+  must be triangulated first, and boundary edges created by a dying face must be
+  protected at the moment they appear.
+- **Decision:** `decimate` defaults to `cluster`, the only method measured to
+  preserve the surface (watertight, 0 degenerate, 0 non-manifold). `method:
+  "qem"` refuses with that reason rather than returning a larger mesh. A
+  decimator that hits its triangle count while destroying the shape is worse
+  than a simpler one that preserves it, and one that returns 278% of the input
+  is not a decimator at all.
+- **What carries forward:** the quadric, the corrected flip test, the
+  priority-queue driver and the incremental boundary bookkeeping are all sound
+  and reusable. The missing piece is a correct link-condition boundary walk.
+  `decimate_qem` in `src/scene/decimate_qem.cpp` is the place to resume.
+
+## 2026-09-27 — A sphere exported as a topologically open mesh
+
+- **Attempt:** check the export after welding corners on (position, normal, uv).
+- **Actual error:** the exported sphere had 1,104 boundary edges and only 18% of
+  its edges shared. A sphere is closed; this measured as `watertight=False`.
+- **Cause:** primitives were flat-shaded, so each face carried its own normal
+  and no two corners could ever match the weld key. Welding could not help,
+  because the inputs genuinely differed. This was not a welding bug: the
+  baseline itself was wrong, and it is why a decimator measured against it gave
+  nonsense volume drift.
+- **Also found:** there was no way to ask for smooth shading at all. `m.smooth`
+  was set only by Catmull-Clark, so every primitive was flat. A sphere is
+  smooth, and it rendered faceted too.
+- **Next action:** curved primitives (sphere, cylinder, cone, torus) are
+  smooth-shaded at creation; `shade_smooth` and `shade_flat` ops were added.
+  Measured after: sphere 1,104 -> 266 vertices, 0 boundary edges, watertight;
+  cylinder 146 -> 50; torus 1,152 -> 288. `shade_flat` on a sphere restores
+  1,104, so the opt-in still works.

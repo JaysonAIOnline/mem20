@@ -131,6 +131,21 @@ are queued and listed explicitly so none can be forgotten.
       do text-to-3D: world-space dimensions, width and thinness per part,
       containment and parentage, hue-derived colour names, proportions. Written
       into every manifest, plus a `describe` command and verb.
+- [x] FBX import via assimp, with real hierarchy, materials, cameras and lights.
+      18 of 19 real files import, zero face mismatches against an independent
+      assimp oracle using identical post-processing flags.
+- [x] Vertex sharing: the render mesh welds on (position, normal, uv), so an
+      export is no longer a triangle soup. Curved primitives are smooth-shaded
+      so they can weld at all.
+- [x] UVs and normals survive import and export. TEXCOORD_0 is omitted when a
+      mesh has no real UVs instead of publishing the old fabricated ramp.
+- [ ] QEM decimation: quadric, flip test, priority queue and link condition are
+      done and fast (0.12s at 35k faces), but the hole retriangulation builds its
+      loop from the wrong vertex set and returns a larger mesh. It refuses rather
+      than shipping. Outstanding: a correct link-condition boundary walk.
+- [ ] Determinism: replay the op journal to reproduce an asset byte-exactly.
+- [ ] Animation: clips, authoring pipeline, retargeting.
+- [ ] Procedural generation: real node-graph authoring.
 - [ ] Poly / texture / material budgets from the `jairf-tech-budgets` roadmap,
       and naming-convention enforcement (`SM_` `SK_` `M_` `T_` `PF_` `A_`).
 - [ ] Ingest path: import external mesh → re-mesh to budget → fix normals →
