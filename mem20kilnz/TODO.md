@@ -149,11 +149,20 @@ are queued and listed explicitly so none can be forgotten.
       across an original edge. Sphere, torus, cylinder and cone are watertight
       with 0 boundary and 0 non-manifold edges at every level, and subdivided
       meshes can now be decimated.
-- [ ] Mesh boolean (union / difference / intersect) does not exist. It was named
-      in an earlier summary of mine; it is absent from the 106-op surface.
-- [ ] `remesh` does not exist.
-- [ ] `displace` does not exist, so there is no way to add surface detail.
-- [ ] No `skin` op, so imported skin weights cannot be authored or edited.
+- [x] Mesh boolean (union / difference / intersect) exists via a shared voxel core
+      with `remesh`. Verified against analytic volumes on cubes (2.7-11.3% error,
+      watertight, manifold) and on two spheres (union 4.9%). Sphere intersection
+      (~52%) and sphere difference (~42%, non-manifold) are known limitations of
+      the binary field, pinned as failing tests in CONFWORK.md.
+- [x] `remesh` resamples to a target triangle count (bisecting the resolution) or
+      to an explicit one. Watertight and manifold; 5.9-16.1% volume error, a
+      documented one-cell shell erosion that converges as resolution rises. Repeat
+      passes compound it.
+- [x] `displace` moves vertices along their normals by deterministic layered
+      value noise. Zero amplitude is a verified no-op; area scales with amplitude.
+- [x] `skin` binds vertices to up to four bones with smooth falloff, all weights
+      summing to 1, and the weights now reach the exported glTF (JOINTS_0,
+      WEIGHTS_0, a skins array and a MAT4 inverse-bind accessor).
 - [ ] No clip or keyframe op: animation is a scene cursor only.
 - [x] Determinism: `replay` and `reproduce` rebuild an asset from its journal
       and compare SHA-256, so a manifest is verified rather than trusted. A

@@ -692,3 +692,99 @@ skin, and any clip or keyframe op.** Those claims were wrong and are corrected
 in failures.md. Skin *data* is imported from FBX and glTF, but there is no op to
 author or edit it. Animation is a scene cursor (`frame`, `set_frame`) and
 nothing else.
+
+## The four missing ops, 2026-09-27
+
+`boolean`, `remesh`, `displace` and `skin` now exist as real implementations.
+Op surface is 110, advertised and dispatched identically.
+
+`boolean` and `remesh` share one core in `src/scene/voxel.cpp`: rasterize the
+closed mesh into a voxel field, flood the exterior inward from the border so the
+unreachable cells are the interior, then read a new mesh out with naive surface
+nets. Neither operation reasons about winding, self-intersection or coplanar
+faces, and the output is closed by construction. This was chosen after a BSP CSG
+implementation was written and abandoned: it segfaulted on two 12-triangle cubes
+and its tree grew exponentially, because a half-remembered clip-and-invert
+recursion is not a safe thing to reproduce from memory.
+
+### Measured, against analytic answers
+
+Cubes, side 2, overlapping by 1 in x. Exact: union 12, intersect 4, difference 4.
+
+| mode | res 40 | res 48 | res 64 | boundary | non-manifold |
+| --- | --- | --- | --- | --- | --- |
+| union | 6.1% | 7.1% | 3.5% | 0 | 0 |
+| intersect | 9.0% | 11.3% | 5.2% | 0 | 0 |
+| difference | 4.6% | 6.2% | 2.7% | 0 | 0 |
+
+`remesh` of a unit sphere, exact 4.1888: 16.1% at res 32, 11.1% at 48, 9.2% at 64,
+7.7% at 80. A side-2 cube, exact 8: 15.6%, 10.0%, 7.4%, 5.9%.
+
+Both operands are baked to world space first, so a moved or rotated operand is
+handled correctly. Verified: a quarter-turn about z leaves the union at 12.
+
+`displace` moves vertices along their normals by layered value noise, deterministic
+for a given seed so the journal replays byte-identically. Zero amplitude is a
+verified no-op; surface area grows monotonically with amplitude.
+
+`skin` binds every vertex to up to four bones with smooth falloff, filling `skin`,
+`joints` and `inv_bind` the way the importers do. All weights sum to 1, verified
+over all 266 vertices of a sphere bound to two bones.
+
+### Bugs found while building these, and what they cost
+
+1. **The separating-axis test had no tolerance.** A cell touching a face is an
+   overlap, but at *exact* contact the tie fell to a float ULP and was reported as
+   separated. Whether a face landed exactly on a cell boundary is
+   resolution-dependent, so the shell leaked at some resolutions and held at
+   others: a cube voxelised at res 40 and 56 had `interior=0` and produced nothing,
+   while res 48 worked. It also rejected roughly half the cells under every face.
+   Fixed with a relative epsilon; isolated in a standalone harness before fixing.
+2. **A conservative point-in-triangle rasterizer leaves diagonal gaps**, so the
+   flood leaks and "interior" stops meaning inside: 59% to 377% volume overshoot.
+   Replaced with a 13-axis SAT test.
+3. **The y-axis outward direction was negated** in surface nets, winding every y
+   quad inwards. Still watertight and correctly sized, but the
+   divergence-theorem volume cancelled to a third of the truth.
+4. **Voxelised degenerate triangles produced NaN.** A repeated vertex makes
+   `d1 - d3 = |ab|^2 = 0`, and that division was unguarded, so remeshing a remesh
+   returned `volume -nan`, which serialised to JSON `null` and hid the failure.
+   Zero-area triangles are now skipped and every division is guarded.
+5. **The boolean source picked the wrong operand's surface point.** A cell on the
+   lens boundary where sphere B cuts through is still *inside* sphere A, so
+   choosing by containment pulled the boundary onto A and collapsed the
+   intersection. It must follow which operand's triangles actually reached the cell.
+6. **`skin` was never exported.** It filled the mesh and `describe` reported
+   `skinned=True`, while the exporter wrote no `JOINTS_0`, no `WEIGHTS_0` and no
+   `skins` array, so the weights existed only in memory and vanished on save.
+   Now a valid glTF 2.0 skin with joints, a MAT4 inverse-bind accessor and both
+   vertex attributes, verified by parsing the written file.
+7. **Bones could not be created at all.** They only arrived by importing a rigged
+   glTF or FBX, which left `parent`, `pose`, `ik` and `skin` unusable on a built
+   scene and untestable without a fixture. `create primitive=bone` now exists.
+
+`mesh_stats` was added so operations report what they actually produced --
+faces, boundary and non-manifold edge counts, degenerate faces, non-finite
+vertices, surface area and signed volume -- rather than leaving a caller to
+export and guess. Both ops surface these in their result data.
+
+### Known limitations, pinned as failing tests
+
+Both come from the binary occupancy field: a conservative rasterizer must consume
+a whole cell of shell, which erodes the solid by one cell all round. Ordinary
+solids tolerate that (the tables above). Thin features do not.
+
+- **Intersection of two spheres** reads ~52% of the true volume. The lens where
+  two unit spheres overlap is thin at its tips, which is exactly what the
+  erosion destroys. It converges only as O(1/res), so no resolution dials it out.
+- **Difference of two spheres** reads ~42% high *and* leaves 25-28 non-manifold
+  edges, so the result is not a valid closed surface.
+- Repeated `remesh` compounds the erosion: 3.33, then 2.70, then 2.11 for a sphere
+  at res 24. Each pass erodes another cell.
+
+The proper fix is a signed distance field rather than a binary occupancy field.
+An attempt was made and rejected: classifying each shell cell by its own nearest
+triangle gave 2.1% volume error but thousands of non-manifold edges, because
+neighbouring cells disagree; a majority filter restored manifoldness and gave the
+accuracy back again, because the "noise" it smoothed away was the accurate
+boundary. That experiment was removed rather than left in as a partial feature.

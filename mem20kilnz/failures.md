@@ -639,3 +639,51 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
 - **Next action:** the op surface is now the authoritative statement in
   CONFWORK.md, and the missing capabilities are listed as gaps rather than
   implied.
+
+## 2026-09-27 — the four missing ops, and how many ways the first attempt was wrong
+
+Recorded because the failure count is the point: the first working-looking
+implementation of this core was wrong in seven separate ways, and five of them
+produced output that looked plausible.
+
+1. BSP CSG boolean, written from memory of csg.js. Segfaulted on two 12-triangle
+   cubes; with the recursion bounded, the tree then grew exponentially and a
+   sphere pair never finished. Cause: my `Split` enum had three outcomes where
+   `poly_type` has four, so an entirely-in-front polygon (case 2) was returned as
+   SPANNING and run through the crossing loop, and `clip_to` re-read
+   `front.size()` while appending to it. Abandoned for a voxel core, which does
+   not need winding or coplanar special cases at all.
+2. Conservative rasterizer by corner point-in-triangle. Left diagonal gaps in the
+   shell, so the flood leaked and the volume overshot by 59% to 377% while every
+   face count looked plausible. Replaced with 13-axis SAT.
+3. SAT separating-axis test with no tolerance. At exact contact a tie fell to a
+   float ULP and read as separated. Resolution-dependent: a cube voxelised at
+   res 40 and 56 gave `interior=0`; res 48 worked. Isolated in a standalone
+   harness, which reported `overlap=0` for a cell plainly under the face.
+4. Surface nets y-axis outward direction negated. Watertight, right size, wrong
+   volume: 1.22 instead of 4.19 for a unit sphere. Diagnosed by noticing the
+   bounding box was correct to one cell while the divergence-theorem sum was not,
+   which can only mean inconsistent winding.
+5. The boolean chose which operand's recorded surface point to use by containment
+   rather than by which operand's triangles actually touched the cell.
+6. `closest_on_tri` divided by `|ab|^2`, which is 0 for a repeated vertex, so
+   remeshing a remesh returned `volume -nan`. JSON serialised that to `null`, so
+   the failure was invisible in the result data until it was checked for.
+7. `skin` reported success and `describe` said `skinned=True` while the exporter
+   wrote no skin data whatsoever. The op was only ever half-built and the only
+   reason it was not caught is that nothing had been exported and re-read.
+
+Also: stripping the temporary debug counters with a regex swallowed the
+`flood_exterior` call that sat between two of them, which broke `remesh` at every
+resolution while leaving the boolean working, because the boolean has its own
+flood calls. Read the diff after deleting debug code.
+
+## 2026-09-27 — a rejected experiment, kept out of the tree
+
+Classifying each voxel shell cell by its own nearest triangle normal gave 2.1%
+volume error on a remeshed sphere, against 11% for the binary field, but left
+2829 non-manifold edges, because neighbouring cells disagree about which side of
+the surface they are on. A majority filter over the shell restored manifoldness
+and pushed the error straight back to 10.9%: the raggedness it removed was not
+noise, it was the accurate boundary. Both were deleted rather than left in as a
+partial feature. The real fix is a signed distance field, which is not written.
