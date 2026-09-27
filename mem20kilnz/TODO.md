@@ -139,11 +139,19 @@ are queued and listed explicitly so none can be forgotten.
       so they can weld at all.
 - [x] UVs and normals survive import and export. TEXCOORD_0 is omitted when a
       mesh has no real UVs instead of publishing the old fabricated ramp.
-- [ ] QEM decimation: quadric, flip test, priority queue and link condition are
-      done and fast (0.12s at 35k faces), but the hole retriangulation builds its
-      loop from the wrong vertex set and returns a larger mesh. It refuses rather
-      than shipping. Outstanding: a correct link-condition boundary walk.
-- [ ] Determinism: replay the op journal to reproduce an asset byte-exactly.
+- [x] QEM decimation, now the default. The hole boundary must be walked in
+      *cyclic order* through the face fan, not collected as a set. Hits the
+      requested ratio exactly, stays closed with zero degenerate faces, and
+      drifts 6-20x less volume than clustering (-0.6% vs -13.2% at ratio 0.5).
+      Decimation refuses a mesh that is not a closed surface, with real counts.
+- [ ] `subsurf` still leaves holes: 960 boundary edges after fixing a wrong
+      vertex in the quad and a wrong corner in the triangle branch. Volume is
+      sane again (was exactly 0) but the surface is not closed, so subdivision
+      output cannot yet be decimated, booleaned or remeshed.
+- [x] Determinism: `replay` and `reproduce` rebuild an asset from its journal
+      and compare SHA-256, so a manifest is verified rather than trusted. A
+      30-op build with refine replays byte-identically. This also caught the
+      journal being read before refine, so manifests described the blockout.
 - [ ] Animation: clips, authoring pipeline, retargeting.
 - [ ] Procedural generation: real node-graph authoring.
 - [ ] Poly / texture / material budgets from the `jairf-tech-budgets` roadmap,

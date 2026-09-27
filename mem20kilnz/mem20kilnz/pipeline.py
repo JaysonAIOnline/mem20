@@ -153,17 +153,18 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
             result.partial = True
         result.engine_message = str(reply.get("message", "")) if "reply" in dir() else result.error
 
-        journal = k.call("journal", {})
-        entries = journal.get("entries", [])
-        summary = _journal_summary(entries)
-        result.op_count = summary["count"]
-        result.failed_ops = summary["failed"]
-
+        # The early-return paths below write a manifest, so the journal has to
+        # exist from here even though the full read happens later.
+        entries: list[dict] = []
         family = request.family or _budgets.infer_family(name)
+        # Counted here so refine knows the brief produced something. The full
+        # journal is read again at the end, after refine, so the manifest
+        # describes the whole build.
+        brief_ops = k.call("journal", {}).get("total", 0)
 
         # Refine before exporting, so the export is the refined asset and the
         # gate judges what actually ships. Only ops that add real geometry.
-        if request.auto_refine and request.tier != "blockout" and result.op_count:
+        if request.auto_refine and request.tier != "blockout" and brief_ops > 0:
             report = _refine.refine(
                 k, family=family, target_tier=request.tier,
                 max_steps=request.refine_max_steps,
@@ -193,6 +194,16 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
             _write_manifest(manifest_path, request, result, entries)
             result.manifest = str(manifest_path)
             return result
+
+        # The journal is read only now, after refine has run. Reading it earlier
+        # recorded just the brief's ops, so a manifest described the blockout
+        # while the shipped file was the refined asset -- replay then rebuilt 24
+        # vertices where the original had 5,952, and the hashes did not match.
+        journal = k.call("journal", {})
+        entries = journal.get("entries", [])
+        summary = _journal_summary(entries)
+        result.op_count = summary["count"]
+        result.failed_ops = summary["failed"]
 
         # Geometry confirmed, so the artifact is real and may be written.
         k.export(str(glb_path))

@@ -607,3 +607,39 @@ the mesh watertight with zero degenerate and zero non-manifold faces, and
 `method: "qem"` refuses with that reason. The code is kept because the quadric,
 the flip test, the queue and the boundary bookkeeping all transfer; the missing
 piece is a correct link-condition boundary walk.
+
+## 2026-09-27 — Determinism: a manifest now reproduces its asset
+
+`mem20kilnz/replay.py` (WORKED). The engine journal was already a complete
+record — it captures the ops a language model invents internally, which never
+pass through the client as separate calls. What was missing was anything that
+consumed it.
+
+- `replay(entries, out)` applies a journal to a fresh scene and exports.
+  Ops that failed the first time are skipped rather than re-raised, because the
+  original build survived them; each skip is reported.
+- `reproduce(manifest)` replays and compares SHA-256 against the hash the
+  manifest recorded. Equal hashes mean the bytes are identical, not similar.
+- `mem20kilnz replay <manifest>` exposes it; exit 0 when the bytes match, 2 when
+  they differ, 1 when the replay itself failed. Differing bytes is a failure, not
+  a warning -- the entire point is that a manifest reproduces its asset.
+- Ops that read external files (`import`, `open`) are flagged, since a replay can
+  only match while those files are unchanged. Flagged, not silently skipped.
+
+Measured on a real build -- brief plus the six-pass refine stage, 30 ops:
+
+    built    : 43580 bytes  30 journal ops  sha 9c6756b1f68fad5a...
+    replayed : identical=True  applied=30  skipped=0
+
+### A real bug this exposed
+
+The first replay attempt did **not** match: 161,772 bytes and 5,952 vertices
+against a replay of 1,720 bytes and 24. The manifest's journal was read
+*before* the refine stage ran, so it recorded only the brief's ops and described
+the blockout while the shipped file was the refined asset. The journal is now
+read after every stage, with a separate count taken right after the brief so the
+refine guard still knows the brief produced something.
+
+This is the failure mode the feature exists to catch, caught by the feature:
+before there was no way to know a manifest was describing a different asset from
+the one on disk.

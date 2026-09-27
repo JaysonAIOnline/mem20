@@ -65,7 +65,7 @@ def test_shade_ops_are_idempotent_and_report_state(kiln):
     assert "already smooth" in kiln.op({"op": "shade_smooth"})["message"]
 
 
-def test_clustering_preserves_a_closed_surface(kiln, tmp_path):
+def test_decimation_preserves_a_closed_surface(kiln, tmp_path):
     """The shipped default must not tear the mesh open."""
     sphere(kiln)
     before = export_metrics(kiln, tmp_path, "b")
@@ -84,22 +84,41 @@ def test_volume_drift_stays_bounded(kiln, tmp_path):
     kiln.op({"op": "decimate", "ratio": 0.5})
     after = export_metrics(kiln, tmp_path, "a")
     drift = abs(after["signed_volume"] - before["signed_volume"]) / abs(before["signed_volume"])
-    assert drift < 0.25, f"signed volume drifted {drift * 100:.1f}%"
+    assert drift < 0.10, f"signed volume drifted {drift * 100:.1f}%"
 
 
-def test_qem_refuses_instead_of_returning_a_larger_mesh(kiln):
-    """Pinned deliberately.
+def test_qem_hits_the_target_and_keeps_the_surface_closed(kiln, tmp_path):
+    """QEM is the default because it is measurably the better of the two.
 
-    QEM is implemented but does not meet the quality bar: three attempts are
-    recorded in failures.md, and the current one turns a 528-triangle sphere
-    into 1,470 triangles. It must fail loudly, not quietly return a bigger mesh.
+    On a watertight sphere it reaches the requested ratio, stays closed with no
+    degenerate faces, and drifts far less volume than clustering.
     """
     sphere(kiln)
-    with pytest.raises(OpFailed) as exc:
-        kiln.op({"op": "decimate", "ratio": 0.5, "method": "qem"})
-    message = str(exc.value)
-    assert "not available" in message
-    assert "larger" in message or "cluster" in message
+    before = export_metrics(kiln, tmp_path, "b")
+    kiln.op({"op": "decimate", "ratio": 0.5})
+    after = export_metrics(kiln, tmp_path, "a")
+    assert 0.45 <= after["triangles"] / before["triangles"] <= 0.55, (
+        f"asked for 50%, got {after['triangles'] / before['triangles'] * 100:.0f}%"
+    )
+    assert after["boundary_edges"] == 0
+    assert after["nonmanifold_edges"] == 0
+    assert after["degenerate_tris"] == 0
+    drift = abs(after["signed_volume"] - before["signed_volume"]) / abs(before["signed_volume"])
+    assert drift < 0.05, f"signed volume drifted {drift * 100:.1f}%"
+
+
+def test_qem_beats_clustering_on_volume_drift(kiln, tmp_path):
+    """The reason QEM is the default, pinned so it cannot silently regress."""
+    sphere(kiln)
+    base = export_metrics(kiln, tmp_path, "base")
+    drifts = {}
+    for method in ("qem", "cluster"):
+        sphere(kiln)
+        kiln.op({"op": "decimate", "ratio": 0.5, "method": method})
+        m = export_metrics(kiln, tmp_path, method)
+        drifts[method] = abs(m["signed_volume"] - base["signed_volume"]) / abs(
+            base["signed_volume"])
+    assert drifts["qem"] < drifts["cluster"], drifts
 
 
 def test_an_unknown_method_is_refused_by_name(kiln):
@@ -107,3 +126,19 @@ def test_an_unknown_method_is_refused_by_name(kiln):
     with pytest.raises(OpFailed) as exc:
         kiln.op({"op": "decimate", "ratio": 0.5, "method": "magic"})
     assert "unknown method" in str(exc.value)
+
+
+def test_a_holed_mesh_is_refused_rather_than_reduced(kiln):
+    """A decimator run on a broken mesh returns confident nonsense.
+
+    Subdivision currently leaves holes, so this is reachable today: it must be
+    refused with the actual edge counts, not reduced into something plausible.
+    """
+    sphere(kiln)
+    kiln.op({"op": "subsurf", "levels": 1})
+    with pytest.raises(OpFailed) as exc:
+        kiln.op({"op": "decimate", "ratio": 0.5})
+    message = str(exc.value)
+    assert "not a closed surface" in message
+    assert "boundary edge" in message
+    assert "non-manifold" in message

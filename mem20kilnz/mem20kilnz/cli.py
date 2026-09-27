@@ -26,6 +26,7 @@ from . import describe as _describe
 from . import engine as _engine
 from . import ingest as _ingest
 from . import pipeline as _pipeline
+from . import replay as _replay
 from . import secrets as _secrets
 from . import validate as _validate
 from .errors import EngineMissing, KilnError
@@ -268,6 +269,17 @@ def cmd_ingest(args) -> int:
     return 0 if all(r.get("gate_ok") is not False for r in records) else 2
 
 
+def cmd_replay(args) -> int:
+    """Replay a manifest's journal and check the bytes against its hash."""
+    result = _replay.reproduce(args.manifest, out_glb=args.out)
+    _emit(result.as_dict())
+    if not result.ok:
+        return 1
+    # Differing bytes is a real failure, not a warning: the whole point is that
+    # a manifest reproduces its asset.
+    return 0 if result.identical in (True, None) else 2
+
+
 def cmd_describe(args) -> int:
     """Plain-English description of a model, for an agent that cannot see."""
     result = _describe.describe(args.file)
@@ -387,6 +399,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--lod", type=int, default=0)
     p.add_argument("--tier", default="standard", choices=_DETAIL_TIERS)
     p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("replay",
+                       help="replay a manifest's op journal and verify the bytes")
+    p.add_argument("manifest")
+    p.add_argument("--out", default=None,
+                   help="where to write the replayed asset (default: alongside)")
+    p.set_defaults(func=cmd_replay)
 
     p = sub.add_parser("describe",
                        help="describe a model in plain English, without seeing it")

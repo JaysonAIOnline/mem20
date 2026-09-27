@@ -502,3 +502,81 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
   Measured after: sphere 1,104 -> 266 vertices, 0 boundary edges, watertight;
   cylinder 146 -> 50; torus 1,152 -> 288. `shade_flat` on a sphere restores
   1,104, so the opt-in still works.
+
+## 2026-09-27 — QEM fixed: the hole boundary needed an *order*, not a set
+
+- **Attempt:** third run at the QEM hole retriangulation.
+- **Change:** the hole loop was being built as a *set* of the surviving vertex's
+  neighbours. A set has no order, and a fan over an unordered loop produces
+  overlapping triangles. It now walks the 1-ring of each endpoint in cyclic
+  order -- through the face fan, which is the only place adjacency survives --
+  and builds the boundary as: `c`, b's remaining neighbours, `d`, then a's
+  remaining neighbours coming back the other way.
+- **Result, on a watertight 528-triangle sphere:**
+
+  | method | ratio | triangles | hit | area drift | volume drift | boundary | degenerate | watertight |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | qem | 0.75 | 396 | 75% | +3.10% | **-1.32%** | 0 | 0 | yes |
+  | cluster | 0.75 | 172 | 33% | -4.02% | -8.20% | 0 | 0 | yes |
+  | qem | 0.50 | 264 | 50% | +7.92% | **-0.60%** | 0 | 0 | yes |
+  | cluster | 0.50 | 122 | 23% | -6.65% | -13.19% | 0 | 0 | yes |
+  | qem | 0.25 | 132 | 25% | +60.01% | -8.80% | 0 | 0 | yes |
+  | qem | 0.10 | 52 | 10% | +13.97% | -56.42% | 0 | 0 | yes |
+
+  QEM hits the target exactly, stays closed, and drifts 6-20x less volume than
+  clustering at realistic ratios. Clustering cannot reach the target at all.
+  Confirmed on sphere, cylinder and torus.
+- **Decision:** `qem` is now the default. `cluster` remains available.
+- **Added guard:** decimation refuses a mesh that is not a closed surface, with
+  the actual boundary and non-manifold edge counts. A decimator run on a holed
+  or non-manifold input returns confident nonsense, so it says no instead. This
+  is reachable today because of the subdivision defect below.
+
+## 2026-09-27 — Subdivision produced a mesh with zero volume and holes (partly fixed)
+
+- **Attempt:** measure QEM on a subdivided sphere. Every quality number was
+  nonsense, so the baseline itself was investigated.
+- **Actual error:** a subdivided sphere had 1,104 boundary edges, 1,370
+  non-manifold edges, and a signed volume of **exactly 0.000000** on a shape
+  whose true volume is about 4.19.
+- **Cause 1, fixed:** the new quad was built as
+  `(edge_pt, nxt, v_pt[nxt], v_pt[cur])`, putting the *original*, unsmoothed
+  vertex index into a face whose position array had already been replaced.
+  Neighbouring faces therefore referenced different vertices for the same
+  corner, and the inconsistent normals cancelled exactly. The quad is now
+  `(v_pt[cur], edge_pt[cur->nxt], v_pt[nxt], edge_pt[prev->cur])`.
+- **Cause 2, fixed:** the triangle branch emitted corner triangles as
+  `(v_pt[cur], edge_pt[cur->nxt], v_pt[nxt])`, using the next vertex point
+  where the preceding edge point belongs, so consecutive corner triangles shared
+  no edge. It is now `(v_pt[cur], edge_pt[cur->nxt], edge_pt[prev->cur])` plus a
+  centre triangle.
+- **Cause 3, NOT fixed:** subdivision is still not watertight. Boundary edges
+  went 1,104 -> 960 after the two fixes, and the volume is now sane
+  (-4.07 -> -3.94 -> -3.22 across levels) instead of zero, but the mesh still has
+  holes. The quad branch was hand-checked and its sub-quads do share edges
+  correctly, so the remaining cause is not yet identified.
+- **Consequence, and why it matters:** `subsurf` output cannot currently be fed
+  to boolean, remesh or decimation, because the manifold precheck correctly
+  refuses it. That is the guard doing its job, but it means subdivision is not
+  finished. Recorded rather than papered over, because a subdivided mesh that
+  exports with holes and looks plausible in a render is exactly the kind of
+  defect that survives.
+
+## 2026-09-27 — The manifest described the blockout, not the shipped asset
+
+- **Attempt:** replay a build's journal and compare the bytes.
+- **Actual error:** the replay produced 1,720 bytes with 24 vertices where the
+  original was 161,772 bytes with 5,952. Diffs were confined to the accessor
+  counts, so the geometry itself differed, not just the encoding.
+- **Cause:** the journal was read immediately after the brief, before the refine
+  stage ran. The six bevel passes refine applies were therefore absent from the
+  manifest, which recorded the ops that produced the *blockout* while the file on
+  disk was the refined asset. Replaying the manifest faithfully rebuilt the wrong
+  thing -- faithfully, and wrongly.
+- **Why it matters:** this is worse than having no journal. A manifest that
+  looks complete and replays cleanly is trusted; one that is quietly truncated is
+  not.
+- **Next action:** the journal is read after every stage. A separate count is
+  taken right after the brief so the refine guard is unaffected. A full 30-op
+  build with refine now replays byte-identically. The refactor also needed
+  `entries` initialised before the early-return paths, which write a manifest.
