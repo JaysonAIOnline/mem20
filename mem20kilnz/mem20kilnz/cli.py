@@ -30,6 +30,8 @@ from . import validate as _validate
 from .errors import EngineMissing, KilnError
 from .rpc import Kiln
 
+_DETAIL_TIERS = _budgets.DETAIL_TIERS
+
 
 def _emit(obj) -> None:
     print(json.dumps(obj, indent=2, sort_keys=True))
@@ -159,6 +161,7 @@ def cmd_build(args) -> int:
                 gate=not args.no_gate,
                 require_prefix=args.require_prefix,
                 lod=args.lod,
+                tier=args.tier,
             ),
             kiln=k,
         )
@@ -218,6 +221,7 @@ def cmd_batch(args) -> int:
                     gate=not args.no_gate,
                     require_prefix=args.require_prefix,
                     lod=args.lod,
+                    tier=args.tier,
                 ),
                 kiln=k,
             ).as_dict()
@@ -241,7 +245,7 @@ def cmd_batch(args) -> int:
 
 def cmd_probe(args) -> int:
     """Measure an external file without modifying it."""
-    report = _ingest.probe(args.file, family=args.family, lod=args.lod)
+    report = _ingest.probe(args.file, family=args.family, lod=args.lod, tier=args.tier)
     _emit(report.as_dict())
     return 0 if report.ok else 1
 
@@ -249,7 +253,7 @@ def cmd_probe(args) -> int:
 def cmd_ingest(args) -> int:
     """Import external meshes and record where each one came from."""
     records = _ingest.convert(args.files, args.out, family=args.family,
-                              gate=not args.no_gate, lod=args.lod)
+                              gate=not args.no_gate, lod=args.lod, tier=args.tier)
     converted = sum(1 for r in records if r["converted"])
     _emit({
         "count": len(records),
@@ -333,6 +337,9 @@ def main(argv: list[str] | None = None) -> int:
                             help="treat a missing roadmap prefix as an error")
         target.add_argument("--lod", type=int, default=0,
                             help="LOD tier for the poly budget (default: 0)")
+        target.add_argument("--tier", default="standard", choices=_DETAIL_TIERS,
+                            help="detail bar to judge against: "
+                                 + ", ".join(_DETAIL_TIERS) + " (default: standard)")
 
     p = sub.add_parser("build",
                        help="one brief to a GLB, a preview, and a manifest")
@@ -356,6 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("file")
     p.add_argument("--family", default=None, help="asset family for the poly budget")
     p.add_argument("--lod", type=int, default=0)
+    p.add_argument("--tier", default="standard", choices=_DETAIL_TIERS)
     p.set_defaults(func=cmd_probe)
 
     p = sub.add_parser("ingest", help="import external meshes with provenance")
@@ -364,6 +372,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--family", default=None)
     p.add_argument("--no-gate", action="store_true")
     p.add_argument("--lod", type=int, default=0)
+    p.add_argument("--tier", default="standard", choices=_DETAIL_TIERS)
     p.set_defaults(func=cmd_ingest)
 
     p = sub.add_parser("catalogue", help="index built assets from their manifests")

@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from . import budgets as _budgets
+from . import refine as _refine
 from . import secrets as _secrets
 from . import validate as _validate
 from .errors import OpFailed
@@ -56,6 +57,15 @@ class BuildRequest:
     gate: bool = True
     require_prefix: bool = False
     lod: int = 0
+    #: The bar to judge against. `standard` is the roadmap's authored budget;
+    #: `blockout` accepts primitive-assembly output. The manifest records what
+    #: was achieved regardless of what was asked for.
+    tier: str = "standard"
+    #: Attempt real-geometry refinement before judging the asset. On by default,
+    #: because a standard-tier request that ships a blockout is the failure this
+    #: pipeline exists to avoid. Set False to record the raw model output.
+    auto_refine: bool = True
+    refine_max_steps: int = 6
 
 
 @dataclass
@@ -77,6 +87,11 @@ class BuildResult:
     failed_ops: int = 0
     gate_ok: bool | None = None
     gate_findings: list[dict] = field(default_factory=list)
+    requested_tier: str = "standard"
+    achieved_tier: str = "none"
+    refine: dict | None = None
+    #: True when the brief failed partway but left usable geometry behind.
+    partial: bool = False
     error: str = ""
     provider: str = ""
 
@@ -118,7 +133,8 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
     provider = _secrets.llm_config().get("_provider", "")
     session = kiln is not None
     k = kiln or Kiln(env=_secrets.engine_env())
-    result = BuildResult(ok=False, brief=request.brief, name=name, provider=provider)
+    result = BuildResult(ok=False, brief=request.brief, name=name, provider=provider,
+                         requested_tier=request.tier)
     try:
         k.reset()
         # Clear the journal so it describes this build and nothing earlier.
@@ -127,11 +143,12 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
         try:
             reply = k.command(request.brief)
         except OpFailed as exc:
+            # A brief can fail partway through and still have changed the scene.
+            # Discarding that work would throw away real geometry, so measure
+            # what exists before deciding this build failed.
             result.error = exc.message
-            _write_manifest(manifest_path, request, result, [])
-            result.manifest = str(manifest_path)
-            return result
-        result.engine_message = str(reply.get("message", ""))
+            result.partial = True
+        result.engine_message = str(reply.get("message", "")) if "reply" in dir() else result.error
 
         journal = k.call("journal", {})
         entries = journal.get("entries", [])
@@ -139,19 +156,33 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
         result.op_count = summary["count"]
         result.failed_ops = summary["failed"]
 
-        k.export(str(glb_path))
-        result.glb = str(glb_path)
-        result.glb_bytes = glb_path.stat().st_size if glb_path.is_file() else 0
-        result.glb_sha256 = sha256_file(glb_path)
+        family = request.family or _budgets.infer_family(name)
 
-        # An export can succeed on an empty scene and still be a failed build.
-        # A brief the engine could not act on answers "no ops" and writes a
-        # valid but geometry-free GLB, so measure the result rather than
-        # trusting the export's success.
-        structure = _validate.validate(glb_path) if result.glb_bytes else None
+        # Refine before exporting, so the export is the refined asset and the
+        # gate judges what actually ships. Only ops that add real geometry.
+        if request.auto_refine and request.tier != "blockout" and result.op_count:
+            report = _refine.refine(
+                k, family=family, target_tier=request.tier,
+                max_steps=request.refine_max_steps,
+            )
+            result.refine = report.as_dict()
+            if report.triangles_after and not report.steps and not report.target_reached:
+                # Nothing to refine, or the scene had no geometry; the gate
+                # below still decides, so this is recorded, not fatal.
+                pass
+
+        # Measure into a scratch file first. Exporting straight to the final
+        # path would leave a valid but geometry-free GLB on disk for every
+        # failed brief, which is litter that looks like a deliverable.
+        probe_path = out_dir / f".{name}.measure.glb"
+        k.export(str(probe_path))
+        probe_bytes = probe_path.stat().st_size if probe_path.is_file() else 0
+        structure = _validate.validate(probe_path) if probe_bytes else None
         if structure is not None:
             result.triangles = structure.total_triangles
-        if result.glb_bytes and not result.triangles:
+        probe_path.unlink(missing_ok=True)
+
+        if probe_bytes and not result.triangles:
             result.error = (
                 "engine produced no geometry"
                 + (f" (message: {result.engine_message})" if result.engine_message else "")
@@ -160,11 +191,22 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
             result.manifest = str(manifest_path)
             return result
 
+        # Geometry confirmed, so the artifact is real and may be written.
+        k.export(str(glb_path))
+        result.glb = str(glb_path)
+        result.glb_bytes = glb_path.stat().st_size if glb_path.is_file() else 0
+        result.glb_sha256 = sha256_file(glb_path)
+
         if request.preview and result.glb_bytes:
             k.render(str(png_path), samples=request.samples)
             if png_path.is_file():
                 result.png = str(png_path)
                 result.png_bytes = png_path.stat().st_size
+
+        if result.glb_bytes:
+            # Measured from the file, never from the request: this is the tier
+            # the asset actually reached, not the tier that was asked for.
+            result.achieved_tier = _budgets.achieved_tier(family, result.triangles)
 
         if request.gate and result.glb_bytes:
             report = _validate.gate(
@@ -172,6 +214,7 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
                 family=request.family or _budgets.infer_family(name),
                 require_prefix=request.require_prefix,
                 lod=request.lod,
+                tier=request.tier,
             )
             result.gate_ok = report.gate_ok
             result.gate_findings = [f.as_dict() for f in report.findings]
@@ -202,6 +245,8 @@ def _write_manifest(path: Path, request: BuildRequest, result: BuildResult,
             "samples": request.samples,
             "gate": request.gate,
             "lod": request.lod,
+            "tier": request.tier,
+            "auto_refine": request.auto_refine,
         },
         "brief_sha256": sha256_text(request.brief),
         "provider": result.provider,
@@ -210,6 +255,11 @@ def _write_manifest(path: Path, request: BuildRequest, result: BuildResult,
             "error": result.error,
             "engine_message": result.engine_message,
             "triangles": result.triangles,
+            "partial": result.partial,
+            "requested_tier": result.requested_tier,
+            "achieved_tier": result.achieved_tier,
+            "tier_met": (result.achieved_tier == result.requested_tier
+                         if result.gate_ok else None),
         },
         "artifacts": {
             "glb": {
@@ -222,8 +272,10 @@ def _write_manifest(path: Path, request: BuildRequest, result: BuildResult,
         "gate": {
             "applied": request.gate,
             "ok": result.gate_ok,
+            "tier": request.tier,
             "findings": result.gate_findings,
         },
+        "refine": result.refine,
         "journal": {
             "count": result.op_count,
             "failed": result.failed_ops,

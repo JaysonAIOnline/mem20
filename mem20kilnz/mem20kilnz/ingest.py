@@ -54,6 +54,7 @@ class Probe:
     has_normals: bool = False
     has_uvs: bool = False
     family: str = ""
+    tier: str = "standard"
     budget: dict[str, Any] = field(default_factory=dict)
     gate_ok: bool | None = None
     findings: list[dict] = field(default_factory=list)
@@ -64,11 +65,17 @@ class Probe:
         return asdict(self)
 
 
-def probe(path: str | Path, family: str | None = None, lod: int = 0) -> Probe:
-    """Measure a file without modifying it."""
+def probe(path: str | Path, family: str | None = None, lod: int = 0,
+          tier: str = "standard") -> Probe:
+    """Measure a file without modifying it.
+
+    `tier` is the bar to judge against and defaults to `standard`, the roadmap's
+    authored budget. Pass `blockout` to accept primitive-assembly output.
+    """
     p = Path(path)
     suffix = p.suffix.lower()
-    result = Probe(path=str(p), ok=False, format=SUPPORTED_FORMATS.get(suffix, ""))
+    result = Probe(path=str(p), ok=False, format=SUPPORTED_FORMATS.get(suffix, ""),
+                   tier=tier)
 
     if not p.is_file():
         result.reason = f"no file at {p}"
@@ -104,12 +111,13 @@ def probe(path: str | Path, family: str | None = None, lod: int = 0) -> Probe:
         result.reason = "; ".join(f.message for f in report.errors)
         return result
 
-    gated = _validate.gate(p, family=result.family, lod=lod)
+    gated = _validate.gate(p, family=result.family, lod=lod, tier=tier)
     result.gate_ok = gated.gate_ok
     result.findings = [f.as_dict() for f in gated.findings]
-    verdict = _budgets.check_triangles(result.family, result.triangles, lod)
+    verdict = _budgets.check_triangles(result.family, result.triangles, lod, tier=tier)
     result.budget = {
         "family": result.family,
+        "tier": tier,
         "lod": lod,
         "triangles": result.triangles,
         "lod0_min": verdict.lod0_min,
@@ -126,6 +134,7 @@ def convert(
     family: str | None = None,
     gate: bool = True,
     lod: int = 0,
+    tier: str = "standard",
 ) -> list[dict]:
     """Import external meshes and record where each one came from.
 
@@ -138,7 +147,7 @@ def convert(
     with Kiln(env=_secrets.engine_env()) as k:
         for raw in paths:
             src = Path(raw)
-            record = probe(src, family=family, lod=lod)
+            record = probe(src, family=family, lod=lod, tier=tier)
             entry: dict[str, Any] = {
                 "source": "external",
                 "input": str(src),
@@ -178,7 +187,7 @@ def convert(
             entry["imported_triangles"] = entry["glb_bytes"] and _triangles_of(glb_path)
 
             if gate and entry["glb_bytes"]:
-                gated = _validate.gate(glb_path, family=family, lod=lod)
+                gated = _validate.gate(glb_path, family=family, lod=lod, tier=tier)
                 entry["gate_ok"] = gated.gate_ok
                 entry["gate_findings"] = [f.as_dict() for f in gated.findings]
 

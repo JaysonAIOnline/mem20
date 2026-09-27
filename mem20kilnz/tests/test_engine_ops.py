@@ -226,3 +226,73 @@ def test_journal_since_returns_only_new_entries(kiln):
     assert later["count"] == 1
     assert later["entries"][0]["op"]["name"] == "B"
     assert later["total"] == 2
+
+
+def test_truncated_op_list_keeps_the_complete_ops(kiln):
+    """A cut-off list must not throw away the ops that were complete."""
+    kiln.reset()
+    truncated = (
+        '[{"op":"create","primitive":"cube","name":"Crate","size":[1,1,1]},'
+        '{"op":"create","primitive":"cube","name":"Band","size":[1.1,1.1,0.2]},'
+        '{"op":"c'
+    )
+    reply = kiln.command(truncated)
+    assert "2 complete ops recovered" in reply["message"]
+    assert "truncated" in reply["message"]
+    names = [n["name"] for n in kiln.call("list", {})["nodes"]]
+    assert names == ["Crate", "Band"]
+
+
+def test_truncation_inside_the_first_op_recovers_nothing_and_says_so(kiln):
+    """Half an op is not an op, so this must still fail rather than guess."""
+    kiln.reset()
+    with pytest.raises(OpFailed) as exc:
+        kiln.command('[{"op":"cre')
+    assert "json" in str(exc.value).lower()
+    assert kiln.call("list", {})["count"] == 0
+
+
+def test_a_prose_prefixed_line_goes_to_the_english_agent_not_the_json_path(kiln):
+    """Recorded because it is easy to mistake for salvage.
+
+    A line starting with prose does not begin with '[' or '{', so it never
+    reaches the JSON branch. `interpret` tries the DSL, then the built-in
+    English intent handler. The salvage path applies to a line that does start
+    as JSON, and to a model response inside `call_llm`.
+    """
+    kiln.reset()
+    line = 'Sure! Here is the model:\n' + '[{"op":"create","primitive":"sphere","name":"S"}]'
+    reply = kiln.command(line)
+    assert "recovered" not in reply.get("message", "")
+    assert [n["name"] for n in kiln.call("list", {})["nodes"]] == ["Sphere"]
+
+
+def test_a_complete_op_list_is_unaffected(kiln):
+    """The salvage is a fallback, not a replacement for the normal path."""
+    kiln.reset()
+    reply = kiln.command('[{"op":"create","primitive":"cube","name":"Z"}]')
+    assert "recovered" not in reply["message"]
+    assert [n["name"] for n in kiln.call("list", {})["nodes"]] == ["Z"]
+
+
+def test_an_empty_list_is_still_reported_as_no_ops(kiln):
+    kiln.reset()
+    assert kiln.command("[]")["message"] == "no ops"
+
+
+def test_a_batch_reports_how_far_it_got_instead_of_a_generic_message(kiln):
+    """A caller must be able to tell a no-op failure from a partial batch."""
+    kiln.reset()
+    batch = [
+        {"op": "create", "primitive": "cube", "name": "A"},
+        {"op": "create", "primitive": "sphere", "name": "B"},
+        {"op": "bevel", "amount": 0.1},
+        {"op": "create", "primitive": "cylinder", "name": "C"},
+    ]
+    with pytest.raises(OpFailed) as exc:
+        kiln.ops(batch)
+    message = str(exc.value)
+    assert "2 of 4 ops applied" in message, message
+    assert "bevel: no edges" in message
+    # The two good creates survive rather than being rolled back with the batch.
+    assert [n["name"] for n in kiln.call("list", {})["nodes"]] == ["A", "B"]

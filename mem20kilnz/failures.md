@@ -306,3 +306,74 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
 - **Next action:** removed the unused import. `ruff check` clean, 87 tests pass.
 - **Process fix:** the post-commit verification now lints and tests as separate
   steps, after the final edit, and the result is read rather than assumed.
+
+## 2026-09-26 — Refinement could ship an asset 260x over budget
+
+- **Attempt:** add real edge detail until the triangle budget is met.
+- **Actual error:** none reported. One of six builds came out at **1,557,860**
+  triangles against a 6,000 ceiling, and the gate correctly refused it.
+- **Cause:** the loop checked the tier *before* each pass, so a pass that
+  multiplied the count far past the ceiling was still allowed to stand. Stopping
+  the loop afterwards is not enough, because the asset would ship over budget.
+- **Why it matters:** a refinement stage that can overshoot by 260x is worse than
+  no stage, because the triangle number is the thing being optimised.
+- **Next action:** the ceiling is checked after every pass, and an overshooting
+  pass is rolled back through the engine's undo stack, so what ships is inside
+  the budget. `overshot` is reported rather than hidden. Deterministic repro
+  pinned in tests (10 cubes, 2 segments).
+
+## 2026-09-26 — A brief that failed partway threw away its geometry
+
+- **Attempt:** build a crate.
+- **Actual error:** `exit=1`, `error: "bevel: no edges"`, and no asset, even
+  though the model had already created five objects.
+- **Cause:** the model emitted a `bevel` op that failed, and `apply_ops` returned
+  on the first failure. The client saw a failed command and discarded
+  everything, including real geometry that was already in the scene.
+- **Why it matters:** this is the inverse of the earlier empty-scene bug. There,
+  nothing was built but it was reported as a build; here, something real was
+  built but it was reported as nothing.
+- **Next action:** `apply_ops` and `m_ops` now report how far a batch got
+  (`"2 of 4 ops applied, then failed: bevel: no edges"`) and keep the successful
+  ops. The pipeline marks such builds `partial` and keeps the geometry.
+
+## 2026-09-26 — Truncated model output discarded every complete op
+
+- **Attempt:** get ops from the model for a complex brief.
+- **Actual error:** `LLM did not return ops JSON`, with the content ending
+  mid-object (`{"op":"c`).
+- **Cause:** the model ran out of tokens part-way through the array, and
+  `extract_json_array` required a closing `]`, so the whole response was thrown
+  away — including the ops that were already complete and valid.
+- **Next action:** `salvage_truncated_ops` walks the text with a brace stack and
+  keeps every object that parses and has an `op` key. It will not guess at a
+  half-written op: truncated inside the first op still fails, deliberately.
+
+## 2026-09-26 — A salvage implementation that deleted the functions after it
+
+- **Attempt:** replace a C++ function body using a brace-counting script.
+- **Actual error:** `error: 'apply_and_reply' was not declared in this scope`,
+  and the diff showed `dsl_command` and more had been removed.
+- **Cause:** the script counted braces without skipping string literals, so its
+  match ran past the intended function and deleted everything up to the next
+  coincidental brace balance.
+- **Why it matters:** this was an unreviewed destructive edit to a 1,478-line
+  file. The compiler caught it immediately, but only because the project builds
+  with warnings as errors on unused symbols; the fix was `git checkout` on that
+  one file and redoing the edit by hand.
+- **Next action:** used the editor's exact-match replacement instead of
+  computed offsets. `git diff` reviewed for deletions before rebuilding.
+
+## 2026-09-26 — Test expectations that were wrong, not the code
+
+- **Attempt:** pin tier behaviour in tests.
+- **Actual error:** three assertion failures that looked like defects.
+- **Cause:** all three were my expectations, not the implementation:
+  `achieved_tier('player', 9000)` is `blockout` because 9,000 is under the
+  player floor of 15,000; `achieved_tier('player', 15000)` is `hero` because
+  for a hero-scale family the standard and hero bands coincide and the function
+  reports the highest satisfied tier; and a prose-prefixed line does not start
+  with `[`, so it routes to the English agent and never reaches the JSON
+  salvage path.
+- **Next action:** corrected the expectations and documented why each value is
+  right, so the next reader does not "fix" them back.

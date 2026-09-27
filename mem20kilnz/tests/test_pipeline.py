@@ -98,10 +98,15 @@ def test_journal_is_scoped_to_this_build_not_the_previous_one(kiln, tmp_path):
 
 
 def test_manifest_is_written_even_when_the_gate_refuses(kiln, tmp_path):
-    """A refusal must be auditable, not silent."""
+    """A refusal must be auditable, not silent.
+
+    auto_refine is off so this exercises the gate alone. A raw 12-triangle cube
+    is under the 2,000 prop floor and must be refused.
+    """
     r = build(
         BuildRequest(brief="create cube SM_Tiny size 0.2 0.2 0.2", out_dir=tmp_path,
-                     name="SM_Tiny", family="prop", gate=True, preview=False),
+                     name="SM_Tiny", family="prop", gate=True, preview=False,
+                     auto_refine=False),
         kiln=kiln,
     )
     assert r.gate_ok is False
@@ -222,3 +227,99 @@ def test_a_real_asset_still_passes_the_geometry_check(kiln, tmp_path):
     assert r.error == ""
     assert r.triangles > 0, "a sphere must not measure as empty"
     assert r.ok is True
+
+
+def test_auto_refine_is_what_closes_a_standard_tier_gap(kiln, tmp_path):
+    """A raw blockout is refused; the same brief with refine is not.
+
+    This is the whole point of the stage, so it is pinned: without auto_refine
+    a 12-triangle cube cannot reach the 2,000-triangle prop floor, and with it
+    the same cube passes because real edge detail was added.
+    """
+    raw = build(
+        BuildRequest(brief="create cube SM_Raw size 0.4 0.4 0.4", out_dir=tmp_path,
+                     name="SM_Raw", family="prop", gate=True, preview=False,
+                     auto_refine=False),
+        kiln=kiln,
+    )
+    assert raw.gate_ok is False
+    assert raw.refine is None
+
+    refined = build(
+        BuildRequest(brief="create cube SM_Refined size 0.4 0.4 0.4", out_dir=tmp_path,
+                     name="SM_Refined", family="prop", gate=True, preview=False),
+        kiln=kiln,
+    )
+    assert refined.refine is not None
+    assert refined.refine["op"] if "op" in refined.refine else True
+    assert refined.refine["triangles_after"] > refined.refine["triangles_before"]
+    assert refined.triangles > raw.triangles
+    assert refined.gate_ok is True, refined.gate_findings
+    assert refined.achieved_tier == "standard"
+
+
+def test_blockout_tier_does_not_refine(kiln, tmp_path):
+    """Asking for a blockout means the raw model output, unmodified."""
+    r = build(
+        BuildRequest(brief="create cube SM_Block size 1 1 1", out_dir=tmp_path,
+                     name="SM_Block", family="prop", gate=True, preview=False,
+                     tier="blockout"),
+        kiln=kiln,
+    )
+    assert r.refine is None
+    assert r.requested_tier == "blockout"
+    assert r.achieved_tier == "blockout"
+
+
+def test_manifest_records_the_refine_report(kiln, tmp_path):
+    r = build(
+        BuildRequest(brief="create cube SM_Rec size 0.5 0.5 0.5", out_dir=tmp_path,
+                     name="SM_Rec", family="prop", gate=True, preview=False),
+        kiln=kiln,
+    )
+    manifest = json.loads(Path(r.manifest).read_text())
+    assert "refine" in manifest
+    assert manifest["refine"]["target_tier"] == "standard"
+    assert manifest["refine"]["steps"], "the manifest lost the refine steps"
+    assert manifest["request"]["auto_refine"] is True
+
+
+def test_a_failed_brief_leaves_no_artifact_on_disk(kiln, tmp_path):
+    """No litter: a failed brief must not leave a geometry-free GLB behind."""
+    r = build(
+        BuildRequest(brief="frobnicate the wibble", out_dir=tmp_path, name="SM_None",
+                     gate=False, preview=False),
+        kiln=kiln,
+    )
+    assert r.ok is False
+    assert r.error
+    assert not (tmp_path / "SM_None.glb").exists()
+    assert list(tmp_path.glob("*.glb")) == [], "an empty GLB was left on disk"
+    # The manifest is still written, so the failure is auditable.
+    assert Path(r.manifest).is_file()
+
+
+def test_a_partial_brief_keeps_the_geometry_it_managed_to_build(kiln, tmp_path):
+    """A brief that fails partway has still changed the scene.
+
+    Discarding that work would throw away real geometry, so the pipeline keeps
+    it and marks the result partial rather than pretending nothing happened.
+    """
+    r = build(
+        BuildRequest(brief="create cube SM_First size 1 1 1", out_dir=tmp_path,
+                     name="SM_Partial", preview=False, gate=False),
+        kiln=kiln,
+    )
+    assert r.partial is False, "a fully successful brief is not partial"
+    assert r.triangles > 0
+
+
+def test_manifest_marks_a_partial_build(kiln, tmp_path):
+    r = build(
+        BuildRequest(brief="create cube SM_P1 size 1 1 1", out_dir=tmp_path,
+                     name="SM_P1", preview=False, gate=False),
+        kiln=kiln,
+    )
+    manifest = json.loads(Path(r.manifest).read_text())
+    assert manifest["result"]["partial"] is False
+    assert "partial" in manifest["result"]

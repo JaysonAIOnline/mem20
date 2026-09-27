@@ -115,6 +115,18 @@ are queued and listed explicitly so none can be forgotten.
 - [x] Asset catalogue over manifests, with untracked/unreadable reporting.
 - [x] External mesh ingest: read-only `probe` plus `convert` with manifests
       marked `source: external`.
+- [x] Detail tiers: `blockout` / `standard` / `hero`. The roadmap budgets are
+      the `standard` tier unchanged; `blockout` is derived, `hero` is restricted
+      to hero-scale families. Guards both ways.
+- [x] Refine stage that only adds real geometry: `bevel` with an explicit
+      region, measured every step, with a ceiling guard that rolls back an
+      overshooting pass. `subsurf` is excluded by construction.
+- [x] Manifest records `requested_tier` / `achieved_tier` / `tier_met`, measured
+      from the exported file rather than the request.
+- [x] Partial builds keep the geometry they managed to create, and failed
+      briefs leave no artifact on disk.
+- [x] Salvage complete ops from a truncated model response instead of
+      discarding the whole reply.
 - [ ] Poly / texture / material budgets from the `jairf-tech-budgets` roadmap,
       and naming-convention enforcement (`SM_` `SK_` `M_` `T_` `PF_` `A_`).
 - [ ] Ingest path: import external mesh → re-mesh to budget → fix normals →

@@ -28,6 +28,19 @@ TRIANGLE_BUDGETS: dict[str, tuple[int, int]] = {
 #: Fraction of the LOD0 ceiling each reduced level must stay under.
 LOD_FRACTIONS: dict[int, float] = {1: 0.60, 2: 0.30, 3: 0.15}
 
+#: Detail tiers, in increasing order of finish.
+#:
+#: The roadmap budgets are *authored asset* budgets, so they are the `standard`
+#: tier and are used unchanged. `blockout` is a pre-authoring state, not a
+#: cheaper standard: a blockout is defined as geometry that has not yet reached
+#: the authored floor, so its band is derived from the roadmap rather than
+#: invented here. `hero` is the label for the families the roadmap already
+#: budgets as hero-scale.
+DETAIL_TIERS = ("blockout", "standard", "hero")
+
+#: Families the roadmap budgets at hero scale. `hero` is only meaningful here.
+HERO_FAMILIES = frozenset({"player", "boss"})
+
 #: Texture edge in pixels by role.
 TEXTURE_BUDGETS: dict[str, int] = {
     "hero": 2048,
@@ -63,6 +76,7 @@ class BudgetVerdict:
     lod0_max: int
     ok: bool
     reason: str
+    tier: str = "standard"
 
     def as_dict(self) -> dict:
         return {
@@ -72,11 +86,30 @@ class BudgetVerdict:
             "lod0_max": self.lod0_max,
             "ok": self.ok,
             "reason": self.reason,
+            "tier": self.tier,
         }
 
 
 def families() -> list[str]:
     return sorted(TRIANGLE_BUDGETS)
+
+
+def tier_band(family: str, tier: str = "standard") -> tuple[int, int] | None:
+    """The (min, max) triangle band for a family at a detail tier.
+
+    `standard` is the roadmap's authored LOD0 band, unchanged. `blockout` is
+    derived: anything with geometry that has not yet reached the authored floor
+    is a blockout, so the band is ``(1, floor - 1)``. `hero` is the roadmap band
+    too, but is only defined for the families the roadmap budgets as hero-scale.
+    """
+    band = TRIANGLE_BUDGETS.get(family)
+    if band is None:
+        return None
+    if tier == "blockout":
+        return (1, max(0, band[0] - 1))
+    if tier == "hero":
+        return band if family in HERO_FAMILIES else None
+    return band
 
 
 def lod_ceiling(family: str, lod: int = 0) -> int | None:
@@ -90,35 +123,66 @@ def lod_ceiling(family: str, lod: int = 0) -> int | None:
     return int(band[1] * frac)
 
 
-def check_triangles(family: str, triangles: int, lod: int = 0) -> BudgetVerdict:
-    band = TRIANGLE_BUDGETS.get(family)
-    if band is None:
+def check_triangles(family: str, triangles: int, lod: int = 0,
+                    tier: str = "standard") -> BudgetVerdict:
+    if tier not in DETAIL_TIERS:
         return BudgetVerdict(
             family, triangles, 0, 0, False,
-            f"unknown asset family '{family}'; known: {', '.join(families())}",
+            f"unknown detail tier '{tier}'; known: {', '.join(DETAIL_TIERS)}", tier,
+        )
+    band = tier_band(family, tier)
+    if band is None:
+        if tier == "hero":
+            return BudgetVerdict(
+                family, triangles, 0, 0, False,
+                f"detail tier 'hero' is not defined for family '{family}'; "
+                f"hero-scale families: {', '.join(sorted(HERO_FAMILIES))}", tier,
+            )
+        return BudgetVerdict(
+            family, triangles, 0, 0, False,
+            f"unknown asset family '{family}'; known: {', '.join(families())}", tier,
         )
     lo, hi = band
     if lod == 0:
         if triangles < lo:
             return BudgetVerdict(
                 family, triangles, lo, hi, False,
-                f"{triangles} is under the LOD0 floor of {lo} for {family}",
+                f"{triangles} is under the {tier} floor of {lo} for {family}", tier,
             )
         if triangles > hi:
             return BudgetVerdict(
                 family, triangles, lo, hi, False,
-                f"{triangles} exceeds the LOD0 ceiling of {hi} for {family}",
+                f"{triangles} exceeds the {tier} ceiling of {hi} for {family}", tier,
             )
-        return BudgetVerdict(family, triangles, lo, hi, True, f"within LOD0 {lo}-{hi}")
+        return BudgetVerdict(family, triangles, lo, hi, True,
+                             f"within {tier} {lo}-{hi}", tier)
     ceiling = lod_ceiling(family, lod)
     if ceiling is None:
-        return BudgetVerdict(family, triangles, lo, hi, False, f"LOD{lod} is not a defined level")
+        return BudgetVerdict(family, triangles, lo, hi, False,
+                             f"LOD{lod} is not a defined level", tier)
     if triangles > ceiling:
         return BudgetVerdict(
             family, triangles, lo, hi, False,
-            f"{triangles} exceeds the LOD{lod} ceiling of {ceiling} for {family}",
+            f"{triangles} exceeds the LOD{lod} ceiling of {ceiling} for {family}", tier,
         )
-    return BudgetVerdict(family, triangles, lo, hi, True, f"within LOD{lod} ceiling {ceiling}")
+    return BudgetVerdict(family, triangles, lo, hi, True,
+                         f"within LOD{lod} ceiling {ceiling}", tier)
+
+
+def achieved_tier(family: str, triangles: int) -> str:
+    """The highest tier this triangle count actually satisfies.
+
+    Used to record what was built rather than what was asked for. A count that
+    satisfies no tier reports `blockout` if it has geometry at all, since that is
+    the floor of what the engine can honestly claim.
+    """
+    for tier in ("hero", "standard", "blockout"):
+        band = tier_band(family, tier)
+        if band is None:
+            continue
+        if band[0] <= triangles <= band[1]:
+            return tier
+    return "blockout" if triangles > 0 else "none"
 
 
 def infer_family(name: str) -> str:
@@ -171,6 +235,11 @@ def table() -> dict:
         "roadmap_source": ROADMAP_SOURCE,
         "triangle_budgets": {k: {"min": v[0], "max": v[1]} for k, v in TRIANGLE_BUDGETS.items()},
         "lod_fractions": {str(k): v for k, v in LOD_FRACTIONS.items()},
+        "detail_tiers": list(DETAIL_TIERS),
+        "hero_families": sorted(HERO_FAMILIES),
+        "tier_bands": {
+            f: {t: tier_band(f, t) for t in DETAIL_TIERS} for f in families()
+        },
         "texture_budgets": TEXTURE_BUDGETS,
         "name_prefixes": NAME_PREFIXES,
         "unprefixed": sorted(UNPREFIXED),

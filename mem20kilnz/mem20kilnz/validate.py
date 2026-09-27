@@ -337,11 +337,11 @@ def validate(path: str | Path) -> Report:
 
 
 def check_budgets(report: Report, family: str | None = None, require_prefix: bool = False,
-                  lod: int = 0) -> list[Finding]:
+                  lod: int = 0, tier: str = "standard") -> list[Finding]:
     """Budget and naming findings, derived from the validated report."""
     out: list[Finding] = []
     fam = family or _budgets.infer_family(Path(report.path).stem)
-    verdict = _budgets.check_triangles(fam, report.total_triangles, lod)
+    verdict = _budgets.check_triangles(fam, report.total_triangles, lod, tier=tier)
     if not verdict.ok:
         out.append(Finding("error", "budget", verdict.reason, fam))
     for mr in report.meshes:
@@ -354,10 +354,10 @@ def check_budgets(report: Report, family: str | None = None, require_prefix: boo
 
 
 def gate(path: str | Path, family: str | None = None, require_prefix: bool = False,
-         lod: int = 0) -> Report:
+         lod: int = 0, tier: str = "standard") -> Report:
     """Validate, then apply budgets. Non-zero-worthy findings are errors."""
     report = validate(path)
-    for f in check_budgets(report, family, require_prefix, lod):
+    for f in check_budgets(report, family, require_prefix, lod, tier):
         report.findings.append(f)
         if f.severity == "error":
             report.ok = False

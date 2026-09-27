@@ -35,6 +35,19 @@ not a roadmap.
   describing them from their filename.
 - **External mesh ingest** with a read-only `probe` and a `convert` that marks
   imported assets as `source: external` with both input and output hashes.
+- **Detail tiers.** `standard` is the roadmap's authored budget, unchanged.
+  `blockout` accepts primitive-assembly output, and is derived from the roadmap
+  rather than invented. `hero` is only defined for `player` and `boss`. A
+  manifest records the tier that was *achieved*, measured from the exported
+  file, never the tier that was requested.
+- **Honest refinement.** `build` refines a blockout with real edge detail
+  (`bevel`), measured after every pass, and rolls back any pass that would
+  exceed the budget. Subdivision is deliberately excluded: measured on a real
+  crate it reached the budget by rounding the mesh into a featureless blob, so
+  it would satisfy the gate while making the asset worse.
+- **Salvage of truncated model output.** A model that runs out of tokens
+  mid-array still produced valid ops; those are recovered and applied rather
+  than discarded.
 - **JAIRF budgets and naming validation** enforced as a read-only gate.
 - **Live engine builds** from source, so the binary is never a mystery artifact.
 
@@ -117,10 +130,16 @@ more capable than it is.
   implementation was written and rejected on measured evidence: a wrong face-flip
   test, a stale-index segfault, volume loss, and failure to reach the target
   ratio. Measured area drift is about -4% at ratio 0.75 and -6.7% at ratio 0.5.
-- **Generated assets are frequently under-detailed.** A language model asked for
-  a "weathered crate with iron bands" will often return a handful of primitives
-  well under the triangle budget. The gate rejects these. This is the gate
-  working, not a bug.
+- **Generated assets are blockouts.** Measured, eight runs of one brief gave
+  36 to 300 triangles against a 2,000 prop floor. The model is reliable at
+  producing *something* and unreliable in detail. `--tier blockout` accepts this
+  honestly; the default `standard` tier refuses it.
+- **Refinement is bounded.** Bevel passes raise the count fast enough to reach
+  the standard tier on a simple prop, but the shape degrades with enough
+  passes, so refinement is capped and reports what it reached.
+- **Model output is non-deterministic.** The same brief yields different
+  geometry each run. Nothing in a manifest is stable across runs unless the
+  op journal is replayed.
 - **`probe` does not measure OBJ geometry.** The structural validator asserts
   against a single glTF/GLB and has nothing to check an OBJ against, so `probe`
   reports `geometry not measured by this probe` instead of claiming zero
@@ -134,7 +153,7 @@ more capable than it is.
 ## Tests
 
 ```bash
-python -m pytest tests/ -q      # 87 tests
+python -m pytest tests/ -q      # 132 tests
 python tests/check_op_sync.py engine engine/kiln
 ```
 

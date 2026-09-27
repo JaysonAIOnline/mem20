@@ -34,7 +34,9 @@ def test_probe_reports_the_budget_gap_rather_than_a_verdict_only():
     p = probe(DEMO, family="prop")
     assert p.budget["lod0_min"] == 2000
     assert p.budget["ok"] is False
-    assert "under the LOD0 floor" in p.budget["reason"]
+    # The reason names the tier, so a refusal says which bar was applied.
+    assert "under the standard floor" in p.budget["reason"]
+    assert p.budget["tier"] == "standard"
     assert p.gate_ok is False
 
 

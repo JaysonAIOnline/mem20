@@ -43,7 +43,7 @@ def test_catalogue_indexes_built_assets(kiln, tmp_path):
 def test_summary_separates_passing_from_refused(kiln, tmp_path):
     _build(kiln, tmp_path, "create cube SM_Big size 2 2 2", "SM_Big", gate=False)
     _build(kiln, tmp_path, "create cube SM_Tiny size 0.1 0.1 0.1", "SM_Tiny",
-           family="prop", gate=True)
+           family="prop", gate=True, auto_refine=False)
     cat = Catalogue(tmp_path / "assets")
     summary = cat.summary()
     assert summary["tracked"] == 2

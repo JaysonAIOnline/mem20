@@ -410,3 +410,97 @@ globs. A second defect surfaced immediately — `include = ["pkg", "pkg.*"]` is
 the subpackage shorthand, and trimming only `*` left a module named `pkg.` —
 so trailing separators are trimmed too. After the fix: 0 phantom names, and
 `mem20kilnz` reports `import | mem20kilnz=y`. 6 tests added, 18 pass.
+
+## Phase 4 — detail tiers, honest refinement, salvage (2026-09-26)
+
+### The measured problem
+
+A crate brief, run repeatedly against Groq `openai/gpt-oss-120b`:
+
+- Triangle counts for the identical brief: **60, 60, 60, 92, 204, 300, 48, 36**
+  over 8 runs. Reliable at producing *something*, wildly non-deterministic in
+  detail. The prop floor is 2,000, so the shortfall is ~33x and retrying the
+  same brief does not close it.
+- Asking for more parts does not help: 8 named objects came to 96 triangles,
+  because a cube costs 12.
+- A richer, budget-aware prompt made the model return malformed JSON.
+
+### Why subdivision was rejected, with evidence
+
+Subdivision reaches the budget — one pass took a crate from 204 to 2,892
+triangles, in budget. The render shows a single rounded box: the bands and
+panel are gone, merged into a blob. A second measurement on the same brief hit
+2,028 triangles, also in budget, also a featureless rounded box.
+
+Measured side by side on the identical scene, both inside the standard band:
+
+| method | triangles | render |
+| --- | --- | --- |
+| `subsurf` x2 | 2,028 | one rounded box, bands dissolved |
+| `bevel` refine | 3,876 | box with chamfered edges, bands and panel intact |
+
+Both pass the gate. Only one is better. `subsurf` is therefore excluded from
+the refine stage by construction, not by convention (`ALLOWED_OPS`).
+
+### Detail tiers
+
+`blockout`, `standard`, `hero` (WORKED). The roadmap budgets are authored-asset
+budgets, so they are the `standard` tier and are **unchanged** — asserted by a
+test that walks every family. `blockout` is derived, not invented: `(1, floor-1)`,
+because a blockout is by definition geometry that has not yet reached the
+authored floor. `hero` is the roadmap band, only defined for `player` and
+`boss`.
+
+The guard works in both directions, which is the point:
+
+- the real 60-triangle crate **passes** as `blockout` and **fails** as `standard`
+- 5,000 triangles **fails** as `blockout`, so a blockout cannot masquerade as
+  finished
+- 0 triangles fails even as `blockout`
+
+Default is `standard` everywhere, so no existing caller changed behaviour. The
+manifest records `requested_tier`, `achieved_tier` (measured from the exported
+file, never from the request) and `tier_met`.
+
+### Refinement
+
+`mem20kilnz/refine.py` (WORKED). Real crate, `prop`/standard: **60 → 220 → 940 →
+3,820** in three passes, five nodes bevelled per pass, gate passing.
+
+Every step is measured by exporting and re-reading the file. The loop stops on
+the first step that adds no triangles, so it terminates even when the target is
+unreachable.
+
+**Overshoot guard.** A first run exploded to **1,557,860** triangles, 260x over
+the 6,000 ceiling: one pass can multiply the count far past the budget, and
+stopping the loop is not enough because the asset would still ship over budget.
+The pass is now undone, and the export that follows is inside the ceiling.
+Deterministic repro pinned in tests: 10 cubes at 2 segments.
+
+### Partial work is no longer discarded
+
+A brief whose ops included a failing `bevel` aborted the whole build, throwing
+away five good ops and their geometry — the model emitted the bad op, and
+`apply_ops` returned on the first failure. `apply_ops` and `m_ops` now report
+`"2 of 4 ops applied, then failed: bevel: no edges"` with the good ops intact.
+
+Measured effect: 3/6 crates shipped before these fixes, **7/8 after**, with zero
+overshoots and no stray files.
+
+Failed briefs no longer leave litter: the pipeline exports to a scratch path to
+measure, and publishes the real GLB only once geometry exists.
+
+### Salvaging truncated model output
+
+The malformed-JSON failures were truncation: the model ran out of tokens
+mid-array, and `extract_json_array` required a closing bracket, so every
+complete op before the cut was thrown away. `salvage_truncated_ops` walks the
+text with a brace stack and keeps every object that parses and carries an `op`.
+It refuses to guess at a half-written op.
+
+- truncated after 2 ops → 2 recovered, both applied, reported as partial
+- truncated inside the first op → still fails, correctly
+- complete list → unchanged, no salvage involved
+
+3 briefs x 3 runs after the change: 8 succeeded, 1 op failure, **0 malformed
+JSON**.
