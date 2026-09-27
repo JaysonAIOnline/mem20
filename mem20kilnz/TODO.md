@@ -144,10 +144,17 @@ are queued and listed explicitly so none can be forgotten.
       requested ratio exactly, stays closed with zero degenerate faces, and
       drifts 6-20x less volume than clustering (-0.6% vs -13.2% at ratio 0.5).
       Decimation refuses a mesh that is not a closed surface, with real counts.
-- [ ] `subsurf` still leaves holes: 960 boundary edges after fixing a wrong
-      vertex in the quad and a wrong corner in the triangle branch. Volume is
-      sane again (was exactly 0) but the surface is not closed, so subdivision
-      output cannot yet be decimated, booleaned or remeshed.
+- [x] `subsurf` fixed: the quad sub-faces needed the face point, and the
+      triangulation had to fan from the edge point so diagonals cannot coincide
+      across an original edge. Sphere, torus, cylinder and cone are watertight
+      with 0 boundary and 0 non-manifold edges at every level, and subdivided
+      meshes can now be decimated.
+- [ ] Mesh boolean (union / difference / intersect) does not exist. It was named
+      in an earlier summary of mine; it is absent from the 106-op surface.
+- [ ] `remesh` does not exist.
+- [ ] `displace` does not exist, so there is no way to add surface detail.
+- [ ] No `skin` op, so imported skin weights cannot be authored or edited.
+- [ ] No clip or keyframe op: animation is a scene cursor only.
 - [x] Determinism: `replay` and `reproduce` rebuild an asset from its journal
       and compare SHA-256, so a manifest is verified rather than trusted. A
       30-op build with refine replays byte-identically. This also caught the

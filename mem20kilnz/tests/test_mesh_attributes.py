@@ -80,15 +80,22 @@ def test_export_is_welded_not_a_triangle_soup(kiln, tmp_path):
 
 
 def test_a_smoothed_mesh_still_shares_vertices(kiln, tmp_path):
-    """Subdivision produces many faces; welding must still collapse them."""
+    """Subdivision produces many faces; welding must still collapse them.
+
+    A closed manifold with T triangles has exactly T/2 + 2 vertices, so that is
+    the figure a correctly welded subdivided mesh must reach.
+    """
     kiln.reset()
-    kiln.op({"op": "create", "primitive": "cube", "name": "C", "size": [1, 1, 1]})
+    kiln.op({"op": "create", "primitive": "sphere", "name": "S", "size": [1, 1, 1]})
     kiln.op({"op": "subsurf", "levels": 2})
     out = tmp_path / "s.glb"
     kiln.export(str(out))
     m = V.validate(out).meshes[0]
-    assert m.triangles == 192
-    assert m.vertices < m.triangles * 3
+    assert m.triangles == 8448
+    assert m.vertices == m.triangles // 2 + 2, (
+        f"{m.vertices} vertices where a closed manifold needs "
+        f"{m.triangles // 2 + 2}: the export is a triangle soup"
+    )
 
 
 def test_hard_edges_are_not_merged_away(kiln, tmp_path):

@@ -643,3 +643,52 @@ refine guard still knows the brief produced something.
 This is the failure mode the feature exists to catch, caught by the feature:
 before there was no way to know a manifest was describing a different asset from
 the one on disk.
+
+### subsurf fully closed (2026-09-27)
+
+All four causes fixed and measured. A closed manifold with T triangles has
+exactly T/2 + 2 vertices; every primitive now hits that figure, with 0
+boundary edges, 0 non-manifold edges and 0 degenerate faces:
+
+| primitive | tris | verts | closed min | watertight |
+| --- | --- | --- | --- | --- |
+| cube | 48 | 26 | 26 | yes |
+| sphere | 2,112 | 1,058 | 1,058 | yes |
+| torus | 2,304 | 1,152 | 1,154 | yes |
+| cylinder | 384 | 194 | 194 | yes |
+| cone | 192 | 98 | 98 | yes |
+
+1. The quad sub-faces needed the face point, which was computed and never
+   used. Without it a quad cannot be tiled by four quads.
+2. The triangulation fanned from the first corner, so the quad on each side
+   of an original edge picked the same diagonal and every interior diagonal
+   was used by four triangles. Fanning from the edge point makes the
+   diagonal run edge-point -> face-point, which cannot coincide because the
+   face point belongs to one face.
+3. The triangle branch used the next vertex point where the preceding edge
+   point belonged.
+4. `catmull_clark` never set the smooth flag. Catmull-Clark is a smoothing
+   scheme, so its output is smooth-shaded, as in any DCC tool. Flat-shaded
+   corners also cannot weld, which is why a subdivided cube was a triangle
+   soup until this was fixed.
+
+A subdivided sphere now decimates to 2,016 triangles and stays watertight
+with zero defects. The closed-surface precheck no longer blocks it.
+
+## Op surface, verified (2026-09-27)
+
+106 ops, checked against the live list rather than carried forward:
+
+    create/edit 20   mesh 28   rig 4   io 5   other 13
+
+Present: bevel, subsurf, decimate (QEM), smooth, shade_smooth, shade_flat,
+recalc_normals, extrude, inset, solidify, array, mirror, triangulate, poke,
+merge, fill, wireframe, symmetrize, loop_cut, shrinkwrap, separate_parts,
+separate_loose, parent, pose, ik, ik_two_bone, import (glTF/OBJ/FBX), export,
+describe, journal, and the full selection surface.
+
+**Absent, and previously claimed in this session: boolean, remesh, displace,
+skin, and any clip or keyframe op.** Those claims were wrong and are corrected
+in failures.md. Skin *data* is imported from FBX and glTF, but there is no op to
+author or edit it. Animation is a scene cursor (`frame`, `set_frame`) and
+nothing else.

@@ -580,3 +580,62 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
   taken right after the brief so the refine guard is unaffected. A full 30-op
   build with refine now replays byte-identically. The refactor also needed
   `entries` initialised before the early-return paths, which write a manifest.
+
+## 2026-09-27 — subsurf holes: the quad had no face point, then a shared diagonal
+
+- **Attempt:** close the last subdivision defect, which was leaving 960 boundary
+  edges and blocking decimation, booleans and remesh on subdivided meshes.
+- **Actual error, and the chain of causes:**
+  1. The sub-quad for original edge (a, b) was
+     `(v_a, e_ab, v_b, e_da)`. A quad cannot be tiled by four quads without a
+     face point, and its closing edge `(v_b, e_da)` belonged to no other face, so
+     the surface was open along every original corner. **The face point was
+     computed at the top of the function and never used.**
+  2. With the face point added, boundary edges went to 0 but 456 non-manifold
+     edges remained, all with face count 4, forming a cycle of the original
+     corners. Fanning each sub-quad from its first corner makes the diagonal
+     `(v_cur, v_nxt)`, and the quad on the *other* side of that same original
+     edge has the same two corners in the same order, so it picks the same
+     diagonal. Every interior diagonal was then used by four triangles.
+  3. Fixed by emitting the sub-quads as triangles fanned from the **edge
+     point**, so the diagonal runs edge-point -> face-point. The face point is
+     unique to its face, so a diagonal through it can never coincide with a
+     neighbour's.
+- **Result, measured:**
+
+  | primitive | level 0 | level 1 | level 2 |
+  | --- | --- | --- | --- |
+  | sphere | watertight | watertight | watertight |
+  | torus | watertight | watertight | watertight |
+  | cylinder | watertight | watertight | watertight |
+  | cone | watertight | watertight | watertight |
+
+  0 boundary edges and 0 non-manifold edges at every level, and volume converges
+  instead of collapsing (sphere -4.07 -> -3.99 -> -3.97).
+- **Downstream unblocked:** a subdivided sphere can now be decimated, measured at
+  2,112 -> 2,016 triangles, still watertight with zero defects.
+- **Still not clean:** a `plane` gains non-manifold edges when subdivided (an
+  open surface has no closed-volume guarantee), and a `cube` shrinks hard
+  because one Catmull-Clark level on a 6-quad mesh rounds the corners severely
+  (8.0 -> 3.33 -> 2.92 volume). That is characteristic of the scheme on a coarse
+  mesh rather than a defect, but it is a large change and is recorded.
+
+## 2026-09-27 — Correction: booleans and remesh do not exist
+
+- **What I said earlier in this session:** that the mesh operations included
+  "booleans" and "remesh". That was wrong, and it was not a slip I verified --
+  I carried it forward from my own earlier summary instead of checking the op
+  surface.
+- **Actual state, checked against the live op list (106 ops):** no `boolean`,
+  no `union`, no `difference`, no `intersect`, no `remesh`, no `voxel`, and no
+  `displace`. `skin` is also absent, though a skinned mesh is imported from
+  FBX and glTF, so the data is carried but there is no op to author or edit it.
+  Animation has `frame` and `set_frame` for the scene cursor and no clip or
+  keyframe op at all.
+- **Why it matters:** booleans and remesh were named as the reason subdivision
+  needed fixing, and that reasoning was wrong. Subdivision was still worth
+  fixing -- it produced holes and a signed volume of exactly zero -- but the
+  justification cited capabilities that do not exist.
+- **Next action:** the op surface is now the authoritative statement in
+  CONFWORK.md, and the missing capabilities are listed as gaps rather than
+  implied.
