@@ -127,6 +127,10 @@ are queued and listed explicitly so none can be forgotten.
       briefs leave no artifact on disk.
 - [x] Salvage complete ops from a truncated model response instead of
       discarding the whole reply.
+- [x] Plain-English description of the exported model, so a text-only agent can
+      do text-to-3D: world-space dimensions, width and thinness per part,
+      containment and parentage, hue-derived colour names, proportions. Written
+      into every manifest, plus a `describe` command and verb.
 - [ ] Poly / texture / material budgets from the `jairf-tech-budgets` roadmap,
       and naming-convention enforcement (`SM_` `SK_` `M_` `T_` `PF_` `A_`).
 - [ ] Ingest path: import external mesh → re-mesh to budget → fix normals →

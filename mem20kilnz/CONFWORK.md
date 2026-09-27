@@ -504,3 +504,69 @@ It refuses to guess at a half-written op.
 
 3 briefs x 3 runs after the change: 8 succeeded, 1 op failure, **0 malformed
 JSON**.
+
+## Phase 5 — plain-English description, for an agent that cannot see (2026-09-26)
+
+`mem20kilnz/describe.py` (WORKED). Reads the **exported GLB**, not the in-memory
+scene, so the description cannot disagree with the bytes that ship — the same
+principle the gate follows. Written into every export manifest, exposed as
+`mem20kilnz describe <file>`, and reachable from inside a session via the
+`describe` verb (which already existed; it now reports more).
+
+Measured on a real build, brief "a wooden treasure chest with iron bands and a
+lock", tier blockout, 6 parts / 1,848 triangles:
+
+    ChestBody is a mesh measuring 2.00 by 1.00 by 1.00 (the largest part),
+      coloured dark orange, with a matte surface, enclosing BandBottom.
+    ChestLid is a mesh measuring 2.00 by 0.20 by 1.00 (a very thin sheet or
+      sliver, wider than ChestBody, and 10% as thick as it is wide), ...
+    BandBottom ... (a very thin sheet or sliver, 0.54 times the width of
+      ChestBody, and 5% as thick as it is wide), coloured grey, with a fully
+      metallic, satin surface, attached to ChestBody, sitting inside ChestBody.
+    Lock is a mesh measuring 0.20 by 0.20 by 0.10 (a small protruding part,
+      0.10 times the width of ChestBody), ...
+
+A text-only agent can now answer "is the lock the right size", "are the bands
+bands or blocks", and "what is attached to what", without seeing anything.
+
+### Measured, not estimated
+
+- dimensions from vertex positions, in world space
+- colour names from hue, saturation and lightness (`colour_name`), not a lookup
+  table; brown is computed as a desaturated not-bright orange-to-yellow
+- finish from roughness and metalness, in words
+- thinness judged against each part's own smallest side
+- explicitly **not** claimed: whether the shape resembles its subject. That is
+  stated in `not_computable` on every run, because geometry cannot answer it.
+
+### Four defects found by writing it, two of which would have made it lie
+
+1. **Materials were invisible.** The exporter writes the material on the mesh
+   primitive, not the node, so reading `node.material` yielded nothing and every
+   part came out colourless. Now read from the primitive.
+2. **Dimensions were in local space.** The description reported a model with a
+   raised band as 1.00 tall when the true extent was 1.15. The exporter writes
+   untransformed positions, so the transform chain must be walked.
+3. **The transform chain was mathematically wrong.** A glTF node is `T*R*S`, and
+   composing two of them gives `T*R*S*T*R*S`, which is *not* a TRS — the inner
+   translation has nowhere to go. The original single-triple collapse was
+   replaced with a row-major 4x4 matrix. Demonstrated: with a rotation on both
+   nodes and a non-uniform parent scale, the collapse returns `(0, -2, 0)` and
+   the matrix returns `(0, 2, 0)`.
+4. **Relative size was judged on volume.** A 0.2 lock on a 2.0 chest is 0.4% of
+   the volume, which reads as a "sliver", while being a tenth of the chest's
+   width, which is a real part. Now judged on width, with thinness reported
+   separately, because a band is *wider* than the chest it wraps and a width
+   ratio alone loses the only fact worth knowing.
+
+Also: a colour bug where wood read as "orange", because the brown check was
+guarded on the sector name `"red"` while 24-40 degrees is the `"orange"` sector.
+Keyed on hue range instead.
+
+### The engine side
+
+`describe_scene` now also reports, for every node: parent name, scale, measured
+local bounds, and material with albedo, roughness and metallic. Measurement
+lives in the engine for the live scene and in `describe.py` for the exported
+file; the prose rendering exists only in `describe.py`, deliberately, so there
+is one implementation of the English rather than two that can drift.

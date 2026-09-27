@@ -377,3 +377,68 @@ Format: date · attempt · actual error · cause (or "unknown") · next action.
   salvage path.
 - **Next action:** corrected the expectations and documented why each value is
   right, so the next reader does not "fix" them back.
+
+## 2026-09-26 — The description was colourless and measured in the wrong space
+
+- **Attempt:** build a plain-English description of an exported model.
+- **Actual error:** no exception. The output was fluent and entirely wrong: every
+  part came out with no colour, and a model with a band raised above its crate
+  was reported as 1.00 units tall when the true extent was 1.15.
+- **Cause, two independent bugs:**
+  1. The exporter writes the material on the mesh *primitive*, but the code read
+     `node.material`, which does not exist. The colour-naming logic was written,
+     correct, and never received any input.
+  2. The exporter writes untransformed positions, so bounding boxes came out in
+     each node's local space and offsets were lost.
+- **Why it matters:** this is the worst failure shape for a description feature.
+  It reads well, it is confidently wrong, and its entire purpose is to let an
+  agent act without seeing. A wrong measurement is worse than no description.
+- **Next action:** material read from the primitive; world-space bounds via the
+  transform chain. Both covered by tests asserting measured values, including
+  the overall height that the local-space bug got wrong.
+
+## 2026-09-26 — The transform chain was mathematically wrong
+
+- **Attempt:** compose a parent's and a child's node transform.
+- **Actual error:** silent. A point came out on the wrong side of the origin.
+- **Cause:** a glTF node is `T*R*S`, and composing two of them gives
+  `T*R*S*T*R*S`. That is not expressible as a single translation/quaternion/scale
+  triple, because the inner translation has nowhere to go. The code collapsed the
+  chain into one triple, which is only correct when rotations are absent.
+- **Evidence:** parent with a 90-degree rotation and a 2x non-uniform scale, child
+  with its own 90-degree rotation and an offset. The true chain gives
+  `(0, 2, 0)`; the collapsed triple gives `(0, -2, 0)`.
+- **Why it matters:** this is the backbone of every measurement reported, and it
+  would have been wrong for exactly the cases that matter — rotated sub-parts
+  under a scaled parent, which is what a detailed asset is made of.
+- **Next action:** replaced with a row-major 4x4 matrix. A test now asserts the
+  distinguishing case so the shortcut cannot come back.
+- **Note on the investigation:** my first hand-computed "expected" value was also
+  wrong (2.0 instead of 3.0) because I forgot that the child's own translation
+  moves the point. The code was right; the expectation was not. Recorded because
+  the same trap would mislead the next reader.
+
+## 2026-09-26 — A wide thin band was described only by how wide it was
+
+- **Attempt:** report a band's size relative to the chest.
+- **Actual error:** `105% of the width of Chest`.
+- **Cause:** relative size was a single width ratio, and judged against volume for
+  small parts. A band is genuinely wider than the chest it wraps, so the number
+  was true and carried no information; the useful fact, that it is a thin strip,
+  was discarded.
+- **Next action:** width and thinness are now judged independently — width
+  against the largest part, thinness against the part's own smallest side. A
+  2.1 x 0.05 x 0.1 band now reads as "a very thin sheet or sliver, wider than
+  ChestBody, and 2% as thick as it is wide".
+
+## 2026-09-26 — Wood was named "orange"
+
+- **Attempt:** colour naming from hue and lightness.
+- **Actual error:** RGB (0.7, 0.5, 0.3) — a wood tone, and the crate's actual
+  colour — came out as "orange".
+- **Cause:** the brown special case was guarded on the *sector name* being
+  `"red"`, but hues of 24-40 degrees fall in the `"orange"` sector, so the branch
+  never ran.
+- **Next action:** keyed on the hue range directly, and widened, since brown is
+  not a hue but a desaturated, not-bright orange-to-yellow. Regression-tested
+  against both a vivid orange, which must stay orange, and a wood brown.

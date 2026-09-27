@@ -22,6 +22,7 @@ from pathlib import Path
 
 from . import budgets as _budgets
 from . import catalogue as _catalogue
+from . import describe as _describe
 from . import engine as _engine
 from . import ingest as _ingest
 from . import pipeline as _pipeline
@@ -267,6 +268,18 @@ def cmd_ingest(args) -> int:
     return 0 if all(r.get("gate_ok") is not False for r in records) else 2
 
 
+def cmd_describe(args) -> int:
+    """Plain-English description of a model, for an agent that cannot see."""
+    result = _describe.describe(args.file)
+    if args.json:
+        _emit(result.as_dict())
+    else:
+        print(result.text())
+        for item in result.not_computable:
+            print(f"  not computable: {item}")
+    return 0 if result.ok else 1
+
+
 def cmd_catalogue(args) -> int:
     """Index built assets from their manifests."""
     cat = _catalogue.Catalogue(args.root)
@@ -374,6 +387,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--lod", type=int, default=0)
     p.add_argument("--tier", default="standard", choices=_DETAIL_TIERS)
     p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("describe",
+                       help="describe a model in plain English, without seeing it")
+    p.add_argument("file")
+    p.add_argument("--json", action="store_true", help="emit the measurements as JSON")
+    p.set_defaults(func=cmd_describe)
 
     p = sub.add_parser("catalogue", help="index built assets from their manifests")
     p.add_argument("root", nargs="?", default="kilnz-out")

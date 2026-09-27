@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from . import budgets as _budgets
+from . import describe as _describe
 from . import refine as _refine
 from . import secrets as _secrets
 from . import validate as _validate
@@ -90,6 +91,8 @@ class BuildResult:
     requested_tier: str = "standard"
     achieved_tier: str = "none"
     refine: dict | None = None
+    #: Plain-English description, so a text-only agent can read what it built.
+    description: dict | None = None
     #: True when the brief failed partway but left usable geometry behind.
     partial: bool = False
     error: str = ""
@@ -208,6 +211,11 @@ def build(request: BuildRequest, kiln: Kiln | None = None) -> BuildResult:
             # the asset actually reached, not the tier that was asked for.
             result.achieved_tier = _budgets.achieved_tier(family, result.triangles)
 
+        # Describe the bytes that shipped, not the scene that produced them, so
+        # the words cannot describe something the file does not contain.
+        if result.glb_bytes:
+            result.description = _describe.describe(glb_path).as_dict()
+
         if request.gate and result.glb_bytes:
             report = _validate.gate(
                 glb_path,
@@ -276,6 +284,7 @@ def _write_manifest(path: Path, request: BuildRequest, result: BuildResult,
             "findings": result.gate_findings,
         },
         "refine": result.refine,
+        "description": result.description,
         "journal": {
             "count": result.op_count,
             "failed": result.failed_ops,

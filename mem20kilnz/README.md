@@ -48,6 +48,14 @@ not a roadmap.
 - **Salvage of truncated model output.** A model that runs out of tokens
   mid-array still produced valid ops; those are recovered and applied rather
   than discarded.
+- **A plain-English description of any model, for an agent that cannot see it.**
+  `mem20kilnz describe <file>`, and written into every export manifest. It reads
+  the exported GLB rather than the live scene, so the words describe the bytes
+  that actually ship. It reports true world-space dimensions, each part's width
+  and thinness against the largest part, what is attached to or inside what,
+  materials with colour names derived from hue and lightness, and the overall
+  proportion. What it cannot do is judge whether a shape resembles its brief, and
+  it says so on every run rather than implying otherwise.
 - **JAIRF budgets and naming validation** enforced as a read-only gate.
 - **Live engine builds** from source, so the binary is never a mystery artifact.
 
@@ -98,6 +106,7 @@ The command prints a JSON report and exits non-zero if the gate fails.
 | `mem20kilnz probe <file>` | Measure an external mesh without modifying it |
 | `mem20kilnz ingest <files...>` | Import external meshes with provenance records |
 | `mem20kilnz catalogue <root>` | Index built assets from their manifests |
+| `mem20kilnz describe <file>` | Plain-English description of a model, no vision needed |
 
 `doctor`, `budgets`, `build`, and `batch` emit JSON by default. `ops`,
 `validate`, and `gate` print a human report by default and take `--json` for
@@ -153,7 +162,7 @@ more capable than it is.
 ## Tests
 
 ```bash
-python -m pytest tests/ -q      # 132 tests
+python -m pytest tests/ -q      # 162 tests
 python tests/check_op_sync.py engine engine/kiln
 ```
 
