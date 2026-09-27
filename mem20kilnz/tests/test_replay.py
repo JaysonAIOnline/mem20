@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from mem20kilnz.pipeline import BuildRequest, build, sha256_file
 from mem20kilnz.errors import OpFailed
+from mem20kilnz.pipeline import BuildRequest, build, sha256_file
 from mem20kilnz.replay import EXTERNAL_OPS, replay, reproduce
 
 
