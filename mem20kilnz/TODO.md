@@ -203,3 +203,28 @@ are queued and listed explicitly so none can be forgotten.
       (`bevel.glb`, `edit.glb`, `model.glb`, and ~15 PNGs) has not been checked
       for the same UV-generation staleness. Audit them the same way before
       trusting any of them as fixtures.
+
+## Animation (done 2026-09-27)
+
+- [x] Named clips with a frame rate and range: `clip_create`, `clip_list`,
+      `clip_set`, `clip_delete`.
+- [x] Keyframe authoring on location, rotation and scale, with step, linear and
+      bezier interpolation. Re-keying a frame replaces rather than appends.
+- [x] `set_frame` drives mesh, camera, light and bone nodes from one clip.
+- [x] glTF animation export: samplers, channels, LINEAR/STEP/CUBICSPLINE,
+      rotation as quaternions, times in seconds, spec-required min/max.
+- [x] glTF animation import, so a clip survives a save and reload. Verified
+      identical at frames 1/6/12/18/24 at 24, 30 and 60 fps.
+- [x] Frame rate carried in `asset.extras.kiln_fps` and per animation, because
+      glTF does not record the authored rate.
+- [x] Clips serialized into the scene JSON, so a journal replay of an animated
+      build no longer produces a static scene.
+- [x] `retarget` maps a clip onto the bones in the scene by name, drops tracks
+      with no counterpart and reports the count, and refuses when there is no rig.
+- [ ] No easing curves beyond bezier: no back, bounce, elastic or elastic-style
+      presets, and no per-key editing of tangent handles after authoring.
+- [ ] No curve editor surface: keys are authored one at a time through the op, not
+      manipulated as a whole curve.
+- [ ] No morph-target or shape-key animation channels; `skins`/weights paths are
+      deliberately ignored on import.
+- [ ] No constraint-driven animation and no IK baked into a clip.

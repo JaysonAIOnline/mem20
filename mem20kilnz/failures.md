@@ -687,3 +687,31 @@ the surface they are on. A majority filter over the shell restored manifoldness
 and pushed the error straight back to 10.9%: the raggedness it removed was not
 noise, it was the accurate boundary. Both were deleted rather than left in as a
 partial feature. The real fix is a signed distance field, which is not written.
+
+## 2026-09-27 — animation: a plausible curve that was a key out of step
+
+The reloaded clip did not look broken. It returned 1.0 at the first frame, 0.55
+in the middle and 0.0 afterwards, which reads like a curve that simply starts
+high. It was the same curve shifted by one key: the value slot in a CUBICSPLINE
+sampler is the middle of an in/value/out triplet, and that offset was being
+applied to LINEAR and STEP samplers as well, so the last key read past the end of
+the accessor and silently returned 0.
+
+What made this worth recording is that every individual check passed. The file
+was valid glTF, the accessor counts were right, the times increased, and the
+import reported no error. Only comparing the sampled curve before and after a
+save caught it.
+
+The frame rate loss was the same shape of bug. glTF records times in seconds and
+nothing about the rate, so a clip authored at 30fps came back at the 24fps
+default with its keys on frames 1/10/19 instead of 1/12/24. Both the wrong-key and
+the wrong-rate failures produced a curve that is smooth, continuous and entirely
+plausible, which is exactly the failure mode that survives review. Round-trip
+tests that compare sampled values, not file validity, are what found them.
+
+A third failure was not subtle at all and is here only because of how it was
+found: `read_accessor` takes an int index, and it was being handed a JSON object.
+Any import of an animated file threw a json type_error and took the engine down.
+Every existing fixture imports cleanly, so the fixture suite could never have
+caught it. A gdb catchpoint on `__cxa_throw` located it in one run after reading
+the code had failed to.

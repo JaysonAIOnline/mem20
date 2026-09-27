@@ -788,3 +788,65 @@ triangle gave 2.1% volume error but thousands of non-manifold edges, because
 neighbouring cells disagree; a majority filter restored manifoldness and gave the
 accuracy back again, because the "noise" it smoothed away was the accurate
 boundary. That experiment was removed rather than left in as a partial feature.
+
+## Animation, 2026-09-27
+
+Animation was a flat list of bone poses with no clip, no channels and one
+hardcoded lerp, so it could not animate a mesh node, could not hold two clips at
+once, had no way to author a key, and was never written to disk. It is now named
+clips of per-channel tracks with three interpolation modes, exported to glTF and
+read back.
+
+Op surface 110 -> 116: `clip_create`, `clip_list`, `clip_set`, `clip_delete`,
+`key`, `retarget`.
+
+### Verified
+
+`set_frame` drives a mesh node's translation, rotation and scale, and a bone's
+pose, from the same clip. Linear interpolation is exact against hand-computed
+values (frame 6 of keys 1,12,24 is 5/11 = 0.454545). STEP holds the left key.
+BEZIER matches a hand-computed Hermite evaluation to 1e-6 (0.567243), and
+differs from linear, so the mode is doing real work rather than falling through.
+Sampling outside the key range holds the first or last value.
+
+Two clips coexist with independent rates; switching the active clip changes which
+curve plays. Re-keying a frame replaces the key rather than appending, because
+two keys on one frame make the bracket search ambiguous.
+
+Clips survive a save and reload. The evaluated curve is identical at frames
+1/6/12/18/24 after an export/import cycle, at 24, 30 and 60 fps. The written file
+is valid glTF 2.0: an animations array with samplers and channels, LINEAR and
+CUBICSPLINE interpolation, rotation as quaternions, key times in seconds, and
+the min/max arrays the spec requires on an animation input sampler. A track with
+a single key is not exported, because glTF needs two keys to form an interval.
+
+Clips are serialized into the scene JSON, so a journal replay of a build that
+animated something now produces the animated scene rather than a static one.
+
+`retarget` re-maps a clip's tracks onto bones present in the scene by name. On a
+clip with 3 tracks, 2 of which were bones, it keeps 2 and reports 1 dropped. It
+refuses outright when the scene has no bones, rather than attaching a mesh track
+to something bone-shaped.
+
+### Bugs found and fixed
+
+1. **The glTF animation import read a value one key ahead.** The value slot in a
+   CUBICSPLINE sampler is the middle of an in/value/out triplet, but that offset
+   was applied to LINEAR and STEP samplers too, so a reloaded clip was shifted by
+   one key and read nothing at all past the end. It surfaced as a curve that
+   looked plausible: 1.0 at the first frame, 0.0 through the middle.
+2. **The frame rate was lost on export.** glTF stores times in seconds and says
+   nothing about the rate they were authored at. A 30fps clip came back at the
+   24fps default with its keys on frames 1/10/19 instead of 1/12/24, so the whole
+   curve was wrong. The rate is now carried in `asset.extras.kiln_fps` and per
+   animation, so a file with clips at different rates survives.
+3. **`read_accessor` was passed a JSON object where it takes an int index**, which
+   threw a json type_error and took the whole engine down on any animated file.
+   Found with a gdb catchpoint rather than by reading code, because the fixtures
+   all import cleanly and only an animated file triggered it.
+4. `apply_frame` grouped keys by frame and then rescanned that whole map per
+   node, which is O(nodes x keys). It is now a bracket search per track.
+
+The old `Scene::keys` list and its bone-only lerp were removed rather than kept
+alongside; nothing else read them, and leaving both would have meant two sources
+of truth for animation.
