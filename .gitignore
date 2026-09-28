@@ -103,3 +103,8 @@ mem20agentz/built/app_*.py
 
 # Test scaffolding that writes into the package directory.
 mem20messenger/.test-home/
+
+# Downloaded model weights (HuggingFace cache). The snapshot symlinks point into
+# a blobs/ directory that is not present, so git's resolver spins on them and
+# wedges every status/add/push. Weights are fetched at runtime, not committed.
+mem20owebz/data/cache/
