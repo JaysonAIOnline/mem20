@@ -34,6 +34,7 @@ class Sample:
     child_names: list[str] = field(default_factory=list)
     busy_children: list[str] = field(default_factory=list)
     owns_foreground: bool | None = None
+    baseline: bool = False
     quiet_streak: int = 0
     quiescent: bool = False
     reasons: list[str] = field(default_factory=list)
@@ -197,7 +198,9 @@ class Monitor:
         for pid in self.pids:
             sample = self._observe(pid, table)
             previous = self.state.samples.get(pid)
-            if previous is not None:
+            if previous is None:
+                sample.baseline = True
+            else:
                 sample.quiet_streak = previous.quiet_streak + 1
             self.state.samples[pid] = sample
 

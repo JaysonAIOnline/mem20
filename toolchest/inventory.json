@@ -1,7 +1,7 @@
 {
   "format": "mem20-toolchest-inventory",
   "format_version": 1,
-  "generated_at": "2026-09-27T19:16:23.169115+00:00",
+  "generated_at": "2026-09-28T07:06:24.396639+00:00",
   "toolchest_version": "0.1.0",
   "host": "jnet1",
   "sources": [
@@ -11,9 +11,9 @@
   ],
   "counts": {
     "mcp": 253,
-    "cli": 290,
-    "subsystem": 36,
-    "total": 579
+    "cli": 291,
+    "subsystem": 37,
+    "total": 581
   },
   "categories": {
     "agent-platform": {
@@ -23,7 +23,7 @@
       ]
     },
     "cli": {
-      "count": 290,
+      "count": 291,
       "subcategories": [
         "cloud",
         "data-db",
@@ -80,7 +80,7 @@
       ]
     },
     "other": {
-      "count": 17,
+      "count": 18,
       "subcategories": [
         "native-subsystem"
       ]
@@ -9799,7 +9799,7 @@
       "name": "bean-query",
       "category": "cli",
       "subcategory": "data-db",
-      "description": "bean-query: Usage: bean-query [OPTIONS] FILENAME [QUERY]...    An interactive interpreter for the Beancount Query Language.    Load Beancount ledger FILENAME and run Beancount Query Language QUERY on it,   if specified, or drop into",
+      "description": "bean-query \u00b7 runs with /root/.venv/bin/python",
       "source": "/root/.venv/bin/bean-query",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -9822,12 +9822,7 @@
         "executable": true,
         "size": 168,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/bean-query",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "Usage: bean-query [OPTIONS] FILENAME [QUERY]...    An interactive interpreter for the Beancount Query Language.    Load Beancount ledger FILENAME and run Beancount Query Language QUERY on it,   if specified, or drop into"
-        }
+        "resolved_target": "/root/.venv/bin/bean-query"
       }
     },
     {
@@ -9974,7 +9969,7 @@
       "name": "check-model",
       "category": "cli",
       "subcategory": "ml-ai",
-      "description": "check-model \u00b7 runs with /root/.venv/bin/python",
+      "description": "check-model: usage: check-model [-h] model_pb  positional arguments:   model_pb  options:   -h, --help  show this help message and exit",
       "source": "/root/.venv/bin/check-model",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -9997,7 +9992,12 @@
         "executable": true,
         "size": 183,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/check-model"
+        "resolved_target": "/root/.venv/bin/check-model",
+        "help": {
+          "sampled": true,
+          "ok": true,
+          "summary": "usage: check-model [-h] model_pb  positional arguments:   model_pb  options:   -h, --help  show this help message and exit"
+        }
       }
     },
     {
@@ -14710,6 +14710,38 @@
       }
     },
     {
+      "id": "cli:sitemap",
+      "kind": "cli",
+      "name": "sitemap",
+      "category": "cli",
+      "subcategory": "generic",
+      "description": "sitemap \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/sitemap",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/sitemap"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 170,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/sitemap"
+      }
+    },
+    {
       "id": "cli:skillclaw",
       "kind": "cli",
       "name": "skillclaw",
@@ -16266,7 +16298,7 @@
       "name": "blender",
       "category": "cli",
       "subcategory": "graphics-3d",
-      "description": "blender \u00b7 -> /opt/blender/blender-5.2.0-linux-x64/blender",
+      "description": "blender: Blender 5.2.0 LTS Usage: blender [args ...] [file] [args ...]  Render Options: -b or --background  \tRun in background (often used for UI-less rendering).  \tThe audio device is disabled in background-mode by default \tand ",
       "source": "/usr/local/bin/blender",
       "runtime_status": "ok",
       "runtime_detail": "symlink in /usr/local/bin",
@@ -16289,7 +16321,12 @@
         "executable": true,
         "size": 174666336,
         "symlink": true,
-        "resolved_target": "/opt/blender/blender-5.2.0-linux-x64/blender"
+        "resolved_target": "/opt/blender/blender-5.2.0-linux-x64/blender",
+        "help": {
+          "sampled": true,
+          "ok": true,
+          "summary": "Blender 5.2.0 LTS Usage: blender [args ...] [file] [args ...]  Render Options: -b or --background  \tRun in background (often used for UI-less rendering).  \tThe audio device is disabled in background-mode by default \tand "
+        }
       }
     },
     {
@@ -19071,7 +19108,8 @@
         "dependencies": [
           "fastapi>=0.110",
           "uvicorn>=0.27",
-          "mem20ops"
+          "mem20ops",
+          "mem20dreamz"
         ],
         "installed": {
           "env": "root-venv",
@@ -20555,6 +20593,74 @@
         "importable": [
           {
             "name": "mem20shopz",
+            "importable": true
+          }
+        ],
+        "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
+      "id": "subsystem:mem20sitemapz",
+      "kind": "subsystem",
+      "name": "mem20sitemapz",
+      "category": "other",
+      "subcategory": "native-subsystem",
+      "description": "Machine-readable sitemap of the mem20 monorepo for AI agents, plus a quiescence poller and source-only snapshotter.",
+      "source": "/opt/mem20/mem20sitemapz/pyproject.toml",
+      "runtime_status": "ok",
+      "runtime_detail": "pkg=mem20sitemapz v0.1.0; installed 0.1.0 via root-venv; importable=True (1 modules checked); scripts=1 declared, 1 on PATH",
+      "checks": [
+        {
+          "check": "pyproject present",
+          "ok": true,
+          "detail": "/opt/mem20/mem20sitemapz/pyproject.toml"
+        },
+        {
+          "check": "name declared",
+          "ok": true,
+          "detail": "mem20sitemapz"
+        },
+        {
+          "check": "description present",
+          "ok": true,
+          "detail": "115 chars"
+        },
+        {
+          "check": "installed",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "distribution",
+          "ok": true,
+          "detail": "installed 0.1.0 via root-venv"
+        },
+        {
+          "check": "import",
+          "ok": true,
+          "detail": "mem20sitemapz=y"
+        }
+      ],
+      "meta": {
+        "pkg_name": "mem20sitemapz",
+        "version": "0.1.0",
+        "pyproject": "/opt/mem20/mem20sitemapz/pyproject.toml",
+        "entry_points": [
+          {
+            "console": "sitemap",
+            "target": "mem20sitemapz.cli:main",
+            "on_path": true
+          }
+        ],
+        "dependencies": [],
+        "installed": {
+          "env": "root-venv",
+          "version": "0.1.0",
+          "location": "/root/.venv/lib/python3.14/site-packages"
+        },
+        "importable": [
+          {
+            "name": "mem20sitemapz",
             "importable": true
           }
         ],

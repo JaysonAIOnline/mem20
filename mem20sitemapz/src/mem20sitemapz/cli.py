@@ -175,8 +175,10 @@ def cmd_watch(args: argparse.Namespace) -> int:
         print(f"watch: self agent pid={self_pid} self sessions={self_sessions}", file=sys.stderr)
 
     targets = [int(p) for p in (args.targets or "").replace(",", " ").split()] if args.targets else []
+    excluded = {int(p) for p in (args.exclude_pid or [])}
     if not targets and args.autodetect:
         targets = _autodetect_targets()
+    targets = [p for p in targets if p not in excluded]
     if not targets:
         print("no target pids; pass --targets or --autodetect", file=sys.stderr)
         return 2
@@ -236,7 +238,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_build = sub.add_parser("build", help="scan the tree and write the index")
     p_build.add_argument("--root", default=str(DEFAULT_ROOT))
     p_build.add_argument("--index-dir", default=str(DEFAULT_INDEX_DIR))
-    p_build.add_argument("--depth", type=int, default=2)
+    p_build.add_argument("--depth", type=int, default=14)
     p_build.set_defaults(func=cmd_build)
 
     p_search = sub.add_parser("search", help="search the index")
@@ -267,6 +269,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_watch = sub.add_parser("watch", help="wait until every target agent stops working, then snapshot")
     p_watch.add_argument("--targets", default="", help="comma or space separated pids")
+    p_watch.add_argument("--exclude-pid", action="append", type=int, default=[])
     p_watch.add_argument("--autodetect", action="store_true", help="find other opencode processes")
     p_watch.add_argument("--root", default=str(DEFAULT_ROOT))
     p_watch.add_argument("--out", default=str(snapshot_mod.DEFAULT_OUT))
@@ -281,14 +284,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_watch.add_argument("--no-snapshot", action="store_true", help="report quiescence, write nothing")
     p_watch.set_defaults(func=cmd_watch)
 
-    common(parser)
     return parser
+
+
+TOP_LEVEL_FLAGS = {"-h", "--help", "--version"}
 
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     parser = build_parser()
-    if not argv or argv[0].startswith("-"):
+    if not argv:
+        argv = ["build"]
+    elif argv[0].startswith("-") and argv[0] not in TOP_LEVEL_FLAGS:
         argv = ["build", *argv]
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

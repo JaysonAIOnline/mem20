@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .policy import (
+    CODE_LANGUAGES,
     DOC_NAMES,
     SCHEMA,
     UNPREFIXED_SERVICES,
@@ -18,6 +19,7 @@ from .policy import (
 )
 
 LINE_COUNT_MAX_BYTES = 2_000_000
+DEFAULT_MAX_DEPTH = 14
 
 
 def _read_text(path: Path, limit: int = 400_000) -> str:
@@ -59,15 +61,30 @@ def _load_pyproject(subsystem_dir: Path) -> dict[str, Any]:
     }
 
 
+README_TEXT_LIMIT = 8000
+
+
+def _doc_files(subsystem_dir: Path) -> list[Path]:
+    found = [subsystem_dir / name for name in DOC_NAMES if (subsystem_dir / name).is_file()]
+    if not found:
+        found = sorted(p for p in subsystem_dir.glob("*.md") if p.is_file())[:2]
+    return found
+
+
 def _readme_head(subsystem_dir: Path) -> str:
-    for name in DOC_NAMES:
-        candidate = subsystem_dir / name
-        if candidate.is_file():
-            for line in _read_text(candidate, 4000).splitlines():
-                stripped = line.strip().lstrip("#").strip()
-                if stripped and not stripped.startswith(("!", "[", "<")):
-                    return stripped[:300]
+    for candidate in _doc_files(subsystem_dir):
+        for line in _read_text(candidate, 4000).splitlines():
+            stripped = line.strip().lstrip("#").strip()
+            if stripped and not stripped.startswith(("!", "[", "<", "-", "|", "*")):
+                return stripped[:300]
     return ""
+
+
+def _readme_text(subsystem_dir: Path) -> str:
+    chunks = []
+    for candidate in _doc_files(subsystem_dir):
+        chunks.append(_read_text(candidate, README_TEXT_LIMIT))
+    return " ".join(chunks)[:README_TEXT_LIMIT].lower()
 
 
 def _classify(name: str) -> str:
@@ -95,6 +112,7 @@ def _new_bucket() -> dict[str, Any]:
         "files": 0,
         "bytes": 0,
         "lines": 0,
+        "lines_by_language": {},
         "languages": {},
         "test_files": 0,
         "docs": [],
@@ -103,7 +121,7 @@ def _new_bucket() -> dict[str, Any]:
     }
 
 
-def scan(root: Path, max_depth: int = 2) -> dict[str, Any]:
+def scan(root: Path, max_depth: int = DEFAULT_MAX_DEPTH) -> dict[str, Any]:
     root = root.resolve()
     buckets: dict[str, dict[str, Any]] = {}
     root_files: list[str] = []
@@ -161,6 +179,7 @@ def scan(root: Path, max_depth: int = 2) -> dict[str, Any]:
         "subsystems": len(subsystems),
         "files": sum(s["file_count"] for s in subsystems) + root_bucket["files"],
         "lines": sum(s["line_count"] for s in subsystems) + root_bucket["lines"],
+        "code_lines": sum(s["code_lines"] for s in subsystems),
         "languages": _merge_languages([s["languages"] for s in subsystems]),
         "categories": _count_by(subsystems, "category"),
     }
@@ -185,7 +204,9 @@ def _accumulate(bucket: dict[str, Any], path: Path, current: Path, root: Path) -
     language = language_of(path)
     bucket["files"] += 1
     bucket["bytes"] += size
-    bucket["lines"] += _count_lines(path, size)
+    lines = _count_lines(path, size)
+    bucket["lines"] += lines
+    bucket["lines_by_language"][language] = bucket["lines_by_language"].get(language, 0) + lines
     bucket["languages"][language] = bucket["languages"].get(language, 0) + 1
     if path.name in DOC_NAMES:
         bucket["docs"].append(str(path.relative_to(root)))
@@ -200,12 +221,17 @@ def _accumulate(bucket: dict[str, Any], path: Path, current: Path, root: Path) -
 def _entry_for(root: Path, name: str, bucket: dict[str, Any]) -> dict[str, Any] | None:
     subsystem_dir = root / name
     meta = _load_pyproject(subsystem_dir)
+    by_lang = bucket["lines_by_language"]
+    code_lines = sum(
+        value for lang, value in by_lang.items() if lang in CODE_LANGUAGES
+    )
     entry: dict[str, Any] = {
         "name": meta.get("name") or name,
         "dir": name,
         "category": _classify(name),
         "description": meta.get("description") or "",
         "readme_summary": _readme_head(subsystem_dir),
+        "readme_text": _readme_text(subsystem_dir),
         "keywords": meta.get("keywords") or [],
         "version": meta.get("version"),
         "license": meta.get("license"),
@@ -215,6 +241,8 @@ def _entry_for(root: Path, name: str, bucket: dict[str, Any]) -> dict[str, Any] 
         "packaged": bool(meta),
         "file_count": bucket["files"],
         "line_count": bucket["lines"],
+        "code_lines": code_lines,
+        "lines_by_language": dict(sorted(by_lang.items(), key=lambda kv: -kv[1])),
         "bytes": bucket["bytes"],
         "languages": dict(sorted(bucket["languages"].items(), key=lambda kv: -kv[1])),
         "test_files": bucket["test_files"],

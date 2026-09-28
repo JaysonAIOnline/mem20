@@ -34,7 +34,8 @@ def render_markdown(index: dict[str, Any]) -> str:
     lines.append("")
     lines.append(f"- Subsystems indexed: **{totals.get('subsystems', 0)}**")
     lines.append(f"- Source files: **{totals.get('files', 0)}**")
-    lines.append(f"- Non-blank lines: **{totals.get('lines', 0)}**")
+    lines.append(f"- Code lines (excludes data/docs): **{totals.get('code_lines', 0):,}**")
+    lines.append(f"- All non-blank source lines (incl. json/md): **{totals.get('lines', 0):,}**")
     langs = totals.get("languages", {})
     if langs:
         top = ", ".join(f"{k} ({v})" for k, v in list(langs.items())[:8])
@@ -52,16 +53,16 @@ def render_markdown(index: dict[str, Any]) -> str:
             continue
         lines.append(f"## {CATEGORY_LABEL.get(category, category)}")
         lines.append("")
-        lines.append("| Subsystem | Lines | Tests | Entry points | What it is |")
+        lines.append("| Subsystem | Code lines | Tests | Entry points | What it is |")
         lines.append("|---|---:|---:|---|---|")
-        for entry in sorted(group, key=lambda e: (-e.get("line_count", 0), e["name"])):
+        for entry in sorted(group, key=lambda e: (-e.get("code_lines", 0), e["name"])):
             summary = entry.get("description") or entry.get("readme_summary") or ""
             summary = summary.replace("|", "/").replace("\n", " ")
             if len(summary) > 150:
                 summary = summary[:147] + "..."
             scripts = ", ".join(f"`{k}`" for k in sorted(entry.get("entry_points", {}))) or "-"
             lines.append(
-                f"| `{entry['name']}` | {entry.get('line_count', 0)} | "
+                f"| `{entry['name']}` | {entry.get('code_lines', 0)} | "
                 f"{entry.get('test_files', 0)} | {scripts} | {summary} |"
             )
         lines.append("")
@@ -92,7 +93,8 @@ def render_terminal(index: dict[str, Any]) -> str:
         f"generated   {index.get('generated_at')} ({index.get('scan_seconds')}s)",
         f"subsystems  {totals.get('subsystems', 0)}",
         f"files       {totals.get('files', 0)}",
-        f"lines       {totals.get('lines', 0)}",
+        f"code lines  {totals.get('code_lines', 0)}",
+        f"all lines   {totals.get('lines', 0)}",
     ]
     langs = totals.get("languages", {})
     if langs:

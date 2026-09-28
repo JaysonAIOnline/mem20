@@ -202,6 +202,40 @@ UNPREFIXED_SERVICES = (
 )
 
 
+CODE_LANGUAGES = frozenset(
+    (
+        "python",
+        "typescript",
+        "javascript",
+        "rust",
+        "go",
+        "c",
+        "cpp",
+        "csharp",
+        "lua",
+        "gdscript",
+        "shell",
+        "sql",
+        "zig",
+        "elixir",
+        "erlang",
+        "ruby",
+        "perl",
+        "php",
+        "swift",
+        "kotlin",
+        "scala",
+        "dart",
+        "html",
+        "css",
+        "scss",
+        "glsl",
+        "protobuf",
+        "make",
+    )
+)
+
+
 def is_skipped_dir(name: str, extra: tuple[str, ...] = ()) -> bool:
     patterns = SOURCE_DIR_GLOBS + extra
     return any(fnmatch.fnmatch(name, pat) for pat in patterns)

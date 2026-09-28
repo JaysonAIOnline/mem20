@@ -108,11 +108,18 @@ def create_snapshot(
             rel_dir = current.relative_to(root)
             rel_str = "" if rel_dir == Path(".") else str(rel_dir)
 
+            for pruned in list(dirnames):
+                if _is_secret_path(f"{rel_str}/{pruned}".lstrip("/")):
+                    result.skipped_secrets += 1
+                    result.skipped += 1
+
             dirnames[:] = sorted(
                 d
                 for d in dirnames
-                if not is_skipped_dir(d, extra_skip_dirs)
-                and not _is_secret_path(f"{rel_str}/{d}".lstrip("/"))
+                if not (
+                    is_skipped_dir(d, extra_skip_dirs)
+                    or _is_secret_path(f"{rel_str}/{d}".lstrip("/"))
+                )
             )
 
             for name in sorted(filenames):

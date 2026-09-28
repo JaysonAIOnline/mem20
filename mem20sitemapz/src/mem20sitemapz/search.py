@@ -11,6 +11,7 @@ FIELD_WEIGHTS = (
     ("dir", 5.0),
     ("modules", 4.0),
     ("description", 3.0),
+    ("readme_text", 2.0),
     ("readme_summary", 2.5),
     ("subdirs", 1.5),
     ("docs", 1.0),
