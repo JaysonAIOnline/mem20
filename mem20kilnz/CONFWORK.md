@@ -850,3 +850,75 @@ to something bone-shaped.
 The old `Scene::keys` list and its bone-only lerp were removed rather than kept
 alongside; nothing else read them, and leaving both would have meant two sources
 of truth for animation.
+
+## Procedural node graph, 2026-09-27
+
+A graph is a way of wiring the mesh operations together, not a second
+implementation of them. Every node that produces geometry calls the operation it
+stands for: `primitive` calls make_primitive, `union`/`difference`/`intersect`
+call boolean_mesh, `remesh` calls remesh_mesh, `displace` calls displace_mesh.
+Node types: primitive, translate, rotate, scale, join, union, difference,
+intersect, remesh, displace, bbox_size, math, output.
+
+Op surface 116 -> 126 via graph_create, graph_node, graph_set, graph_link,
+graph_unlink, graph_delete_node, graph_info, graph_types, graph_evaluate and
+graph_delete.
+
+### The claim that matters, and how it is checked
+
+A graph must produce the *same* mesh as the op sequence it represents. A union of
+two unit spheres offset 1 in x, built both ways, gives 20,832 faces, 10,418 verts
+and a signed volume of 6.315994 in both cases, exactly. A single sphere primitive
+matches the `create` op triangle for triangle through the exported file. If the
+graph ever became a parallel implementation that drifted, these fail.
+
+### Errors name the node and the reason
+
+The caller is usually an agent that has to correct itself, so a vague message is
+a real cost. A cycle reports the path: `cycle: node 'T1' is already being
+evaluated (via 'o' -> 'T1' -> 'T2' -> 'T1') (at node 'T1')`. An unwired mesh
+input reports `translate: the mesh input is empty or not a mesh (at node 't')`. A
+string in a mesh socket reports `cannot use a string where a mesh is expected (at
+node 'o')`. An unknown node type lists every known type. A boolean that cannot
+resolve says so and names the mode and the resolution tried.
+
+Numbers cross freely between float and int sockets, because an agent setting an
+integer where a float is expected means the same thing. A mesh socket left at its
+default is genuinely empty and the node says so; a mesh socket explicitly set to
+the wrong type is a type error, and the two are distinguished by a `literal_set`
+flag rather than conflated.
+
+Graphs are serialized into the scene JSON, links by node and socket name so a
+rebuild that renumbers nodes cannot rewire them, and the undo snapshot carries
+them.
+
+### Bugs found and fixed
+
+1. **The node registry returned a vector by value, so `find_def` handed out
+   pointers into a destroyed temporary.** Every reader of the socket spec was
+   reading freed memory. It segfaulted inside the vector's own growth, which is a
+   long way from the actual mistake, and it took a gdb backtrace to find rather
+   than reading. Now a function-local static.
+2. **The Python client silently rewrote the graph's `input` field into an
+   absolute path**, because import and export use a field called `input` as a
+   filename and `_resolve_paths` rewrites that name unconditionally. Every
+   `graph_set` arrived as `input: "/cwd/primitive"` and no socket ever matched.
+   Renamed to `socket`, which is graph vocabulary anyway, rather than changing
+   shared client behaviour.
+3. **The `primitive` node did not set smooth shading or sync the render mesh.**
+   Curved primitives have to be smooth-shaded for `mesh_sync_render` to weld
+   them, and without the sync the render mesh is never built, so `displace_mesh`,
+   which needs vertex normals, refused the node's output. Both steps are what
+   `create` does and both are now mirrored.
+4. Deleting a node renumbers every later index, so links are repaired and the
+   output pointer adjusted; without that, a deleted node silently made the next
+   one feed the wrong place.
+
+### A pre-existing false success, found while checking equivalence
+
+`translate` read its movement from `delta` and defaulted a missing or misspelled
+key to a zero vector, then reported "translated <name>". Passing `offset`, the
+obvious name, moved nothing and reported success. It now refuses a missing key
+and a zero delta. This is not part of the graph work; it was found because the
+graph's `translate` node and the op disagreed, and the graph turned out to be
+right.

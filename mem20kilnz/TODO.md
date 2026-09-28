@@ -228,3 +228,29 @@ are queued and listed explicitly so none can be forgotten.
 - [ ] No morph-target or shape-key animation channels; `skins`/weights paths are
       deliberately ignored on import.
 - [ ] No constraint-driven animation and no IK baked into a clip.
+
+## Procedural node graph (done 2026-09-27)
+
+- [x] Named graphs holding typed nodes, links by node and socket name, and a
+      designated output node: graph_create, graph_node, graph_set, graph_link,
+      graph_unlink, graph_delete_node, graph_info, graph_types, graph_delete.
+- [x] Node types primitive, translate, rotate, scale, join, union, difference,
+      intersect, remesh, displace, bbox_size, math, output. Every geometry node
+      calls the real operation it stands for.
+- [x] Demand-driven evaluation with cycle detection that names the path.
+- [x] `graph_evaluate` returns measured quality: faces, boundary and non-manifold
+      edges, degenerate faces, non-finite vertices, surface area, signed volume.
+- [x] Verified to produce the *same* mesh as the equivalent op sequence: a union
+      of two offset spheres matches exactly at 20,832 faces and volume 6.315994.
+- [x] Graphs serialized into the scene JSON, links by name so renumbering cannot
+      rewire them, and carried in the undo snapshot.
+- [x] Node references accept an index or a name, so a generated graph and a
+      hand-written one are both comfortable.
+- [ ] No graph-to-glTF export: a procedural graph currently only reaches a file
+      as the mesh it evaluates to. Blender exports the graph itself.
+- [ ] No graph instancing or parameterised node groups, so a repeated subgraph
+      has to be repeated by hand.
+- [ ] No procedural textures or displacement images, so `displace` is driven by
+      value noise only.
+- [ ] No curve nodes, no procedural branching, and no per-frame animation of
+      graph parameters.

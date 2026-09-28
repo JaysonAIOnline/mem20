@@ -715,3 +715,43 @@ Any import of an animated file threw a json type_error and took the engine down.
 Every existing fixture imports cleanly, so the fixture suite could never have
 caught it. A gdb catchpoint on `__cxa_throw` located it in one run after reading
 the code had failed to.
+
+## 2026-09-27 — node graph: a freed pointer, and a field name the client owned
+
+The graph's first working build segfaulted on the second node. The backtrace put
+the crash inside `std::vector<std::pair<std::string, Type>>::_M_realloc_append`,
+which is about as far from the cause as a crash can be. The cause was
+`registry()` returning a `std::vector<NodeDef>` by value while `find_def` returned
+a pointer into it: the temporary was destroyed the moment `find_def` returned, and
+every reader of the socket spec was reading freed memory. Reading the code did not
+find it because the code is correct in isolation; it is the lifetime that is wrong.
+
+The second failure was a name collision with the client rather than with the
+engine. The Python RPC layer rewrites any field called `input` into an absolute
+path, because import and export use `input` as a filename. The graph ops used
+`input` as a socket name, so every `graph_set` arrived as
+`input: "/cwd/primitive"` and no socket ever matched. The error it produced was
+honest and useless: "node 'A' has no input '/opt/mem20/mem20kilnz/primitive'.
+It has: primitive, size, segments." The listing of valid names is what made it
+diagnosable at all. Renamed to `socket` rather than changing PATH_FIELDS, because
+that constant is shared behaviour and a name nobody else uses is the cheaper,
+safer fix.
+
+The third failure was found by disagreeing with the ops. The graph's `translate`
+node moved a mesh and the `translate` op did not, so the graph was suspect. It was
+the op: it reads `delta`, defaults a missing key to zero, and reported "translated
+<name>" having moved nothing. A false success is worse than a crash, because the
+caller believes it. `translate` now refuses a missing key and a zero delta. This
+was pre-existing and unrelated to the graph work.
+
+Fourth: the `primitive` node initially skipped the two steps `create` does --
+setting smooth shading for curved primitives, and calling mesh_sync_render. The
+first is not cosmetic, since mesh_sync_render welds on (position, normal, uv) and a
+flat-shaded curved surface cannot share a vertex. The second meant the render
+mesh was never built, so `displace_mesh`, which needs vertex normals, refused the
+node's output. Found because a displace node failed on a mesh that looked fine.
+
+Worth noting for the pattern: three of these four produced a plausible result
+rather than an error, and the one that crashed was the easiest to find. Tests that
+compare against the equivalent op path, rather than against a previous run, are
+what caught the drift.
