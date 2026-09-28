@@ -182,26 +182,38 @@ def verify_suite(
     return results
 
 
-def service_status(unit: str) -> dict[str, Any]:
-    """Report systemd unit status, main pid, and whether it has restarted recently."""
-    show = _run(
-        [
-            "systemctl",
-            "show",
-            unit,
-            "-p",
-            "ActiveState",
-            "-p",
-            "SubState",
-            "-p",
-            "MainPID",
-            "-p",
-            "ActiveEnterTimestamp",
-            "-p",
-            "ExecMainStartTimestamp",
-            "--no-pager",
-        ]
-    )
+def service_status(unit: str, user: bool = False) -> dict[str, Any]:
+    """Report systemd unit status, main pid, and whether it has restarted recently.
+
+    ``user=True`` queries the per-user manager instead of the system one. Both
+    are needed: a user unit is invisible to the system manager, and asking the
+    system manager about one reports it as inactive/dead - which reads as a
+    service that started and failed, which is not what happened.
+
+    ``load_state`` comes from systemd itself, so a unit that does not exist can
+    be named as missing instead of being inferred from a dead-looking status.
+    """
+    cmd = ["systemctl"]
+    if user:
+        cmd.append("--user")
+    cmd += [
+        "show",
+        unit,
+        "-p",
+        "LoadState",
+        "-p",
+        "ActiveState",
+        "-p",
+        "SubState",
+        "-p",
+        "MainPID",
+        "-p",
+        "ActiveEnterTimestamp",
+        "-p",
+        "ExecMainStartTimestamp",
+        "--no-pager",
+    ]
+    show = _run(cmd)
     props: dict[str, str] = {}
     for line in show["stdout_tail"].splitlines():
         key, _, value = line.partition("=")
@@ -209,8 +221,12 @@ def service_status(unit: str) -> dict[str, Any]:
             props[key.strip()] = value.strip()
     pid = int(props.get("MainPID") or 0)
     running = _run(["ps", "-o", "lstart=", "-p", str(pid)]) if pid else None
+    load_state = props.get("LoadState")
     return {
         "unit": unit,
+        "scope": "user" if user else "system",
+        "load_state": load_state,
+        "exists": load_state not in (None, "not-found"),
         "active_state": props.get("ActiveState"),
         "sub_state": props.get("SubState"),
         "main_pid": pid,

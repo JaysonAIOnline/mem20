@@ -1,0 +1,220 @@
+{
+  "_comment": [
+    "Prices are intentionally unset. A SKU becomes sellable only once BOTH",
+    "price_id (a real Stripe Price) and amount_cents are filled in - see",
+    "catalog.py Sku.configured. Until then the storefront shows 'price not set'",
+    "and checkout refuses with a reason. Nothing here guesses a price."
+  ],
+  "skus": [
+    {
+      "id": "foundation-single",
+      "group": "foundations",
+      "name": "Foundation",
+      "description": "A single mem20 service brought up, wired and documented.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "one subsystem, installed and enabled",
+        "systemd unit with restart-on-failure",
+        "runbook and first probe"
+      ]
+    },
+    {
+      "id": "fleet-starter",
+      "group": "foundations",
+      "name": "Fleet Starter",
+      "description": "A small working fleet with the control plane in front of it.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "up to five subsystems",
+        "unified control plane",
+        "CLI contract coverage report"
+      ]
+    },
+    {
+      "id": "hosting-monthly",
+      "group": "foundations",
+      "name": "Managed Hosting",
+      "description": "We run it, patch it and keep it honest, month to month.",
+      "kind": "subscription",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "monitoring and honest status",
+        "dependency and security updates",
+        "cancel any time"
+      ]
+    },
+    {
+      "id": "ops-audit",
+      "group": "operations",
+      "name": "Operations Audit",
+      "description": "A real review of what is running and what it is costing you.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "service and port census",
+        "persistence and restart review",
+        "prioritised fix list"
+      ]
+    },
+    {
+      "id": "control-plane-setup",
+      "group": "operations",
+      "name": "Control Plane Setup",
+      "description": "One screen to see every subsystem and its real status.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "per-subsystem panels",
+        "REST-first probes with honest fallbacks",
+        "auth and access control"
+      ]
+    },
+    {
+      "id": "oncall-monthly",
+      "group": "operations",
+      "name": "On-Call",
+      "description": "Someone answers when a service stops being honest.",
+      "kind": "subscription",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "response target",
+        "incident notes kept on the ledger",
+        "monthly review"
+      ]
+    },
+    {
+      "id": "memory-tiering",
+      "group": "intelligence",
+      "name": "Memory Tiering",
+      "description": "Decay, consolidation and trust scores tuned to your data.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "retention and decay policy",
+        "confidence calibration",
+        "audit for simulated content"
+      ]
+    },
+    {
+      "id": "agent-fleet-build",
+      "group": "intelligence",
+      "name": "Agent Fleet Build",
+      "description": "A working multi-agent system with defined handoffs.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "agent roles and tools",
+        "roadmap-backed execution",
+        "evaluation and regression tests"
+      ]
+    },
+    {
+      "id": "intelligence-monthly",
+      "group": "intelligence",
+      "name": "Intelligence Retainer",
+      "description": "Ongoing work on memory, cognition and agent behaviour.",
+      "kind": "subscription",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "monthly capability work",
+        "benchmark tracking",
+        "priority queue"
+      ]
+    },
+    {
+      "id": "asset-pipeline",
+      "group": "creative",
+      "name": "Asset Pipeline",
+      "description": "A repeatable path from idea to shipped, usable assets.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "generation and optimisation",
+        "naming and budget rules",
+        "reproducible build"
+      ]
+    },
+    {
+      "id": "game-vertical",
+      "group": "creative",
+      "name": "Game Vertical",
+      "description": "A playable vertical slice, built to be played early.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "vertical slice",
+        "player-facing testing",
+        "structured beta feedback"
+      ]
+    },
+    {
+      "id": "studio-monthly",
+      "group": "creative",
+      "name": "Studio Retainer",
+      "description": "Standing creative and technical capacity each month.",
+      "kind": "subscription",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "reserved capacity",
+        "asset and build work",
+        "monthly demo"
+      ]
+    },
+    {
+      "id": "migration",
+      "group": "support",
+      "name": "Migration",
+      "description": "Move an existing stack onto mem20 without losing history.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "inventory and mapping",
+        "staged cutover",
+        "rollback plan"
+      ]
+    },
+    {
+      "id": "training",
+      "group": "support",
+      "name": "Team Training",
+      "description": "Your team learns the estate instead of guessing at it.",
+      "kind": "one_time",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "hands-on sessions",
+        "runbooks and checklists",
+        "recorded material"
+      ]
+    },
+    {
+      "id": "priority-support-monthly",
+      "group": "support",
+      "name": "Priority Support",
+      "description": "A named contact for the things that cannot wait.",
+      "kind": "subscription",
+      "price_id": "",
+      "amount_cents": null,
+      "features": [
+        "priority queue",
+        "direct contact",
+        "quarterly roadmap review"
+      ]
+    }
+  ]
+}

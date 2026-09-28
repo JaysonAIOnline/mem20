@@ -13,6 +13,23 @@ from .inventory import Inventory, Item
 from .quest import Quest, QuestLog, QuestObjective
 from .world import Faction, NPC, Scene, World
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _cmd_character(args) -> int:
     c = Character(args.name, args.archetype)
@@ -125,6 +142,7 @@ def _cmd_test(args) -> int:
     return 0
 
 
+@json_main
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="mem20rpgz", description="Native mem20 RPGAgent")
     p.add_argument("--seed", type=int, default=20260917)

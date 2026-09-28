@@ -21,6 +21,23 @@ from . import braid_hook
 from .descriptor import all_descriptors
 from .service import SenseService
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _cmd_gap(args: argparse.Namespace) -> int:
     svc = SenseService()
@@ -85,6 +102,7 @@ def _cmd_serve(args: argparse.Namespace) -> int:
     return api_main(["--port", str(args.port)])
 
 
+@json_main
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     p = argparse.ArgumentParser(prog="fs-sense", description="mem30 Phase 1 sense-organs")

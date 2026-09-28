@@ -7,7 +7,25 @@ import sys
 from .sdk import UCGClient
 from .simulator import run_scenarios
 
+import functools
 
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
+
+@json_main
 def main() -> None:
     p = argparse.ArgumentParser(prog="mem20ucgz")
     p.add_argument("--url", default="http://127.0.0.1:8781")

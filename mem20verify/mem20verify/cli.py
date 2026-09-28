@@ -13,7 +13,7 @@ import json
 import os
 import sys
 
-from . import dataintegrity, linters, outage, systemd, testrun
+from . import dataintegrity, linters, outage, shadow, systemd, testrun
 
 EXIT_OK = 0
 EXIT_FINDINGS = 1
@@ -225,6 +225,55 @@ def cmd_lint(args) -> int:
     return EXIT_OK if not issues else EXIT_FINDINGS
 
 
+# ------------------------------------------------------------------ shadow
+def cmd_shadow(args) -> int:
+    try:
+        reports = shadow.sweep(tuple(args.package) if args.package else None,
+                               root=args.root, python=args.python,
+                               pythonpath=args.pythonpath)
+    except RuntimeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+
+    lines = []
+    for report in reports:
+        if report.resolution == shadow.RESOLVES:
+            lines.append(f"  OK        {report.package:24s} {report.import_name:22s} "
+                         f"layout={report.layout}")
+        elif report.resolution == shadow.SHADOWED:
+            lines.append(f"  SHADOWED  {report.package:24s} {report.import_name:22s} "
+                         f"layout={report.layout} outranked-by={report.search_path}")
+        elif report.resolution == shadow.UNREACHABLE:
+            lines.append(f"  UNREACH   {report.package:24s} {report.import_name:22s} "
+                         f"layout={report.layout} not-importable-here")
+        else:
+            lines.append(f"  {report.resolution.upper():9s} {report.package:24s} "
+                         f"{report.import_name}")
+            for problem in report.problems:
+                lines.append(f"             - {problem}")
+
+    shadowed = [r for r in reports if r.resolution == shadow.SHADOWED]
+    unreachable = [r for r in reports if r.resolution == shadow.UNREACHABLE]
+    findings = shadowed + unreachable
+    human = (f"shadow sweep: {len(reports) - len(findings)}/{len(reports)} "
+             f"import with the estate root on sys.path"
+             + ("\n" + "\n".join(lines) if lines else ""))
+    if shadowed:
+        human += ("\nnote: SHADOWED packages are installed and import fine on their "
+                  "own; a same-named\n      directory outranks them only when the "
+                  "estate root is the working directory.\n      Layout is not the "
+                  "cause - run each from its own package root.")
+    if unreachable:
+        human += (f"\nnote: {len(unreachable)} package(s) are not importable from "
+                  "this interpreter at all\n      (own venv, or different name); "
+                  "a layout change would not fix those.")
+    _emit({"ok": not findings,
+           "shadowed": [r.as_dict() for r in shadowed],
+           "unreachable": [r.as_dict() for r in unreachable],
+           "reports": [r.as_dict() for r in reports]}, args.json, human)
+    return EXIT_OK if not findings else EXIT_FINDINGS
+
+
 # --------------------------------------------------------------------- all
 def cmd_all(args) -> int:
     codes = []
@@ -280,6 +329,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("lint", help="AST linters for known-shipped defect classes")
     p.add_argument("paths", nargs="+")
     p.set_defaults(func=cmd_lint)
+
+    p = sub.add_parser("shadow", help="which packages are shadowed by a same-named dir")
+    p.add_argument("--root", default=shadow.DEFAULT_ROOT)
+    p.add_argument("--package", action="append")
+    p.add_argument("--python", default=shadow.DEFAULT_PYTHON)
+    p.add_argument("--pythonpath", help="extra PYTHONPATH for the child probe")
+    p.set_defaults(func=cmd_shadow)
 
     p = sub.add_parser("all", help="systemd + dataintegrity + outage")
     p.add_argument("--unit", dest="units", action="append")

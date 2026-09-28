@@ -101,8 +101,19 @@ impl PyBraidEngine {
         Ok(node)
     }
 
+    /// The provenance gate, as documented in braid_core: a node is PROVEN only
+    /// when its audit signature verifies AND its precommitment still re-derives
+    /// the committed CID. `BraidLog::verify` alone checks only the content
+    /// hash, so a node with a correct CID but a forged or stripped signature
+    /// would have reported as proven here - which is exactly the claim every
+    /// Python caller makes when it calls this. Use the same gate braid_her,
+    /// braid_ui_bridge and intent.rs already use.
     fn prove(&self, cid: &str) -> bool {
-        self.engine.lock().unwrap().log.verify(cid)
+        let engine = self.engine.lock().unwrap();
+        match engine.log.get(cid) {
+            Some(node) => braid_core::engine::node_is_proven(node),
+            None => false,
+        }
     }
 
     #[pyo3(signature = (cap, snapshot_cid, desire, target, context, weight))]

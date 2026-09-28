@@ -16,6 +16,23 @@ import sys
 
 from . import __version__
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _agent_files(args) -> tuple[str, str]:
     agents_yaml = args.agents or os.environ.get("MEM20CREWZ_AGENTS_YAML",
@@ -71,6 +88,7 @@ def cmd_peers(args) -> int:
     return 0
 
 
+@json_main
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="mem20crewz",
                                      description="cleanroom mem20 crews on mem20")

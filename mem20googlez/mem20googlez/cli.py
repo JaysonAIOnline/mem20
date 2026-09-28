@@ -10,6 +10,23 @@ from .config import GoogleADKConfig
 from .providers import resolve_provider
 from .runners import DurableRunner
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _make_runner(
     agent: BaseAgent,
@@ -102,6 +119,7 @@ def _cmd_health(args) -> int:
     return 0 if healthy else 1
 
 
+@json_main
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="mem20googlez", description="mem20 Google ADK runtime")
     parser.add_argument("--config", help="YAML configuration path")

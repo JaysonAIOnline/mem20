@@ -16,6 +16,23 @@ import sys
 import urllib.request
 from typing import Any
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _fetch(path: str, body: dict | None = None,
            base: str = "http://127.0.0.1:8783") -> Any:
@@ -76,6 +93,7 @@ def _cmd_health(args: argparse.Namespace) -> int:
     return 0 if h.get("ok") else 1
 
 
+@json_main
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="fs-cv", description="mem20cviz cv.infer")
     sub = p.add_subparsers(dest="cmd", required=True)

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20sitemapz"
+version = "0.1.0"
+description = "Machine-readable sitemap of the mem20 monorepo for AI agents, plus a quiescence poller and source-only snapshotter."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "sitemap", "index", "codebase", "agents", "snapshot", "quiescence"]
+dependencies = []
+
+[project.scripts]
+sitemap = "mem20sitemapz.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["mem20sitemapz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20shopz"
+version = "0.1.0"
+description = "mem20 storefront: catalog, Stripe Checkout, signature-verified webhooks and once-only auto-provisioning."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "stripe", "checkout", "storefront", "provisioning"]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "stripe>=10",
+]
+
+[project.scripts]
+mem20-shop = "mem20shopz.__main__:main"
+
+[tool.setuptools]
+packages = ["mem20shopz"]
+
+[tool.setuptools.package-data]
+mem20shopz = ["catalog.json", "static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

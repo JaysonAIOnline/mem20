@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20webgpuz"
+version = "1.0.0"
+description = "WebGPU compute studio: backend selection against probed real hardware; reports 'not_measured' rather than a fabricated speedup. mem30 Phase 4 incubator."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+mem20webgpuz = "mem20webgpuz.core:cli"
+
+[tool.setuptools]
+packages = ["mem20webgpuz"]
+
+[tool.setuptools.package-data]
+mem20webgpuz = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]

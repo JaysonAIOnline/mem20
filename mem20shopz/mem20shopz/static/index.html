@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>mem20 shop</title>
+<meta name="description" content="Buy a working mem20 service. Prices and readiness are live, not promised." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/">mem20<span class="brand-dim">.shop</span></a>
+    <div class="live" id="live" title="This page updates itself. No refresh needed.">
+      <span class="dot" id="dot"></span>
+      <span id="live-text">connecting…</span>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <section class="hero">
+    <h1>A working agent fleet, <span class="grad">not a promise of one.</span></h1>
+    <p class="lede">
+      Every product here is a real service with a real price, provisioned by a verified
+      payment webhook. If something is not buyable yet, this page says so plainly
+      instead of taking your money for it.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#catalog">Browse the catalog</a>
+      <a class="btn" id="status-link" href="#status">Why can I not buy yet?</a>
+    </div>
+  </section>
+
+  <section id="status" class="panel" aria-live="polite">
+    <div class="panel-head">
+      <h2>Readiness</h2>
+      <span class="pill" id="mode-pill">…</span>
+    </div>
+    <div id="status-body" class="status-body">
+      <p class="muted">Reading live status…</p>
+    </div>
+  </section>
+
+  <div id="notice" class="notice" hidden></div>
+
+  <section id="activity" class="panel" hidden>
+    <div class="panel-head">
+      <h2>Recent activity</h2>
+      <span class="muted small" id="activity-total"></span>
+    </div>
+    <ul id="activity-list" class="activity"></ul>
+  </section>
+
+  <section id="catalog">
+    <div class="section-head">
+      <h2>The catalog</h2>
+      <p class="muted" id="catalog-note">…</p>
+    </div>
+    <div id="groups" class="groups">
+      <p class="muted">Loading catalog…</p>
+    </div>
+  </section>
+
+  <section class="panel faq">
+    <h2>Straight answers</h2>
+    <details>
+      <summary>What actually happens when I pay?</summary>
+      <p>
+        Stripe confirms the payment and sends a signed webhook. Provisioning runs from
+        that webhook, not from your browser — so you get your service even if you close
+        the tab. While provisioning is in dry-run mode, nothing is created, and the
+        banner above will say so.
+      </p>
+    </details>
+    <details>
+      <summary>Why are some products unpriced?</summary>
+      <p>
+        A price is not invented to fill a gap. An unpriced product has no Stripe Price
+        behind it, so the server refuses to sell it. You will see the exact reason on
+        its card.
+      </p>
+    </details>
+    <details>
+      <summary>Why do the prices and status change while I am looking?</summary>
+      <p>
+        Because they are live. This page re-reads the server on a timer and pauses when
+        the tab is hidden, so what you see is current rather than cached from whenever
+        the page happened to load.
+      </p>
+    </details>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <span class="muted small">mem20 — self-improving agent infrastructure.</span>
+  <a class="muted small" href="/api/health">health</a>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -7,11 +7,29 @@ from .builder import build
 from .simulator import run as simulate, SCENARIOS
 from .benchmark import benchmark
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 def runtime(args):
     trust={args.signer:args.secret} if getattr(args,"secret",None) else {}
     endpoints={"edge":getattr(args,"edge_endpoint",None),"cloud":getattr(args,"cloud_endpoint",None)}
     return MicroappRuntime(args.state,trust,endpoints,max_concurrent=getattr(args,"max_concurrent",4))
 
+@json_main
 def main():
     p=argparse.ArgumentParser(prog="fs-microapp"); p.add_argument("--state",default=str(Path.home()/".freestack/rm002/state.db")); p.add_argument("--signer",default="lab"); p.add_argument("--secret",default=os.environ.get("FREESTACK_SIGNING_SECRET","dev-secret")); p.add_argument("--edge-endpoint",default=os.environ.get("FREESTACK_EDGE_ENDPOINT")); p.add_argument("--cloud-endpoint",default=os.environ.get("FREESTACK_CLOUD_ENDPOINT")); p.add_argument("--max-concurrent",type=int,default=4)
     s=p.add_subparsers(dest="cmd",required=True)

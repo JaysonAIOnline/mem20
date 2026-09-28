@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20cliz"
+version = "0.1.0"
+description = "Shared machine contract for mem20 fleet CLIs: a json_main decorator that adds --json to any CLI without changing its human output."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "cli", "json", "contract", "machine-readable"]
+dependencies = []
+
+[project.scripts]
+mem20-cli = "mem20cliz:main"
+
+[tool.setuptools]
+packages = ["mem20cliz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

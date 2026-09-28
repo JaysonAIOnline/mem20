@@ -1,0 +1,125 @@
+{
+  "name": "mem30-moonshots",
+  "description": "Phase 4 incubation lane. Canonical union of the two divergent lists of ten: the roadmap's moonshot names and the 2026-09-20 dream's iteration-5 artifacts. Every entry is classified MOON (genuine incubation candidate) or ABSORBED (restates Phase 0-3 work that already exists), so completed work is not re-promoted into the sandbox. Nothing here is on the critical path.",
+  "created": "2026-09-25",
+  "honesty_contract": {
+    "MOON": "speculative, sandbox only, behind the mem20wasmz/mem20webgpuz incubators; must yield measured evidence or an explicit infeasible result",
+    "ABSORBED": "overlaps a real mem20 capability or a completed phase; the mem30 home already exists, do not rebuild",
+    "rule": "no MOON may report a number it did not measure. RM-102's fabricated estimated_speedup was the reason this register exists."
+  },
+  "sources": {
+    "roadmap_doc": "/home/jayson/Desktop/6/MEM30_AI_EXECUTABLE_ROADMAP.md (Phase 4)",
+    "dream_log": "/home/jayson/Desktop/6/MEM30_DREAM_LOG.md (iteration 5 artifacts)",
+    "master_report": "/home/jayson/Desktop/6/MEM30_MASTER_DREAM_REPORT.md"
+  },
+  "incubators": {
+    "mem20wasmz": {
+      "rm": 101,
+      "port": 8766,
+      "unit": "mem20wasmz-serve.service",
+      "domain": "WebAssembly component compatibility analysis"
+    },
+    "mem20webgpuz": {
+      "rm": 102,
+      "port": 8767,
+      "unit": "mem20webgpuz-serve.service",
+      "domain": "WebGPU backend selection against probed real hardware"
+    }
+  },
+  "phases": [
+    {
+      "name": "absorbed-overlap",
+      "status": "completed",
+      "notes": "Dream-log artifacts that restate completed Phase 0-3 work. Classified ABSORBED so they are not re-promoted. (1) Capability-Versioned Registry = UCG/RM-001, already semantically versioned in mem20ucgz. (2) Reversible Workflow Continuum = RM-052/053, already folded into mem20langz checkpointers per the roadmap's own [DUP] decision. (3) Zero-Install Edge-Deploy = RM-002 ZIMR, already live. (4) WebGPU-Accelerated Capability Mapper = RM-102, now installed as mem20webgpuz with a real hardware probe. The Mem30 Meta-Orchestrator was originally listed here and has been REMOVED: verified against code, it is not absorbed. It is now a moonshot."
+    },
+    {
+      "name": "moon-meta-orchestrator",
+      "status": "planned",
+      "notes": "Meta-Orchestrator: watch the capability graph for gaps, replan phases, and dispatch. NOT ABSORBED, verified by code 2026-09-25. mem20orcaz has no replan/gap-map/meta-orch symbols at all. The nearest code is mem20sENSEZ: RM-200 GapMapper is real and answers against the live UCG (26 active capabilities; 'quantum teleportation sensor platform' scored coverage_ratio 0.25 with missing_tokens [quantum, teleportation, sensor]), and RM-199 PhaseReplanner is real but its reordering is a no-op because every phase is assigned the same gaps, so the stable sort preserves input order (measured: all phases same gaps True, order changed vs input False). No reactive event-to-replan-to-dispatch loop exists. Gap reporting and a deterministic sha256 plan_id exist; a meta-orchestrator does not."
+    },
+    {
+      "name": "moon-foundry",
+      "status": "planned",
+      "notes": "Autonomous Software Foundry: agents that take a spec and ship verified code end-to-end. First genuine MOON in the union."
+    },
+    {
+      "name": "moon-self-healing",
+      "status": "planned",
+      "notes": "Self-Healing Runtime Civilization: supervised fleets that detect their own faults and repair without human dispatch. Depends on moon-foundry."
+    },
+    {
+      "name": "moon-agent-economy",
+      "status": "planned",
+      "notes": "Living Agent Economy: agents holding and trading real value. The trade ledger already exists (mem20mktz reports braid_ok); the economic layer does not."
+    },
+    {
+      "name": "moon-global-market",
+      "status": "planned",
+      "notes": "Global Capability Marketplace: capability offers traded across the A2A bus. Local marketplace organs exist in mem20mktz; the federation does not."
+    },
+    {
+      "name": "moon-collective-intelligence",
+      "status": "planned",
+      "notes": "Collective Model Intelligence: several local models ensembled into one capability that outperforms any member. mem20corez serves models but does not ensemble them."
+    },
+    {
+      "name": "moon-reality-compiler",
+      "status": "planned",
+      "notes": "Reality-to-Software Compiler: turn an observed physical procedure into executable code. Depends on multimodal capture, not yet present."
+    },
+    {
+      "name": "moon-quantum-inspired",
+      "status": "planned",
+      "notes": "Quantum-Inspired Optimizer: annealing-flavoured search over capability plans. The master report classes this as genuinely beyond today's box; sandbox only."
+    },
+    {
+      "name": "moon-neuromorphic",
+      "status": "planned",
+      "notes": "Neuromorphic Event Lab: spiking-event substrate over the existing event bus. Master report classes this as beyond today's box; sandbox only."
+    },
+    {
+      "name": "moon-planetary-batch",
+      "status": "planned",
+      "notes": "Planetary Batch Fabric: distributed batch execution across many nodes. Master report classes this as beyond today's box; sandbox only."
+    },
+    {
+      "name": "moon-spatial-command",
+      "status": "planned",
+      "notes": "Spatial Command Universe: a 3D command surface, natural home mem20officez. Speculative."
+    },
+    {
+      "name": "moon-capability-fusion",
+      "status": "planned",
+      "notes": "Dynamic Capability Fusion Engine: compose capabilities at runtime rather than statically. Closest existing relative is mem20langz state graphs."
+    },
+    {
+      "name": "moon-device-enrollment",
+      "status": "planned",
+      "notes": "Device-Pull Enrollment Protocol: a device pulls its own credentials on join. The master report marks zero-trust attestation as [SPEC], not built."
+    },
+    {
+      "name": "moon-coaching",
+      "status": "planned",
+      "notes": "Human-Machine Coaching Loop: the agent teaches the human a capability and is corrected in return. Related to PickleInitiative's self-model work but distinct."
+    },
+    {
+      "name": "moon-speculative-sandbox",
+      "status": "planned",
+      "notes": "Universal Speculative Sandbox: run what--if branches of a workflow safely. Partially folded into mem20orcaz per the roadmap's [DUP] decision; the universal layer is not built."
+    },
+    {
+      "name": "moon-narrative-engine",
+      "status": "planned",
+      "notes": "Speculative Workflow Narrative Engine: explain a workflow branch as narrative. mem20rpgz already does story-to-play with a real gateway LLM; the speculative planning layer is not built."
+    }
+  ],
+  "counts": {
+    "roadmap_doc_moonshots": 10,
+    "dream_log_artifacts": 10,
+    "total_names_across_both_lists": 20,
+    "absorbed_into_completed_phases": 4,
+    "genuine_moonshots": 16
+  },
+  "reconciliation_note": "The two lists name 20 things between them. Four dream-log artifacts genuinely restate completed Phase 0-3 capabilities and are recorded under absorbed-overlap with the mem20 home named. Sixteen are not absorbed and are listed one-per-phase as genuine moonshots, none on the critical path, per the roadmap's own instruction that moonshots never block the spine. Classification is binary: an effort is absorbed (1) or it is a moonshot (0). There is no partial state, and a moonshot re-classified as absorbed must be verified against running code, never inferred from a name.",
+  "binary_rule": "Every moonshot carries absorbed=0. Do not record partial, partial-ish, or halfway states. If code proves the capability exists and works, it is absorbed=1 and belongs in absorbed-overlap; if it does not, it stays a moonshot at 0."
+}

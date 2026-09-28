@@ -16,6 +16,23 @@ from typing import Optional
 from . import __version__
 from ._substrate import Backend, BackendSealed, get_backend
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 _runtime_log: Optional[pathlib.Path] = None
 
 
@@ -415,6 +432,7 @@ def _out(obj) -> None:
         print(json.dumps(obj, indent=2, default=str))
 
 
+@json_main
 def main(argv: Optional[list[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     if not getattr(args, "cmd", None) and not args.oneshot:

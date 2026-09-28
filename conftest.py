@@ -64,3 +64,23 @@ sys.path[:] = [p for p in sys.path if p not in ("", ".", ROOT)]
 for _project in reversed(_project_roots()):
     if _project not in sys.path:
         sys.path.insert(0, _project)
+
+# 3. Purge any namespace-package entries pytest cached during collection.
+#    pytest walks the directory tree before running tests, and because every
+#    package here lives at <project>/<name>/, that walk can leave `mem20gamez`
+#    (and friends) in sys.modules as a bare namespace package - no __init__, no
+#    attributes, no submodules. sys.path was already correct by then, so the only
+#    cure is to drop the stale entries and let the real package import. This is
+#    what made mem20gamez report "no attribute DQNAgent" and mem20ucgz report
+#    "no module graph", when both were present and correct all along.
+for _name, _module in list(sys.modules.items()):
+    if _name.startswith("mem20") or _name in {"braid", "bpy", "mcp", "toolchest"}:
+        _file = getattr(_module, "__file__", None)
+        if _file is None and getattr(_module, "__path__", None) is not None:
+            del sys.modules[_name]
+
+# 4. Nothing to reorder.
+#    Tried putting the editable-install finders ahead of PathFinder; it made no
+#    difference, because the real problem was the repo root on sys.path (step 1)
+#    and the stale namespace entries above, not finder precedence.
+

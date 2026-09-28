@@ -15,6 +15,23 @@ from .sweep import (
     sweep,
 )
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 EXIT_CLEAN = 0
 EXIT_FINDINGS = 1
 EXIT_ERROR = 2
@@ -91,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+@json_main
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 

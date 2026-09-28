@@ -15,6 +15,23 @@ from .handoffs import handoff, Handoff
 from .guardrails import input_guardrail, output_guardrail
 from .tracing import trace, span, get_current_trace
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _cmd_serve(args) -> int:
     """Run a simple agent server."""
@@ -99,6 +116,7 @@ def _cmd_demo(args) -> int:
     return 0
 
 
+@json_main
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="mem20agentz_sdk", description="mem20 native OpenAI Agents SDK")
     sub = p.add_subparsers(dest="cmd", required=True)

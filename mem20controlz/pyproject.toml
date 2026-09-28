@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20controlz"
+version = "0.1.0"
+description = "Unified control plane for the mem20 fleet: per-subsystem panels (REST-first, CLI fallback) plus the Websites manager for deploys, health, logs and Cloudflare DNS."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "control-plane", "fleet", "fastapi", "websites", "dns"]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "mem20ops",
+    "mem20dreamz",
+]
+
+[project.scripts]
+mem20-control = "mem20controlz.__main__:main"
+
+[tool.setuptools]
+packages = ["mem20controlz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

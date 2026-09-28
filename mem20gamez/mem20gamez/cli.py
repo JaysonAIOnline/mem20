@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -14,6 +15,29 @@ from .curriculum import CurriculumConfig, CurriculumType, create_curriculum
 from .environment import EnvConfig, create_environment
 from .reward_shaper import RewardConfig, create_shaper
 from .trainer import DQNTrainer, MultiAgentTrainer, default_reward_shaper
+
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    # Python deletes the `except ... as _exc` binding when the block ends, so the
+    # message has to be captured now. Referencing _exc later raised NameError the
+    # first time anyone actually used --json without mem20cliz installed.
+    _MEM20CLIZ_MISSING = str(_exc)
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n"
+                % _MEM20CLIZ_MISSING
+            )
+            return func(*a, **k)
+
+        return _warn
 
 _AGENT_CHOICES = [a.value for a in AgentType]
 
@@ -360,6 +384,70 @@ def _cmd_demo(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# build harness
+# ---------------------------------------------------------------------------
+
+
+def _cmd_build_harness(args) -> int:
+    """`mem20gamez build-harness` — the swarm build pipeline."""
+    import json as _json
+
+    from .build_harness import surface
+
+    if args.harness_cmd == "docs":
+        from .build_harness import docs as harness_docs
+
+        if args.format == "html":
+            print(harness_docs.as_html())
+        elif args.format == "json":
+            print(_json.dumps(harness_docs.pointer(), indent=2))
+        else:
+            print(harness_docs.read())
+        return 0
+
+    if args.harness_cmd == "surface":
+        info = surface()
+        print(_json.dumps(info, indent=2))
+        docs = info.get("docs") or {}
+        if docs.get("exists"):
+            print(f"\nguide: {docs['terminal']}  (or {docs['http']})", file=sys.stderr)
+            print(f"law:   {docs['one_line']}", file=sys.stderr)
+        return 0
+
+    if args.harness_cmd == "serve":
+        try:
+            import uvicorn
+        except ImportError:
+            print("uvicorn is required for `build-harness serve`", file=sys.stderr)
+            return 1
+        from .build_harness.app import app
+        uvicorn.run(app, host=args.host, port=args.port, log_level=args.log_level)
+        return 0
+
+    if args.harness_cmd == "plan":
+        # Plan-only: prove the pipeline is wired without spending a provider call.
+        from .build_harness import runner as harness_runner
+        project = _json.loads(Path(args.project).read_text()) if args.project else {}
+        report = harness_runner.run_project(project, dry_run=True)
+        print(_json.dumps(report, indent=2, default=str))
+        return 0
+
+    if args.harness_cmd == "run":
+        from .build_harness import runner as harness_runner
+        project = _json.loads(Path(args.project).read_text()) if args.project else {}
+        report = harness_runner.run_project(
+            project,
+            dry_run=args.dry_run,
+            phase_filter=args.phase or None,
+            max_workers=args.max_workers,
+        )
+        print(_json.dumps(report, indent=2, default=str))
+        return 0 if report.get("ok", True) else 1
+
+    return 1
+
+
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="mem20gamez", description="mem20 native OpenGame — real agents, envs, shaping")
     p.add_argument("--config", help="path to a YAML GameConfig")
@@ -418,7 +506,34 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     test_parser.add_argument("--agent", choices=_AGENT_CHOICES, default="dqn")
     test_parser.set_defaults(func=_cmd_test)
+
+    b = sub.add_parser(
+        "build-harness",
+        help="Swarm build harness: Blender/Unity/Godot asset pipeline",
+    )
+    bsub = b.add_subparsers(dest="harness_cmd", required=True)
+
+    bsub.add_parser("surface", help="what the harness can actually do right now")
+
+    bd = bsub.add_parser("docs", help="the harness guide (how the harness works)")
+    bd.add_argument("--format", choices=["markdown", "html", "json"], default="markdown")
+
+    bs = bsub.add_parser("serve", help="run the harness control surface")
+    bs.add_argument("--host", default="127.0.0.1")
+    bs.add_argument("--port", type=int, default=8085)
+    bs.add_argument("--log-level", default="info")
+
+    bp = bsub.add_parser("plan", help="plan the pipeline without spending a provider call")
+    bp.add_argument("--project", default="", help="path to a project JSON")
+
+    br = bsub.add_parser("run", help="execute the pipeline")
+    br.add_argument("--project", default="", help="path to a project JSON")
+    br.add_argument("--dry-run", action="store_true")
+    br.add_argument("--phase", default="", help="run only this phase")
+    br.add_argument("--max-workers", type=int, default=None)
+    b.set_defaults(func=_cmd_build_harness)
     return p
+
 
 
 def _apply_config(args, argv: list[str]) -> None:
@@ -441,6 +556,7 @@ def _apply_config(args, argv: list[str]) -> None:
             setattr(args, attribute, value)
 
 
+@json_main
 def main(argv=None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     args = _build_parser().parse_args(arguments)

@@ -13,6 +13,23 @@ from .asset_manager import AssetManager
 from .blueprint_builder import BlueprintBuilder
 from .level_streamer import LevelStreamer
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _cmd_serve(args) -> int:
     """Run a server."""
@@ -106,6 +123,7 @@ def _cmd_test(args) -> int:
     return 0
 
 
+@json_main
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="mem20autouez", description="mem20 native AutoUE")
     sub = p.add_subparsers(dest="cmd", required=True)

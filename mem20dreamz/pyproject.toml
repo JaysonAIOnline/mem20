@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20dreamz"
+version = "0.1.0"
+description = "Dream engine for mem20: iteration that improves rather than condenses, judged by a panel where every member is a different model."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "dream", "imagination", "iteration", "panel", "braid"]
+dependencies = [
+    "httpx",
+]
+
+[project.scripts]
+mem20-dream = "mem20dreamz.__main__:main"
+
+[tool.setuptools]
+packages = ["mem20dreamz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

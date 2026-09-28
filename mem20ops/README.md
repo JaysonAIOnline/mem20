@@ -18,8 +18,30 @@ cd /opt/mem20/mem20ops
 /root/.venv/bin/pip install -e .
 ```
 
-Installing puts `fs-ops` on PATH, which also makes it discoverable to
-`toolchest` (run `python -m toolchest refresh` to re-inventory).
+Installing puts two commands on PATH:
+
+- `fs-ops` — the operational workflows below
+- `fs` — the fleet-wide subsystem dispatcher
+
+Both are discoverable to `toolchest` (run `python -m toolchest refresh` to
+re-inventory).
+
+## The `fs` dispatcher
+
+One command reaches every subsystem CLI:
+
+```
+fs                          list every subsystem and the binary behind it
+fs list --json              machine-readable inventory
+fs cv infer ...             runs the cv subsystem
+fs corez serve ...          runs the corez subsystem
+fs ops dns-audit ...        runs the fleet operations CLI
+```
+
+Subsystem names resolve loosely: `fs corez`, `fs mem20corez` and `fs-cv` all
+reach the same CLI, and the child's exit code is propagated so `fs` composes in
+scripts. An unknown subsystem prints the known list and exits non-zero; an
+unknown option is a usage error (exit 2).
 
 ## Exit codes
 
@@ -35,6 +57,12 @@ Audit-style commands return 3 when they find something worth attention (for
 example a wildcard record shadowing unlisted hosts), so they compose in CI.
 
 ## Commands
+
+### `fs-ops cli-coverage [--timeout SECONDS]`
+Audits every fleet CLI against the agreed contract: is the binary actually
+installed (not merely declared), does `--help` exit 0 within a hard timeout, does
+it advertise `--json`, and is its naming `fs-*` or a recorded exception. Reports
+per-binary gaps and exits 3 when any gap exists. Read-only and bounded.
 
 ### `fs-ops dns-audit ZONE [--pattern REGEX]`
 Inventories a Cloudflare zone: per-type counts, full record list, records

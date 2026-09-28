@@ -1,0 +1,97 @@
+{
+  "name": "kilnz",
+  "description": "KilNZ \u2014 AI-first 3D subsystem for mem20. Cleanroom. Blender's ceiling, MSPaint's floor. SOURCE OF TRUTH: /opt/mem20/mem20kilnz/PROPOSAL.md\n\nMeasured ground truth (probed, not assumed): Blender 5.2.0 LTS = 2010 operators / 77 categories / 102 shader nodes / 274 geometry nodes. FreeCAD 1.1.3 = OCCT B-Rep kernel (Solid/Shell/Face/Edge, Bezier+NURBS surfaces, BRepOffsetAPI fillets, HLRBRep). KilN engine = 9766 LOC, 79 live ops, 4 entry points. THIS HOST HAS NO GPU (Intel HD 520, no CUDA, 4 cores, 15GB, torch CPU-only) so all neural generation is hardware-gated and must fail preflight loudly.\n\nTHESIS: multi-representation kernel (poly + B-Rep solid + NURBS curve/surface + constraint sketch + volume/cloud) because Blender is polygon-only and FreeCAD is solid-exact; neither is a superset. The differentiators nobody else has: polygon<->exact-solid round trip, and an agent protocol over geometry.\n\nCRITICAL PATH: P0 verify -> P1 close 9 dead declarations + glTF/GLB importer -> P7 solid/CAD kernel -> P9 modifiers+op algebra -> P11 render. The 255 AI-native features are NOT on the critical path.\n\nFOUND DEFECT: 9 functions declared in src/scene/scene.hpp with NO definition and NO call site anywhere (import_obj, export_obj, decimate_mesh, catmull_clark, wireframe_mesh, shrinkwrap_mesh, symmetrize_mesh, recalc_normals, separate_loose_meshes). Also no glTF/GLB IMPORTER at all, not even declared. Consequence: the external-mesh ingest path is roughly half missing. Fix first.\n\nCOUNT DISCIPLINE: proposal claimed 263 AI-native features; mechanical recount showed 212, and family L (43 generative-pipeline features) was added to reach a verified 255. Verify feature counts with grep, never by hand.",
+  "phases": [
+    {
+      "name": "P0 Verify: build engine clean, prove 79 ops, prove RPC, validate GLB/PNG, record md5, git baseline",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P1 Close dead declarations: glTF/GLB importer, OBJ read/write, quadric decimator, normal recompute, loose-part separation, all bound as ops",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P2 mem20kilnz package: pyproject, console script, hardened RPC client, engine build harness, keys from /opt/mem20/secrets/.env only",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P3 Interop: FBX read/write (cleanroom, ASCII+binary), STL, PLY, USD, Alembic, round-trip gate, loss prediction",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P4 Rigging: rig families (biped/quad/avian/insect/serpent), control rigs, constraints, retargeting, foot planting, weight cleanup, mocap",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P5 Materials/PBR: node-graph shading, image textures, procedural textures, baking, IBL, glTF PBR compliance",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P6 Animation (all of it): curves, interpolation, easing, drivers, NLA, procedural gaits, motion planning",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P7 Solid/CAD: B-Rep kernel, booleans, fillets, NURBS, loft/sweep/revolve, sketch constraint solver, tessellation bridge",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P8 Curves, text, metaballs, volumes, clouds representations",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P9 Modifiers + node system: modifier stack, geometry-node-equivalent op algebra, evaluated-outcome inspection",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P10 Retopology, UV unwrap, sculpt, texturing",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P11 Render: path tracer, EEVEE-class features, volumes, SSS, compositing, denoise",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P12 Physics: cloth, soft body, particles, rigid body, collision, force fields",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P13 The 255 AI-native features (families A-L), on a stable kernel",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P14 Sequencer + motion tracking",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P15 FreeCAD tail: Draft, Path/CAM, Robot, BIM, Inspection, Measure, STEP/IGES",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P16 MSPaint floor: the 8 measured acceptance criteria",
+      "status": "planned",
+      "notes": ""
+    },
+    {
+      "name": "P17 Generative pipeline layer: provider registry, hardware preflight, licence gate, lineage, artifact store, 3D->video GP-Buffer path",
+      "status": "planned",
+      "notes": ""
+    }
+  ],
+  "created": "1789604765.3759632"
+}

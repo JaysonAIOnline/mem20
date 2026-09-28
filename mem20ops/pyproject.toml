@@ -14,6 +14,7 @@ dependencies = []
 
 [project.scripts]
 fs-ops = "mem20ops.cli:main"
+fs = "mem20ops.fleet:main"
 
 [tool.setuptools]
 packages = ["mem20ops"]

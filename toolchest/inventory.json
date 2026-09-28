@@ -1,7 +1,7 @@
 {
   "format": "mem20-toolchest-inventory",
   "format_version": 1,
-  "generated_at": "2026-09-26T14:14:42.555096+00:00",
+  "generated_at": "2026-09-27T19:16:23.169115+00:00",
   "toolchest_version": "0.1.0",
   "host": "jnet1",
   "sources": [
@@ -9619,7 +9619,7 @@
       "name": "backend-test-tools",
       "category": "cli",
       "subcategory": "generic",
-      "description": "backend-test-tools: usage: backend-test-tools [-h] {generate-data} ...  positional arguments:   {generate-data}     generate-data  convert testcases to test data.  options:   -h, --help       show this help message and exit",
+      "description": "backend-test-tools \u00b7 runs with /root/.venv/bin/python",
       "source": "/root/.venv/bin/backend-test-tools",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -9642,12 +9642,7 @@
         "executable": true,
         "size": 180,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/backend-test-tools",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "usage: backend-test-tools [-h] {generate-data} ...  positional arguments:   {generate-data}     generate-data  convert testcases to test data.  options:   -h, --help       show this help message and exit"
-        }
+        "resolved_target": "/root/.venv/bin/backend-test-tools"
       }
     },
     {
@@ -9979,7 +9974,7 @@
       "name": "check-model",
       "category": "cli",
       "subcategory": "ml-ai",
-      "description": "check-model: usage: check-model [-h] model_pb  positional arguments:   model_pb  options:   -h, --help  show this help message and exit",
+      "description": "check-model \u00b7 runs with /root/.venv/bin/python",
       "source": "/root/.venv/bin/check-model",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -10002,12 +9997,7 @@
         "executable": true,
         "size": 183,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/check-model",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "usage: check-model [-h] model_pb  positional arguments:   model_pb  options:   -h, --help  show this help message and exit"
-        }
+        "resolved_target": "/root/.venv/bin/check-model"
       }
     },
     {
@@ -16276,7 +16266,7 @@
       "name": "blender",
       "category": "cli",
       "subcategory": "graphics-3d",
-      "description": "blender: Blender 5.2.0 LTS Usage: blender [args ...] [file] [args ...]  Render Options: -b or --background  \tRun in background (often used for UI-less rendering).  \tThe audio device is disabled in background-mode by default \tand ",
+      "description": "blender \u00b7 -> /opt/blender/blender-5.2.0-linux-x64/blender",
       "source": "/usr/local/bin/blender",
       "runtime_status": "ok",
       "runtime_detail": "symlink in /usr/local/bin",
@@ -16299,12 +16289,7 @@
         "executable": true,
         "size": 174666336,
         "symlink": true,
-        "resolved_target": "/opt/blender/blender-5.2.0-linux-x64/blender",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "Blender 5.2.0 LTS Usage: blender [args ...] [file] [args ...]  Render Options: -b or --background  \tRun in background (often used for UI-less rendering).  \tThe audio device is disabled in background-mode by default \tand "
-        }
+        "resolved_target": "/opt/blender/blender-5.2.0-linux-x64/blender"
       }
     },
     {

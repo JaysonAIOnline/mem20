@@ -11,6 +11,23 @@ from .level import LevelBuilder
 from .narrative import NarrativeEngine
 from .playtest import Playtester
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _cmd_generate(args) -> int:
     cfg = FactoryConfig(seed=args.seed, width=args.width, height=args.height)
@@ -98,6 +115,7 @@ def _cmd_test(args) -> int:
     return 0
 
 
+@json_main
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="mem20factoryz", description="Native mem20 GameFactory-3A")
     p.add_argument("--seed", type=int, default=20260910)

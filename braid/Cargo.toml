@@ -21,7 +21,15 @@ blake3 = "1"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# float_roundtrip is REQUIRED for content addressing, not an optimisation.
+# Without it serde_json parses decimals with a fast approximate
+# `significand as f64 * POW10[exp]` that is off by up to 1 ULP. A commit
+# receives its f64 bit-exact from the caller, but a later read recovers the
+# value from decimal text - so the CID hashed at write time can never be
+# re-derived, and every node holding an "unlucky" float fails verify() forever
+# with its content and signature intact. Correctly-rounded parsing makes the
+# canonical form stable and recovers those records.
+serde_json = { version = "1", features = ["float_roundtrip"] }
 toml = "0.8"
 sha2 = "0.10"
 hmac = "0.12"

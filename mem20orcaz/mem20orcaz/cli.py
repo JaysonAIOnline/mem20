@@ -15,6 +15,23 @@ from .agents import AGENT_CLASSES
 from .nodes import NODE_CLASSES
 from .orchestrator import Orchestrator
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _fake_llm(prompt: str, **_: Any) -> str:
     # deterministic stand-in so llm/rag/binary agents run offline
@@ -77,6 +94,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+@json_main
 def main(argv: Optional[List[str]] = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.version:

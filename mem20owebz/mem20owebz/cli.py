@@ -10,6 +10,23 @@ import sys
 from .config import load_env_files, parse_config
 from .gateway import DEFAULT_CONFIG_PATH
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _cmd_models(args) -> int:
     load_env_files()
@@ -76,6 +93,7 @@ def _cmd_chat(args) -> int:
     return 0
 
 
+@json_main
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="mem20owebz", description="mem20 chat + model gateway (native)")
     p.add_argument("--config", default=DEFAULT_CONFIG_PATH, help="route config YAML")

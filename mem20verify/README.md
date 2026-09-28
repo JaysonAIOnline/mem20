@@ -98,6 +98,46 @@ deliberately not used — it can collide with an unrelated stash.
 mem20verify baseline mem20agentz --failed-from /tmp/results.json
 ```
 
+### `mem20verify shadow`
+Reports which packages are **shadowed** — outranked by a same-named directory
+— when `/opt/mem20` is the working directory. Running `python -m` puts the
+working directory at `sys.path[0]`, so the outer checkout directory (which has no
+`__init__.py`) registers as a PEP 420 namespace portion and can win over the real
+package.
+
+The probe runs in a **fresh interpreter started from the estate root**. This
+matters: `python <script>` puts the *script's* directory on `sys.path[0]`
+instead, so a probe run that way measures the wrong thing and reports everything
+clean. That bug produced a sweep that claimed zero shadowed packages while 24
+were affected. `test_probe_uses_cwd_not_script_dir` guards it.
+
+Two verdicts are reported separately, because the remedies differ:
+
+| Verdict | Meaning | Remedy |
+|---|---|---|
+| `SHADOWED` | imports fine on its own, outranked from the estate root | run it from its own package root |
+| `UNREACH` | not importable from this interpreter at all | often installed only in its own venv; **a layout change will not fix it** |
+
+**Layout is not the cause.** `mem20mktz` is `src/`-layout and still shadowed;
+`mem20cliz` is nested-flat and resolves. What decides it is whether a regular
+package is reachable on a path entry — PEP 420 makes a regular package beat a
+namespace portion found earlier. Packages registered through an appended
+`sys.meta_path` finder lose, because `PathFinder` has already returned the
+namespace by then.
+
+```bash
+mem20verify shadow
+mem20verify shadow --package mem20langz
+mem20verify --json shadow > /tmp/shadow.json
+```
+
+Exits `1` when any package is shadowed or unreachable, `2` when the check cannot
+run. Uses `importlib.util.find_spec` and never imports a module, so no package
+code executes and nothing is written.
+
+**Verified 2026-09-25 against the live estate:** 8 of 34 packages import with the
+estate root on `sys.path`; 23 `SHADOWED`, 3 `UNREACH`.
+
 ### `mem20verify lint`
 Four structural AST checks, each for a defect class that actually shipped:
 
@@ -134,5 +174,5 @@ mem20verify lint /opt/mem20/mem20agentz /opt/mem20/memory_engine
 
 ```
 $ python -m pytest -q
-46 passed in 28.92s
+70 passed in 26.32s
 ```

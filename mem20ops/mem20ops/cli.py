@@ -15,7 +15,7 @@ import json
 import sys
 from typing import Any
 
-from . import audit, memchecks, runtime
+from . import audit, clicheck, memchecks, runtime
 from .cloudflare import CredentialError
 
 EXIT_OK = 0
@@ -191,6 +191,33 @@ def _lint_delta(args, as_json: bool) -> int:
     return EXIT_FINDINGS if result["new_findings"] else EXIT_OK
 
 
+def _cli_coverage(args, as_json: bool) -> int:
+    report = clicheck.audit(timeout=args.timeout)
+
+    def render(data: dict[str, Any]) -> None:
+        totals = data["totals"]
+        print(f"audited CLIs      : {totals['audited_clis']}")
+        print(f"skipped (non-CLI) : {totals['skipped']} {data['skipped_non_cli']}")
+        print(f"declared scripts  : {totals['declared_scripts']}")
+        print(f"with --json       : {totals['with_json']}")
+        print(f"missing --json    : {totals['audited_clis'] - totals['with_json']}")
+        print(f"help failures     : {totals['with_help_failure']}")
+        print(f"help timeouts     : {totals['with_help_timeout']}")
+        print(f"naming            : {totals['fs_standard']} fs-* / {totals['mem20_native']} mem20* "
+              "(not a contract; no subsystem is renamed)")
+        if data["declared_but_not_installed"]:
+            print(f"declared but missing: {', '.join(data['declared_but_not_installed'])}")
+        if data["binaries_present_but_not_declared"]:
+            print(f"installed, undeclared: {', '.join(data['binaries_present_but_not_declared'])}")
+        print("\nmissing --json:")
+        for row in data["results"]:
+            if "no-json" in row["gaps"]:
+                print(f"  {row['name']}")
+
+    _emit(report, as_json, render)
+    return EXIT_OK if report["totals"]["fully_compliant"] == report["totals"]["audited_clis"] else EXIT_FINDINGS
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="fs-ops",
@@ -252,6 +279,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_lint.add_argument("path")
     p_lint.add_argument("--revision", default="HEAD")
     p_lint.set_defaults(func=_lint_delta)
+
+    p_cov = sub.add_parser(
+        "cli-coverage", help="audit every fleet CLI against the fs-*/--json contract"
+    )
+    p_cov.add_argument("--timeout", type=int, default=clicheck.HELP_TIMEOUT)
+    p_cov.set_defaults(func=_cli_coverage)
 
     return parser
 

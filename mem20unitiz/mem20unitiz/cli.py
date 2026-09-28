@@ -13,6 +13,23 @@ from .policy import create_policy
 from .settings import TrainerType, get_default_settings
 from .trainer import POCATrainer, create_trainer
 
+import functools
+
+try:
+    from mem20cliz import json_main
+except ImportError as _exc:  # never fail silently: a hidden fallback looks like success
+    import sys as _sys
+
+    def json_main(func):
+        @functools.wraps(func)
+        def _warn(*a, **k):
+            _sys.stderr.write(
+                "warning: mem20cliz unavailable, --json disabled for this CLI (%s)\n" % _exc
+            )
+            return func(*a, **k)
+
+        return _warn
+
 
 def _configure_settings(args: argparse.Namespace) -> Any:
     settings = get_default_settings(TrainerType(args.trainer))
@@ -173,6 +190,7 @@ def _cmd_demo(args: argparse.Namespace) -> int:
     return 0
 
 
+@json_main
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="mem20unitiz", description="Real reinforcement-learning training")
     subparsers = parser.add_subparsers(dest="command", required=True)
