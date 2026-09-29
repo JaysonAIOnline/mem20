@@ -141,6 +141,12 @@ def _admitted(request: Request) -> dict[str, Any] | None:
         return {"admitted_by": "cloudflare-access", "identity": identity}
     if auth.session_valid(request.cookies.get(auth.COOKIE_NAME)):
         return {"admitted_by": "admin-session", "identity": "admin"}
+    # No password prompt for a caller that genuinely is this machine. The check
+    # also refuses anything carrying proxy headers, so a tunnel or reverse proxy
+    # does not inherit loopback trust just by terminating here.
+    peer = request.client.host if request.client else None
+    if auth.local_request_allowed(peer, request.headers):
+        return {"admitted_by": "loopback", "identity": f"local:{peer}"}
     return None
 
 

@@ -148,3 +148,82 @@ LISTEN 0      511            [::1]:8221          [::]:*    users:(("MainThread",
     FAILED with estate-runtime truth: braid_python has no PyBraidEngine
     on the mktz runtime (see failures.md). ucg_ok flips True ONLY because
     :8781 truly answers, never by fiat.
+
+## 2026-09-29 — /sb scoreboard (build + use)
+
+### Use it
+```sh
+scoreboard -enroll AGENT                          # put on the board at 0
+scoreboard -add AGENT "reason"                    # +1
+scoreboard -del AGENT "reason"                    # -1
+scoreboard --dsq AGENT "reason"                   # disqualify
+scoreboard -reward AGENT ["reason"]               # +3, reason optional
+scoreboard -remove AGENT                          # off the board, history kept
+scoreboard -display                               # ranked table
+scoreboard -history [AGENT]                       # event log, newest first
+scoreboard -serve                                 # the web board
+```
+  - Every flag also accepts two dashes (`--add`, `--del`, ...).
+  - A reason is REQUIRED for -add/-del/--dsq and must be ONE quoted argument.
+    Forgetting the quotes is refused with the corrected command to paste.
+  - Ledger location: `SB_SCOREBOARD_DB`, default `/sb/data/scoreboard.db`.
+  - Web board: http://127.0.0.1:8892/ on this box. From elsewhere:
+    `ssh -L 8892:127.0.0.1:8892 jnet1` then open the same URL.
+
+### Operate it
+```sh
+systemctl status scoreboard        # the read-only page, :8892, loopback only
+systemctl restart scoreboard
+tail -f /var/log/scoreboard.log
+curl -s http://127.0.0.1:8892/api/health
+curl -s http://127.0.0.1:8892/api/board
+```
+
+### Verify it
+```sh
+cd /sb/backend && /root/.venv/bin/python -m pytest /sb/tests -q      # 61 passed
+cd /opt/mem20/mem20sitemapz && /root/.venv/bin/python -m pytest tests -q  # 43 passed
+sitemap search "scoreboard"      # -> mem20scoreboardz at /sb
+sitemap show mem20scoreboardz    # -> location OUTSIDE the monorepo
+```
+
+### Notes
+  - The page CANNOT write. Only GET routes exist, so any write verb returns 405.
+    Use the CLI for every change.
+  - Scores may go negative; nothing clamps them.
+  - Ranks are dense: equal scores share a rank and the next rank skips.
+  - Nothing is ever deleted. To correct a mark, issue a -del with the reason.
+
+## 2026-09-29 — mem20 CLIs on the default PATH (estate gap)
+
+### The gap
+  - mem20 subsystems install their console scripts into /root/.venv/bin.
+  - /etc/profile.d/thestack-env.sh puts that dir on the PATH of interactive
+    login shells, so `sitemap` works when typed at a prompt.
+  - It does NOT reach a default-PATH context: systemd units, cron, scripts
+    run via `sh -c`, `ssh host 'cmd'`. There the tool is installed but simply
+    "command not found".
+  - Reproduce:  env -i PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin \
+        sh -c 'command -v sitemap'   -> nothing
+
+### Fix / re-apply after a venv rebuild
+```sh
+/root/.venv/bin/python /opt/mem20/tools/mem20path.py            # dry run
+/root/.venv/bin/python /opt/mem20/tools/mem20path.py --apply    # link them
+/root/.venv/bin/python /opt/mem20/tools/mem20path.py --verify   # exits non-zero if any is missing
+systemctl status mem20-path-links.service    # runs --apply + --verify at boot
+```
+
+### Verify
+```sh
+env -i PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin sh -c 'command -v sitemap'
+cd /opt/mem20 && /root/.venv/bin/python -m pytest tests/test_mem20path.py -q   # 17
+```
+
+### Notes
+  - Only mem20-OWNED distributions are linked. `chroma` (chromadb), pytest,
+    uvicorn etc. are third-party and deliberately left off the default PATH.
+  - `mem20-metrics` is excluded on purpose: it is a blocking HTTP server, not
+    a command, and would never return.
+  - mem20path never overwrites a real file it did not create; it only manages
+    its own symlinks.

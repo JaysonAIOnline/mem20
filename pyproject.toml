@@ -34,6 +34,10 @@ mem20-mcp = "launcher:main"
 # Query aggregated install metrics from the local event log, or run the
 # collector dashboard server (MEM20_COLLECTOR_PORT=9090).
 mem20-metrics = "metrics_collector:main"
+# Link mem20's own console scripts into a default-PATH directory so they resolve
+# from systemd units, cron jobs and `sh -c` — not just an interactive shell.
+# Excluded on purpose: mem20-metrics, which is a blocking server, not a command.
+mem20-path = "mem20path:main"
 
 [tool.setuptools]
 packages = ["memory_engine"]
@@ -41,8 +45,9 @@ packages = ["memory_engine"]
 # memory / ledger / vectors) and it imports the standalone `procedural.py`
 # at module scope, so both must be installed together. `launcher.py` backs the
 # `mem20-mcp` console script. `metrics_collector.py` is the standalone
-# install-metrics collector server.
-py-modules = ["memory", "metrics_collector", "procedural", "launcher"]
+# install-metrics collector server. `mem20path.py` backs `mem20-path`, which
+# keeps every mem20 CLI resolvable from a non-interactive context.
+py-modules = ["memory", "metrics_collector", "procedural", "launcher", "mem20path"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

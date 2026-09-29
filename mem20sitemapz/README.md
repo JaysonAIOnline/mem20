@@ -17,6 +17,8 @@ reliable way to learn what is there. This indexes the tree into
 ```
 sitemap                      # same as: sitemap build
 sitemap build                # scan tree, write .sitemap/sitemap.json + SITEMAP.md
+sitemap build -v             # ... and report each outside root and what it added
+sitemap build --no-extra-roots   # monorepo only, ignoring every outside root
 sitemap search "secret zzz"  # ranked search over the index
 sitemap show mem20ops        # full detail for one subsystem
 sitemap watch ...            # wait until every target agent stops working, then snapshot
@@ -26,10 +28,35 @@ sitemap verify               # check a zip for corruption and secret paths
 
 Bare `sitemap` with no arguments runs `build`.
 
+## Roots outside the monorepo
+
+Not everything real lives under `/opt/mem20`. `/sb` (the scoreboard) is a full
+tool that deliberately lives elsewhere, and an index that cannot find it is
+worse than useless, because it looks complete. So `build` also indexes a list of
+**extra roots** — `/sb` by default, overridable with a repeated
+`--extra-root DIR` or dropped with `--no-extra-roots`.
+
+An extra root becomes **one** entry, not a directory listing. Scanning `/sb` the
+ordinary way would yield entries called "backend", "frontend" and "data", which
+tells a reader nothing. Instead the whole project is one entry, named after the
+package that defines it (found by looking a few levels down, since its
+`pyproject.toml` is not at the root), carrying:
+
+- its real absolute path, so nobody opens the wrong directory
+- `external: true` and `external_root`, and `show` prints
+  `location OUTSIDE the monorepo`
+- its own README summary, keywords, entry points and version
+
+These entries get their own **"Outside the monorepo"** table in `SITEMAP.md`
+and are excluded from the organ/service/other tables, so an outside project is
+never presented as though it were a mem20 subsystem. The index `totals` are
+recomputed after merging, so the reported estate is the estate actually indexed.
+
 ### Measured on this box
 
-Full-depth build of `/opt/mem20`: **4.1s**, 61 subsystems, 8,067 source files,
-583,654 code lines (1,556,499 including json/markdown).
+Full-depth build of `/opt/mem20` plus `/sb`: **1.75s**, 62 subsystems (61 inside
+the monorepo + `mem20scoreboardz` at `/sb`), 8,159 source files, 586,732 code
+lines (1,568,329 including json/markdown).
 
 ## How search works
 

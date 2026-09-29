@@ -15,8 +15,7 @@ import os
 
 import pytest
 
-from mem20dreamz import engine
-from mem20dreamz import idle
+from mem20dreamz import engine, idle
 from mem20dreamz import panel as panel_mod
 from mem20dreamz.lineage import Lineage
 

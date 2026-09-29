@@ -44,6 +44,17 @@ Both read from `/opt/mem20/secrets/.env` (or the environment):
 | `MEM20_CONTROL_SECRET` | session signing secret |
 | `CONTROL_TRUST_CF_ACCESS` | set to `1` only when behind Cloudflare Access |
 
+**The secrets file wins; the environment is only a fallback.** That order is
+load-bearing and was the other way round, which was a real defect. `llm.py` runs a
+dotenv load at import time and copies *every* key it finds — not just API keys,
+despite what its own docstring says — into `os.environ`. This service imports it
+transitively through `mem20dreamz`, so the admin password and the signing secret
+were snapshotted into the process environment at boot. Rotating either one in the
+file then appeared to do nothing until the unit was restarted, and a rotated
+signing secret left already-issued cookies verifiable. Now a rotation takes effect
+on the next request, with no restart. An environment-only deployment still works,
+because the environment is consulted when the file has no value for the key.
+
 **Failing closed is deliberate.** With no password configured nothing can log
 in, and with no signing secret `POST /api/auth/login` returns `503` rather than
 handing out an unsigned session. `/api/health` and `/api/auth/status` stay open
@@ -182,7 +193,7 @@ npm run build     # -> ../static
 ## Tests
 
 ```sh
-/root/.venv/bin/python -m pytest tests -q     # 162 tests
+/root/.venv/bin/python -m pytest tests -q     # 165 tests
 /root/.venv/bin/ruff check mem20controlz tests
 ```
 
@@ -198,6 +209,12 @@ killed.
 The run-job tests never spawn anything — `conftest` makes `subprocess.Popen` raise
 and the tests patch it with a fake process. The real spawn is verified against the
 live service, not in a unit test.
+
+**No test in this suite reads the real secrets file.** Auth resolves the file
+first and the environment second, so a suite that merely set environment variables
+would authenticate against the live `/opt/mem20/secrets/.env` on this host. An
+autouse fixture redirects `auth.SECRETS_FILE` at a temp file, and per-test changes
+to the configured credential are made by rewriting that file.
 
 ## Reuses
 

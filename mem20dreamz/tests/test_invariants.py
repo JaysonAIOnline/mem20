@@ -205,3 +205,54 @@ def test_score_is_clamped():
 
 def test_pairwise_parses_winner():
     assert verdicts.pairwise('{"winner": "B", "reason": "clearer"}')["winner"] == "B"
+
+
+# --- the panel must be able to tell that it is funded -------------------------
+#
+# A regression that happened for real: `panel._key_for` read `os.environ` directly
+# and only ever found COHERE_API_KEY / GROQ_API_KEY because `llm` was publishing
+# the whole secrets file into the process environment at import. When that leak
+# was closed, the panel quietly reported *no funded members* and `panel()` handed
+# back an empty list. Nothing raised, nothing was logged, and a panel whose entire
+# job is noticing it has lost a member would have gone on producing confident work
+# from nobody.
+
+
+def test_panel_finds_its_keys_without_anything_publishing_them():
+    from mem20dreamz import panel as panel_mod
+
+    keys = [panel_mod.KEY_ENV[m.provider] for m in panel_mod.PANEL if m.provider in panel_mod.KEY_ENV]
+    assert keys, "the roster should name provider key variables"
+    for provider in ("cohere", "groq"):
+        if provider in panel_mod.KEY_ENV:
+            assert panel_mod._key_for(provider), f"{provider} must resolve as funded"
+
+
+def test_an_unfunded_provider_is_reported_as_unfunded(monkeypatch):
+    """A funded check that says yes to everything is as useless as one that says no."""
+    from mem20dreamz import panel as panel_mod
+
+    monkeypatch.setattr(panel_mod.llm, "env_value", lambda name, default="": "")
+    assert panel_mod._key_for("cohere") == ""
+    assert panel_mod.panel() == []
+
+
+def test_the_panel_never_publishes_secrets_into_the_environment():
+    import subprocess
+    import sys as _sys
+
+    code = (
+        "import os, sys;"
+        "before=set(os.environ);"
+        "sys.path.insert(0,'/opt/mem20');"
+        "from mem20dreamz import panel;"
+        "panel.panel();"
+        "import json;print(json.dumps(sorted(set(os.environ)-before)))"
+    )
+    proc = subprocess.run(
+        [_sys.executable, "-c", code], capture_output=True, text=True, timeout=60, check=False
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.strip().splitlines()[-1] == "[]", (
+        "the panel must not publish keys into os.environ"
+    )

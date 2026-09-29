@@ -48,7 +48,7 @@ def render_markdown(index: dict[str, Any]) -> str:
 
     subsystems = index.get("subsystems", [])
     for category in ("organ", "service", "other"):
-        group = [s for s in subsystems if s.get("category") == category]
+        group = [s for s in subsystems if s.get("category") == category and not s.get("external")]
         if not group:
             continue
         lines.append(f"## {CATEGORY_LABEL.get(category, category)}")
@@ -63,6 +63,29 @@ def render_markdown(index: dict[str, Any]) -> str:
             scripts = ", ".join(f"`{k}`" for k in sorted(entry.get("entry_points", {}))) or "-"
             lines.append(
                 f"| `{entry['name']}` | {entry.get('code_lines', 0)} | "
+                f"{entry.get('test_files', 0)} | {scripts} | {summary} |"
+            )
+        lines.append("")
+
+    external = [s for s in subsystems if s.get("external")]
+    if external:
+        lines.append("## Outside the monorepo")
+        lines.append("")
+        lines.append(
+            "Real tools that live outside `/opt/mem20` on purpose. Each is a whole project, "
+            "so it is one entry rather than a directory listing. Read the entry as a path."
+        )
+        lines.append("")
+        lines.append("| Tool | Path | Code lines | Tests | Entry points | What it is |")
+        lines.append("|---|---|---:|---:|---|---|")
+        for entry in sorted(external, key=lambda e: e["name"]):
+            summary = entry.get("description") or entry.get("readme_summary") or ""
+            summary = summary.replace("|", "/").replace("\n", " ")
+            if len(summary) > 150:
+                summary = summary[:147] + "..."
+            scripts = ", ".join(f"`{k}`" for k in sorted(entry.get("entry_points", {}))) or "-"
+            lines.append(
+                f"| `{entry['name']}` | `{entry['dir']}` | {entry.get('code_lines', 0)} | "
                 f"{entry.get('test_files', 0)} | {scripts} | {summary} |"
             )
         lines.append("")

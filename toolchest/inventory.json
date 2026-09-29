@@ -1,7 +1,7 @@
 {
   "format": "mem20-toolchest-inventory",
   "format_version": 1,
-  "generated_at": "2026-09-28T07:06:24.396639+00:00",
+  "generated_at": "2026-09-29T19:22:03.270027+00:00",
   "toolchest_version": "0.1.0",
   "host": "jnet1",
   "sources": [
@@ -11,9 +11,9 @@
   ],
   "counts": {
     "mcp": 253,
-    "cli": 291,
+    "cli": 293,
     "subsystem": 37,
-    "total": 581
+    "total": 583
   },
   "categories": {
     "agent-platform": {
@@ -23,7 +23,7 @@
       ]
     },
     "cli": {
-      "count": 291,
+      "count": 293,
       "subcategories": [
         "cloud",
         "data-db",
@@ -9619,7 +9619,7 @@
       "name": "backend-test-tools",
       "category": "cli",
       "subcategory": "generic",
-      "description": "backend-test-tools \u00b7 runs with /root/.venv/bin/python",
+      "description": "backend-test-tools: usage: backend-test-tools [-h] {generate-data} ...  positional arguments:   {generate-data}     generate-data  convert testcases to test data.  options:   -h, --help       show this help message and exit",
       "source": "/root/.venv/bin/backend-test-tools",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -9642,7 +9642,12 @@
         "executable": true,
         "size": 180,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/backend-test-tools"
+        "resolved_target": "/root/.venv/bin/backend-test-tools",
+        "help": {
+          "sampled": true,
+          "ok": true,
+          "summary": "usage: backend-test-tools [-h] {generate-data} ...  positional arguments:   {generate-data}     generate-data  convert testcases to test data.  options:   -h, --help       show this help message and exit"
+        }
       }
     },
     {
@@ -9799,7 +9804,7 @@
       "name": "bean-query",
       "category": "cli",
       "subcategory": "data-db",
-      "description": "bean-query \u00b7 runs with /root/.venv/bin/python",
+      "description": "bean-query: Usage: bean-query [OPTIONS] FILENAME [QUERY]...    An interactive interpreter for the Beancount Query Language.    Load Beancount ledger FILENAME and run Beancount Query Language QUERY on it,   if specified, or drop into",
       "source": "/root/.venv/bin/bean-query",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -9822,7 +9827,12 @@
         "executable": true,
         "size": 168,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/bean-query"
+        "resolved_target": "/root/.venv/bin/bean-query",
+        "help": {
+          "sampled": true,
+          "ok": true,
+          "summary": "Usage: bean-query [OPTIONS] FILENAME [QUERY]...    An interactive interpreter for the Beancount Query Language.    Load Beancount ledger FILENAME and run Beancount Query Language QUERY on it,   if specified, or drop into"
+        }
       }
     },
     {
@@ -12534,6 +12544,38 @@
       }
     },
     {
+      "id": "cli:mem20-path",
+      "kind": "cli",
+      "name": "mem20-path",
+      "category": "cli",
+      "subcategory": "mem20",
+      "description": "mem20-path \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/mem20-path",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/mem20-path"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 162,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/mem20-path"
+      }
+    },
+    {
       "id": "cli:mem20-shop",
       "kind": "cli",
       "name": "mem20-shop",
@@ -14646,6 +14688,38 @@
       }
     },
     {
+      "id": "cli:scoreboard",
+      "kind": "cli",
+      "name": "scoreboard",
+      "category": "cli",
+      "subcategory": "generic",
+      "description": "scoreboard \u00b7 runs with /root/.venv/bin/python",
+      "source": "/root/.venv/bin/scoreboard",
+      "runtime_status": "ok",
+      "runtime_detail": "script in /root/.venv/bin",
+      "checks": [
+        {
+          "check": "path exists",
+          "ok": true,
+          "detail": "/root/.venv/bin/scoreboard"
+        },
+        {
+          "check": "executable",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "meta": {
+        "bin_dir": "/root/.venv/bin",
+        "type": "script",
+        "shebang": "/root/.venv/bin/python",
+        "executable": true,
+        "size": 173,
+        "symlink": false,
+        "resolved_target": "/root/.venv/bin/scoreboard"
+      }
+    },
+    {
       "id": "cli:semgrep",
       "kind": "cli",
       "name": "semgrep",
@@ -16431,7 +16505,7 @@
       "name": "cloudflare-ddns.sh",
       "category": "cli",
       "subcategory": "generic",
-      "description": "cloudflare-ddns.sh \u00b7 runs with /usr/bin/env bash",
+      "description": "cloudflare-ddns.sh: OK no-change: jnet1.jaysonai.online -> 74.254.4.37",
       "source": "/usr/local/bin/cloudflare-ddns.sh",
       "runtime_status": "ok",
       "runtime_detail": "script in /usr/local/bin",
@@ -16454,7 +16528,12 @@
         "executable": true,
         "size": 2415,
         "symlink": false,
-        "resolved_target": "/usr/local/bin/cloudflare-ddns.sh"
+        "resolved_target": "/usr/local/bin/cloudflare-ddns.sh",
+        "help": {
+          "sampled": true,
+          "ok": true,
+          "summary": "OK no-change: jnet1.jaysonai.online -> 74.254.4.37"
+        }
       }
     },
     {

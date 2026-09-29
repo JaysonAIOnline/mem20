@@ -871,13 +871,28 @@ def _add_to_bm25_index(rec: dict) -> None:
             "tags": rec["tags"],
             "priority": rec["priority"],
         })
-        # Re-tokenize all corpus
+        # Re-tokenize all corpus.
+        # The persisted corpus is metadata-only (id/ts/topic/tags/priority), so
+        # the previous implementation's c.get('content', '') silently yielded ''
+        # and re-tokenized every ALREADY-indexed record as topic+tags only --
+        # dropping its content tokens from the index on every single write.
+        # BM25Okapi has no incremental add, so the whole corpus is re-tokenized
+        # regardless; the ledger is the source of truth that actually carries
+        # content, and it is what rebuild_bm25() already uses.
+        by_id = {r.get("id"): r for r in _load_ledger() if r.get("action") == "remember"}
         all_tokens = []
         for c in corpus:
-            # We need the original text - approximate from metadata
-            t = f"{c['topic']} {c.get('content', '')}"
-            if c.get('tags'):
-                t += " " + " ".join(c['tags'])
+            src = by_id.get(c.get("id"))
+            if src is not None:
+                t = f"{src['topic']}: {src['content']}"
+                if src.get("tags"):
+                    t += " " + " ".join(src["tags"])
+            else:
+                # Ledger entry unavailable (e.g. compacted). Fall back to
+                # metadata rather than silently indexing an empty document.
+                t = f"{c['topic']} {c.get('content', '')}"
+                if c.get("tags"):
+                    t += " " + " ".join(c["tags"])
             all_tokens.append(t.lower().split())
         bm25 = BM25Okapi(all_tokens)
     

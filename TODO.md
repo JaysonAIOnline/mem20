@@ -31,3 +31,11 @@
   (braid_python-0.1.0-cp311-abi3...) into /opt/mem20/mem20mktz/.venv.
   Verified: journal('offer.published',...) → cid br25166abf..., prove=True,
   depth 449, readable via estate bridge.
+
+## 2026-09-29 — /sb scoreboard
+- [x] /sb tool: append-only SQLite ledger, `scoreboard` CLI (9 commands), read-only web board — evidence: 61 tests green, real Chromium render verified, CONFWORK 2026-09-29
+- [x] Loopback service on 127.0.0.1:8892 as `scoreboard.service` (enabled, PPID=1, survives restart) — evidence: systemctl restart re-bound with a new MainPID
+- [x] Registered in toolchest (581 -> 582) and in the sitemap as an outside root — evidence: `toolchest show scoreboard` ok; `sitemap show mem20scoreboardz` -> /sb
+- [x] sitemap now indexes extra roots (/sb by default, --extra-root / --no-extra-roots) — evidence: 43 sitemap tests, pre-existing 22 unchanged
+- [x] mem20 CLIs resolvable from a default PATH (systemd/cron/script contexts) — evidence: 36/36 resolve+run from `env -i PATH=/root/.local/bin:/usr/bin:/bin`, 17 tests, mem20-path-links.service restores them after deletion
+- [ ] blue-hydra.service + searxng.service have non-existent ExecStart paths (pre-existing, dated 2026-08-18, both inactive) — NOT mine, not touched, needs an owner decision

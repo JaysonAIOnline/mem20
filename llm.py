@@ -41,11 +41,35 @@ _ENV_CANDIDATES = [
 ]
 
 
-def _load_dotenv():
-    """Best-effort load of API keys from a .env file if not already in os.environ."""
+# Values read from the secrets file, private to this module.
+#
+# This used to be poured into ``os.environ`` at import time, and that was wrong
+# on two counts. It leaked: every process that imports this module - the dream
+# engine, the control plane, the cognitive engine, the game build harness - ended
+# up holding *every* secret in the estate, including the control-plane admin
+# password, the sudo password, database credentials and cloud keys that have
+# nothing to do with calling a model. And it was sticky: because the loader
+# snapshots once at import and ``_password()``-style lookups prefer the
+# environment, a rotated secret in the file was silently ignored for the life of
+# the process, which is exactly how the control plane ended up serving a stale
+# admin password until someone restarted it.
+#
+# So the file is read into a private map and consulted only for LLM settings. The
+# real environment still wins, which is what a deployment that injects secrets
+# that way expects.
+_FILE_VALUES: dict[str, str] = {}
+
+
+def _load_dotenv() -> dict[str, str]:
+    """Read LLM settings from the first candidate .env that provides a key.
+
+    Best-effort, and deliberately *not* a mutation of the process environment.
+    Returns the values it found so `_get` can consult them.
+    """
     for path in _ENV_CANDIDATES:
         if not path or not os.path.exists(path):
             continue
+        values: dict[str, str] = {}
         try:
             with open(path, "r") as fh:
                 for line in fh:
@@ -54,13 +78,36 @@ def _load_dotenv():
                         continue
                     key, _, val = line.partition("=")
                     key, val = key.strip(), val.strip().strip('"').strip("'")
-                    if key and key not in os.environ:
-                        os.environ[key] = val
+                    if key:
+                        values[key] = val
         except OSError:
-            pass
+            continue
+        _FILE_VALUES.update(values)
         # Only need one successful load for the keys we care about.
-        if os.environ.get("NVIDIA_API_KEY") or os.environ.get("NVAPI_KEY"):
+        if _get("NVIDIA_API_KEY") or _get("NVAPI_KEY"):
             break
+    return _FILE_VALUES
+
+
+def _get(name: str, default: str = "") -> str:
+    """Resolve one setting: the real environment first, then the secrets file."""
+    value = os.environ.get(name, "")
+    if value:
+        return value.strip()
+    value = _FILE_VALUES.get(name, "")
+    return value.strip() if value else default
+
+
+def env_value(name: str, default: str = "") -> str:
+    """Resolve an LLM setting from the environment or the secrets file.
+
+    Public because other modules legitimately need to know whether a provider is
+    funded, and they used to answer that by reading ``os.environ`` directly. That
+    only worked because this module used to publish the whole secrets file into
+    the environment at import; once it stopped, the dream panel silently found no
+    funded members at all. One resolver, so this cannot drift again.
+    """
+    return _get(name, default)
 
 
 _load_dotenv()
@@ -71,28 +118,28 @@ class LLMError(RuntimeError):
 
 
 def _config():
-    base = os.environ.get("MEM20_LLM_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
+    base = _get("MEM20_LLM_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
     # Key must match the provider the base URL points at. Previously NVAPI_KEY
     # was always preferred, so a Groq base URL paired with NVAPI_KEY sent the
     # NVIDIA key to Groq and failed with HTTP 401 "Invalid API Key".
     if "groq" in base.lower():
         key = (
-            os.environ.get("GROQ_API_KEY")
-            or os.environ.get("GROQ_API_KEYS")
-            or os.environ.get("MEM20_LLM_API_KEY")
-            or os.environ.get("NVAPI_KEY")
-            or os.environ.get("NVIDIA_API_KEY")
+            _get("GROQ_API_KEY")
+            or _get("GROQ_API_KEYS")
+            or _get("MEM20_LLM_API_KEY")
+            or _get("NVAPI_KEY")
+            or _get("NVIDIA_API_KEY")
             or ""
         )
     else:
         key = (
-            os.environ.get("NVAPI_KEY")
-            or os.environ.get("NVIDIA_API_KEY")
-            or os.environ.get("MEM20_LLM_API_KEY")
+            _get("NVAPI_KEY")
+            or _get("NVIDIA_API_KEY")
+            or _get("MEM20_LLM_API_KEY")
             or ""
         )
     key = key.strip()
-    model = os.environ.get("MEM20_LLM_MODEL", DEFAULT_MODEL)
+    model = _get("MEM20_LLM_MODEL", DEFAULT_MODEL)
     return base, key, model
 
 
@@ -155,7 +202,7 @@ def _env(name: str, default: str = "") -> str:
     """Resolve an env var plus its numbered *_N variants, first present wins."""
     for i in range(10):
         key = name if i == 0 else f"{name}_{i}"
-        val = os.environ.get(key, "")
+        val = _get(key)
         if val:
             return val.strip()
     return default
@@ -176,17 +223,17 @@ def _fallback_chain() -> list[dict]:
     anonymously or fabricate a completion.
     """
     chain: list[dict] = []
-    fb_base = os.environ.get("MEM20_LLM_FALLBACK_BASE_URL", "").strip().rstrip("/")
+    fb_base = _get("MEM20_LLM_FALLBACK_BASE_URL").strip().rstrip("/")
     if fb_base:
-        fb_key = os.environ.get("MEM20_LLM_FALLBACK_API_KEY", "").strip()
+        fb_key = _get("MEM20_LLM_FALLBACK_API_KEY").strip()
         if fb_key:
             chain.append({
                 "name": "fallback",
                 "base": fb_base,
                 "key": fb_key,
-                "model": os.environ.get("MEM20_LLM_FALLBACK_MODEL", ""),
+                "model": _get("MEM20_LLM_FALLBACK_MODEL"),
             })
-    for name in os.environ.get("MEM20_LLM_FALLBACK_PROVIDERS", "").split(","):
+    for name in _get("MEM20_LLM_FALLBACK_PROVIDERS").split(","):
         name = name.strip()
         if not name:
             continue

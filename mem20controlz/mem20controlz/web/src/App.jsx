@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import StatusPill from "./components/StatusPill.jsx";
 import LoginGate from "./components/LoginGate.jsx";
-import { ErrorBanner } from "./components/Banner.jsx";
+import { ErrorBanner, NoticeBanner } from "./components/Banner.jsx";
 import { KNOWN_STATUSES } from "./status.js";
 import { useResource, formatClock } from "./hooks.js";
 import { fetchAuthStatus, isUnauthorized } from "./auth.js";
@@ -184,6 +184,16 @@ export default function App() {
         {registry.error ? (
           <div className="strip">
             <ErrorBanner title="registry unavailable" error={registry.error} onRetry={registry.refresh} />
+          </div>
+        ) : null}
+
+        {authStatus?.admitted_by === "loopback" ? (
+          <div className="strip">
+            <NoticeBanner tone="info" title="no login required on this machine">
+              This request was admitted because it arrived on a loopback socket, not because a password was
+              checked. That trust stops applying the moment the panel is reached from elsewhere — including
+              through a tunnel or reverse proxy — and the password comes back then.
+            </NoticeBanner>
           </div>
         ) : null}
 

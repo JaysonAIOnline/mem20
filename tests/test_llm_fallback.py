@@ -19,8 +19,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import llm
 
-# Force-hermetic: never auto-load real .env keys during tests.
-llm._load_dotenv = lambda: None
+# Force-hermetic: blank the values llm read from the secrets file at import.
+# Nulling `llm._load_dotenv` never did this - the load happens at import, before
+# this line runs - so the real provider keys were present throughout. llm keeps
+# file values in `_FILE_VALUES` rather than in `os.environ` (that leak is what
+# `tests/test_llm_dotenv_isolation.py` guards), so this is the map to clear.
+llm._FILE_VALUES.clear()
 
 
 class _FakeLLM(BaseHTTPRequestHandler):
@@ -54,6 +58,12 @@ def _isolate_env(pairs: dict) -> None:
     llm._env() resolves a key plus its numbered *_N variants, and the mem20
     module also reads the whole MEM20_LLM_* namespace; both must be scrubbed
     so stale real keys can never leak into the chain under test.
+
+    Both of llm's sources are scrubbed: the process environment *and*
+    ``_FILE_VALUES``, which holds what it read from the secrets file at import.
+    Scrubbing only the environment is not isolation any more, and a test that
+    believed it was hermetic while reading the estate's real provider keys would
+    be worse than no test at all.
     """
     remove = [
         k for k in list(llm.os.environ)
@@ -61,6 +71,7 @@ def _isolate_env(pairs: dict) -> None:
     ]
     for k in remove:
         llm.os.environ.pop(k, None)
+    llm._FILE_VALUES.clear()
     llm.os.environ.update(pairs)
 
 

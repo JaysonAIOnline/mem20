@@ -10,12 +10,17 @@ import time
 from pathlib import Path
 
 from . import report, search as search_mod, snapshot as snapshot_mod, watch as watch_mod
-from .index import scan
+from . import index as index_mod
+from .index import scan, scan_extra
 from .policy import SCHEMA
 
 DEFAULT_ROOT = Path("/opt/mem20")
 DEFAULT_INDEX_DIR = Path("/opt/mem20/.sitemap")
 DEFAULT_DB = Path("/root/.local/share/opencode/opencode.db")
+# Roots outside the monorepo that belong in the index anyway. /sb is a real tool
+# that deliberately does not live under /opt/mem20, and an index that cannot
+# find it is worse than useless - it looks complete.
+DEFAULT_EXTRA_ROOTS = [Path("/sb")]
 
 
 def _index_paths(index_dir: Path) -> tuple[Path, Path, Path]:
@@ -67,6 +72,30 @@ def cmd_build(args: argparse.Namespace) -> int:
         print(f"root not found: {root}", file=sys.stderr)
         return 2
     index = scan(root, max_depth=args.depth)
+
+    extra_roots = _extra_roots(args)
+    added: list[str] = []
+    for extra in extra_roots:
+        entries = scan_extra(extra, max_depth=args.depth)
+        if not entries:
+            if args.verbose:
+                print(f"extra root {extra} produced no entry; skipped", file=sys.stderr)
+            continue
+        index["subsystems"].extend(entries)
+        added.append(str(extra))
+        if args.verbose:
+            for entry in entries:
+                print(
+                    f"extra root {extra} -> {entry['name']} "
+                    f"({entry['file_count']} files, {entry['code_lines']} code lines)",
+                    file=sys.stderr,
+                )
+    if added:
+        index["roots"] = [str(root), *added]
+        # Totals must describe everything the index actually contains, or the
+        # report would claim a smaller estate than the one it is describing.
+        _retotal(index)
+
     index_dir = Path(args.index_dir)
     index_dir.mkdir(parents=True, exist_ok=True)
     json_path, _, _ = _index_paths(index_dir)
@@ -74,9 +103,45 @@ def cmd_build(args: argparse.Namespace) -> int:
     root_md = root / "SITEMAP.md"
     root_md.write_text(report.render_markdown(index), encoding="utf-8")
     print(report.render_terminal(index))
+    if added:
+        print(f"extra roots {' '.join(added)}")
     print(f"wrote {json_path}")
     print(f"wrote {root_md}")
     return 0
+
+
+def _retotal(index: dict) -> None:
+    """Recompute index totals from the subsystems actually present.
+
+    Needed once outside roots are merged in: the totals ``scan`` produced
+    described the monorepo alone, and leaving them alone would make the report
+    claim a smaller estate than the index holds.
+    """
+    subsystems = index.get("subsystems", [])
+    totals = index.setdefault("totals", {})
+    totals["subsystems"] = len(subsystems)
+    totals["files"] = sum(entry.get("file_count", 0) for entry in subsystems)
+    totals["lines"] = sum(entry.get("line_count", 0) for entry in subsystems)
+    totals["code_lines"] = sum(entry.get("code_lines", 0) for entry in subsystems)
+    totals["languages"] = index_mod._merge_languages(
+        [entry.get("languages", {}) for entry in subsystems]
+    )
+    totals["categories"] = index_mod._count_by(subsystems, "category")
+
+
+def _extra_roots(args: argparse.Namespace) -> list[Path]:
+    """Resolve which outside roots to index.
+
+    ``--extra-root`` may be given more than once and replaces the defaults, so a
+    caller can point the build at a scratch project instead. ``--no-extra-roots``
+    drops them entirely for a pure monorepo scan.
+    """
+    if getattr(args, "no_extra_roots", False):
+        return []
+    raw = getattr(args, "extra_root", None)
+    if raw:
+        return [Path(item) for item in raw]
+    return list(DEFAULT_EXTRA_ROOTS)
 
 
 def cmd_search(args: argparse.Namespace) -> int:
@@ -106,6 +171,10 @@ def cmd_show(args: argparse.Namespace) -> int:
         return 0
     print(f"name         {entry['name']}")
     print(f"dir          {entry['dir']}")
+    if entry.get("external"):
+        # A reader who sees an outside path and is not told it is outside will
+        # assume it sits under the monorepo and go looking in the wrong place.
+        print(f"location     OUTSIDE the monorepo (indexed as an extra root: {entry['external_root']})")
     print(f"category     {entry['category']}")
     print(f"packaged     {entry['packaged']}")
     print(f"version      {entry.get('version')}")
@@ -239,6 +308,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("--root", default=str(DEFAULT_ROOT))
     p_build.add_argument("--index-dir", default=str(DEFAULT_INDEX_DIR))
     p_build.add_argument("--depth", type=int, default=14)
+    p_build.add_argument(
+        "--extra-root", action="append", default=None,
+        metavar="DIR",
+        help=(
+            "also index a root outside the monorepo as a single subsystem. "
+            f"Repeatable; replaces the default ({', '.join(str(p) for p in DEFAULT_EXTRA_ROOTS)})"
+        ),
+    )
+    p_build.add_argument(
+        "--no-extra-roots", dest="no_extra_roots", action="store_true",
+        help="index the monorepo only, ignoring every outside root",
+    )
+    p_build.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="report each outside root and what it contributed",
+    )
     p_build.set_defaults(func=cmd_build)
 
     p_search = sub.add_parser("search", help="search the index")

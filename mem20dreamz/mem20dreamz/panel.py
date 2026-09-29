@@ -36,9 +36,12 @@ much lineage each panelist can actually read.
 
 from __future__ import annotations
 
-import os
+import sys
 from dataclasses import dataclass
 from typing import Any
+
+sys.path.insert(0, "/opt/mem20")
+import llm
 
 COHERE = "https://api.cohere.com/compatibility/v1"
 GROQ = "https://api.groq.com/openai/v1"
@@ -159,7 +162,18 @@ EXCLUDED_PROVIDERS = {
 
 
 def _key_for(provider: str) -> str:
-    return (os.environ.get(KEY_ENV.get(provider, ""), "") or "").strip()
+    """Whether a provider is funded, resolved through llm.
+
+    This used to read ``os.environ`` directly, which worked only by accident:
+    ``llm`` published the entire secrets file into the process environment at
+    import time, so COHERE_API_KEY and GROQ_API_KEY happened to be there. When
+    llm stopped doing that - because it was handing every process that imported it
+    the control-plane admin password, the sudo password and every cloud key in
+    the estate - this function found nothing and ``panel()`` returned an empty
+    list. A funded check that silently reports "nobody" is the worst possible
+    failure for a panel whose whole job is to notice it has lost a member.
+    """
+    return llm.env_value(KEY_ENV.get(provider, ""))
 
 
 class PanelConfigError(RuntimeError):

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T00:27:12-0600",
+  "generated_at": "2026-09-29T13:04:30-0600",
   "root": "/opt/mem20",
   "root_files": [
     ".gitignore",
@@ -54,7 +54,11 @@
     "toml": 1,
     "yaml": 1
   },
-  "scan_seconds": 3.2,
+  "roots": [
+    "/opt/mem20",
+    "/sb"
+  ],
+  "scan_seconds": 1.54,
   "schema": "mem20-sitemap-v1",
   "subsystems": [
     {
@@ -1000,9 +1004,9 @@
       "version": "0.1.0"
     },
     {
-      "bytes": 588236,
+      "bytes": 602327,
       "category": "organ",
-      "code_lines": 7208,
+      "code_lines": 7436,
       "dependencies": [
         "fastapi>=0.110",
         "uvicorn>=0.27",
@@ -1037,14 +1041,14 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 9210,
+      "line_count": 9453,
       "lines_by_language": {
         "css": 1063,
         "html": 27,
-        "javascript": 3232,
+        "javascript": 3241,
         "json": 1760,
-        "markdown": 219,
-        "python": 2886,
+        "markdown": 234,
+        "python": 3105,
         "toml": 23
       },
       "modules": [
@@ -1064,7 +1068,7 @@
       "name": "mem20controlz",
       "packaged": true,
       "readme_summary": "mem20controlz",
-      "readme_text": "# mem20controlz\n\nunified control plane for the mem20 fleet: per-subsystem panels (rest first,\nstandardised cli fallback), the websites manager for dns, site inventory, systemd\nhealth, journals and cloudflare pages, and the **dreams manager** for reviewing\ndreams and keeping the ones worth keeping.\n\none fastapi process serves both the api and the built frontend from a single\norigin, so there is no second web server to operate.\n\n## run it\n\nthe service is managed by systemd on this host:\n\n```sh\nsystemctl status mem20controlz          # 127.0.0.1:8890\nsystemctl restart mem20controlz\ncurl -s http://127.0.0.1:8890/api/health\n```\n\nto run it in the foreground instead:\n\n```sh\n/root/.venv/bin/python -m mem20controlz --host 127.0.0.1 --port 8890\n```\n\n`python -m mem20controlz --describe` prints the websites manager manifest.\n\n## authentication\n\ntwo independent layers, either of which admits a request:\n\n1. **cloudflare access** \u2014 a verified identity header, trusted only when\n   `control_trust_cf_access` is set. it is off by default, because a client can\n   forge that header when the service is not actually behind access.\n2. **admin password** \u2014 a constant-time check that mints an hmac-signed session\n   cookie valid for 12 hours.\n\nboth read from `/opt/mem20/secrets/.env` (or the environment):\n\n| key | purpose |\n| --- | --- |\n| `mem20_control_password` | admin password |\n| `mem20_control_secret` | session signing secret |\n| `control_trust_cf_access` | set to `1` only when behind cloudflare access |\n\n**failing closed is deliberate.** with no password configured nothing can log\nin, and with no signing secret `post /api/auth/login` returns `503` rather than\nhanding out an unsigned session. `/api/health` and `/api/auth/status` stay open\nso a load balancer can probe the service and the login screen can ask what the\nauth setup is.\n\n## status honesty\n\nthe registry never reports a panel as `ok` unless a verified surface answered.\n\n| status | meaning |\n| --- | --- |\n| `ok` | rest or cli probe confirmed the surface |\n| `degraded` | probe reached it and it failed the contract |\n| `unreachable` | probe could not reach it at all |\n| `no-health` | the cli runs but exposes no `health` verb \u2014 a probe gap, not a fault |\n| `unknown` | nothing could be confirmed |\n\n`no-health` exists so that a working cli without a health verb is not reported\nas broken. a unit that does not exist is reported as `not-found`, not\n`inactive`, because \"inactive\" would claim a service had started and failed.\n\nevery registry response carries `cached`, `age_s` and `stale`. a full sweep\nspawns ~30 subprocesses and takes seconds, so it is cached and refreshed in the\nbackground; the age is always reported so cached data is never mistaken for a\nlive reading. the cache key includes the probe timeouts, because evidence\ngathered with a 15s budget is not the same evidence as a 2s budget.\n\n## api\n\n| method | path | notes |\n| --- | --- | --- |\n| get | `/api/health` | open |\n| get | `/api/auth/status` | open; reports posture + whether this caller is admitted |\n| post | `/api/auth/login` | `{\"password\": \"...\"}` |\n| post | `/api/auth/logout` | |\n| get | `/api/registry` | cached fleet panels |\n| get | `/api/cli/coverage` | cli contract audit (slow: runs a full audit) |\n| get | `/api/websites/manifest` | |\n| get | `/api/websites/sites` | |\n| get | `/api/websites/dns` | `?zone=&pattern=` |\n| post | `/api/websites/dns` | `{\"zone\",\"type\",\"name\",\"content\",\"proxied\",\"ttl\"}` |\n| delete | `/api/websites/dns/{id}` | `?zone=` |\n| get | `/api/websites/health` | systemd unit health |\n| get | `/api/websites/logs` | `?unit=&lines=` (1\u20135000) |\n| get | `/api/websites/pages` | cloudflare pages projects |\n| get | `/api/dreams/manifest` | what the dreams manager can do |\n| get | `/api/dreams` | `?kind=&include_hollow=&only_unpromoted=&limit=` |\n| get | `/api/dreams/idle-stats` | idle inventory + who holds the run lock |\n| get | `/api/dreams/hollow` | read-only census of failed-call lineages |\n| get | `/api/dreams/runs` | background run jobs |\n| get | `/api/dreams/runs/{job_id}` | one job, with a bounded log tail |\n| post | `/api/dreams/runs` | `{\"dream_id\",\"iterations\"}` \u2192 starts a job, returns at once |\n| get | `/api/dreams/{dream_id}` | one lineage in full, artifact included |\n| get | `/api/dreams/{dream_id}/chain` | ordered cids and any uncommitted iterations |\n| post | `/api/dreams/{dream_id}/verify` | re-prove every node |\n| post | `/api/dreams/{dream_id}/promote` | `{\"force\":bool}` \u2192 portable roadmap pack |\n| post | `/api/dreams` | `{\"seed\",\"foundation\",\"kind\"}` \u2192 new lineage, free |\n\nunmatched `/api/*` paths return `404`, never the spa shell \u2014 a mistyped api\nroute must not come back as a `200` with html.\n\n## dreams\n\nthe review surface for `mem20dreamz`. it imports the engine as a library rather\nthan shelling out to `mem20-dream`, so there is one implementation of the rules\ninstead of two that can disagree. the exception is a run: that is spawned as the\nengine's own cli, because the cli owns the lock discipline and the exit-code\ncontract, and reimplementing them here is how two runs end up dreaming at once.\n\nfour things it is careful about, each because the alternative is a quiet lie:\n\n* **the list never carries an artifact.** a lineage's artifact reaches hundreds of\n  kilobytes and the list is polled, so rows carry counts and flags only. the\n  detail view fetches one dream, artifact included.\n* **hollow lineages are flagged, not hidden.** thirty-nine on this host recorded a\n  provider error where a panel result should be. a hollow filter exists, and when\n  it hides rows the response says how many.\n* **a refusal is never flattened.** the engine refuses promotion on a hollow\n  lineage and on a damaged chain; those are different facts with different\n  remedies, so both are passed through with the engine's own wording. a refusal\n  is a `409` with the reason, or a `200` with `promoted: false` \u2014 never a generic\n  error.\n* **\"kept\" is labelled by how it is derived.** it is read from the promotions\n  directory on disk, not from the ledger, so a pack written elsewhere would not\n  show up. the response says which.\n\n### runs are jobs, not requests\n\nan iteration is a full panel of models; five iterations measure at six to seven\nminutes, against a twenty-second browser timeout. so `post /api/dreams/runs`\nspawns the engine cli and returns a job id at once, and the tab polls it.\n\nthe exit codes stay distinct, because they are different facts:\n\n| exit | reported as | meaning |\n| --- | --- | --- |\n| 0 | `done` | every requested iteration ran |\n| 2 | `paused` | a provider dropped; everything that landed was kept |\n| 3 | `refused` | another run holds the lock |\n| other | `failed` | see the log tail |\n\n`paused` is deliberately not `failed`: telling an operator a partially-successful\nrun failed invites them to throw away work that is mostly intact.\n\nrun records are held **in memory only**, and `get /api/dreams/runs` says so. a\nrestart forgets them \u2014 deliberately, because a job record that outlived its\nprocess would report a dead run as live.\n\na run is bounded at 20 iterations and at the ceiling the idle service itself uses.\npast the ceiling the child is killed and the job is reported `failed` with\n`timed_out`.\n\n### the hollow census only reads\n\n`get /api/dreams/hollow` re-derives hollowness from the stored critiques. it never\nmarks a lineage and never writes to braid, because both are separate explicit\nacts on a store other people read, and a panel that quietly \"fixed\" thirty-nine\nlineages while you were looking at a list would be indistinguishable from one\nthat corrupted them.\n\n## frontend\n\nvite + react in `mem20controlz/web`. the build writes straight into\n`mem20controlz/static/`, which is what the app serves, so there is one build\noutput and no copy step.\n\n```sh\ncd mem20controlz/web\nnpm install\nnpm run build     # -> ../static\n```\n\n`npm run dev` (port 5173) needs `mem20_control_api_target` to proxy `/api`.\n\n## tests\n\n```sh\n/root/.venv/bin/python -m",
+      "readme_text": "# mem20controlz\n\nunified control plane for the mem20 fleet: per-subsystem panels (rest first,\nstandardised cli fallback), the websites manager for dns, site inventory, systemd\nhealth, journals and cloudflare pages, and the **dreams manager** for reviewing\ndreams and keeping the ones worth keeping.\n\none fastapi process serves both the api and the built frontend from a single\norigin, so there is no second web server to operate.\n\n## run it\n\nthe service is managed by systemd on this host:\n\n```sh\nsystemctl status mem20controlz          # 127.0.0.1:8890\nsystemctl restart mem20controlz\ncurl -s http://127.0.0.1:8890/api/health\n```\n\nto run it in the foreground instead:\n\n```sh\n/root/.venv/bin/python -m mem20controlz --host 127.0.0.1 --port 8890\n```\n\n`python -m mem20controlz --describe` prints the websites manager manifest.\n\n## authentication\n\ntwo independent layers, either of which admits a request:\n\n1. **cloudflare access** \u2014 a verified identity header, trusted only when\n   `control_trust_cf_access` is set. it is off by default, because a client can\n   forge that header when the service is not actually behind access.\n2. **admin password** \u2014 a constant-time check that mints an hmac-signed session\n   cookie valid for 12 hours.\n\nboth read from `/opt/mem20/secrets/.env` (or the environment):\n\n| key | purpose |\n| --- | --- |\n| `mem20_control_password` | admin password |\n| `mem20_control_secret` | session signing secret |\n| `control_trust_cf_access` | set to `1` only when behind cloudflare access |\n\n**the secrets file wins; the environment is only a fallback.** that order is\nload-bearing and was the other way round, which was a real defect. `llm.py` runs a\ndotenv load at import time and copies *every* key it finds \u2014 not just api keys,\ndespite what its own docstring says \u2014 into `os.environ`. this service imports it\ntransitively through `mem20dreamz`, so the admin password and the signing secret\nwere snapshotted into the process environment at boot. rotating either one in the\nfile then appeared to do nothing until the unit was restarted, and a rotated\nsigning secret left already-issued cookies verifiable. now a rotation takes effect\non the next request, with no restart. an environment-only deployment still works,\nbecause the environment is consulted when the file has no value for the key.\n\n**failing closed is deliberate.** with no password configured nothing can log\nin, and with no signing secret `post /api/auth/login` returns `503` rather than\nhanding out an unsigned session. `/api/health` and `/api/auth/status` stay open\nso a load balancer can probe the service and the login screen can ask what the\nauth setup is.\n\n## status honesty\n\nthe registry never reports a panel as `ok` unless a verified surface answered.\n\n| status | meaning |\n| --- | --- |\n| `ok` | rest or cli probe confirmed the surface |\n| `degraded` | probe reached it and it failed the contract |\n| `unreachable` | probe could not reach it at all |\n| `no-health` | the cli runs but exposes no `health` verb \u2014 a probe gap, not a fault |\n| `unknown` | nothing could be confirmed |\n\n`no-health` exists so that a working cli without a health verb is not reported\nas broken. a unit that does not exist is reported as `not-found`, not\n`inactive`, because \"inactive\" would claim a service had started and failed.\n\nevery registry response carries `cached`, `age_s` and `stale`. a full sweep\nspawns ~30 subprocesses and takes seconds, so it is cached and refreshed in the\nbackground; the age is always reported so cached data is never mistaken for a\nlive reading. the cache key includes the probe timeouts, because evidence\ngathered with a 15s budget is not the same evidence as a 2s budget.\n\n## api\n\n| method | path | notes |\n| --- | --- | --- |\n| get | `/api/health` | open |\n| get | `/api/auth/status` | open; reports posture + whether this caller is admitted |\n| post | `/api/auth/login` | `{\"password\": \"...\"}` |\n| post | `/api/auth/logout` | |\n| get | `/api/registry` | cached fleet panels |\n| get | `/api/cli/coverage` | cli contract audit (slow: runs a full audit) |\n| get | `/api/websites/manifest` | |\n| get | `/api/websites/sites` | |\n| get | `/api/websites/dns` | `?zone=&pattern=` |\n| post | `/api/websites/dns` | `{\"zone\",\"type\",\"name\",\"content\",\"proxied\",\"ttl\"}` |\n| delete | `/api/websites/dns/{id}` | `?zone=` |\n| get | `/api/websites/health` | systemd unit health |\n| get | `/api/websites/logs` | `?unit=&lines=` (1\u20135000) |\n| get | `/api/websites/pages` | cloudflare pages projects |\n| get | `/api/dreams/manifest` | what the dreams manager can do |\n| get | `/api/dreams` | `?kind=&include_hollow=&only_unpromoted=&limit=` |\n| get | `/api/dreams/idle-stats` | idle inventory + who holds the run lock |\n| get | `/api/dreams/hollow` | read-only census of failed-call lineages |\n| get | `/api/dreams/runs` | background run jobs |\n| get | `/api/dreams/runs/{job_id}` | one job, with a bounded log tail |\n| post | `/api/dreams/runs` | `{\"dream_id\",\"iterations\"}` \u2192 starts a job, returns at once |\n| get | `/api/dreams/{dream_id}` | one lineage in full, artifact included |\n| get | `/api/dreams/{dream_id}/chain` | ordered cids and any uncommitted iterations |\n| post | `/api/dreams/{dream_id}/verify` | re-prove every node |\n| post | `/api/dreams/{dream_id}/promote` | `{\"force\":bool}` \u2192 portable roadmap pack |\n| post | `/api/dreams` | `{\"seed\",\"foundation\",\"kind\"}` \u2192 new lineage, free |\n\nunmatched `/api/*` paths return `404`, never the spa shell \u2014 a mistyped api\nroute must not come back as a `200` with html.\n\n## dreams\n\nthe review surface for `mem20dreamz`. it imports the engine as a library rather\nthan shelling out to `mem20-dream`, so there is one implementation of the rules\ninstead of two that can disagree. the exception is a run: that is spawned as the\nengine's own cli, because the cli owns the lock discipline and the exit-code\ncontract, and reimplementing them here is how two runs end up dreaming at once.\n\nfour things it is careful about, each because the alternative is a quiet lie:\n\n* **the list never carries an artifact.** a lineage's artifact reaches hundreds of\n  kilobytes and the list is polled, so rows carry counts and flags only. the\n  detail view fetches one dream, artifact included.\n* **hollow lineages are flagged, not hidden.** thirty-nine on this host recorded a\n  provider error where a panel result should be. a hollow filter exists, and when\n  it hides rows the response says how many.\n* **a refusal is never flattened.** the engine refuses promotion on a hollow\n  lineage and on a damaged chain; those are different facts with different\n  remedies, so both are passed through with the engine's own wording. a refusal\n  is a `409` with the reason, or a `200` with `promoted: false` \u2014 never a generic\n  error.\n* **\"kept\" is labelled by how it is derived.** it is read from the promotions\n  directory on disk, not from the ledger, so a pack written elsewhere would not\n  show up. the response says which.\n\n### runs are jobs, not requests\n\nan iteration is a full panel of models; five iterations measure at six to seven\nminutes, against a twenty-second browser timeout. so `post /api/dreams/runs`\nspawns the engine cli and returns a job id at once, and the tab polls it.\n\nthe exit codes stay distinct, because they are different facts:\n\n| exit | reported as | meaning |\n| --- | --- | --- |\n| 0 | `done` | every requested iteration ran |\n| 2 | `paused` | a provider dropped; everything that landed was kept |\n| 3 | `refused` | another run holds the lock |\n| other | `failed` | see the log tail |\n\n`paused` is deliberately not `failed`: telling an operator a partially-successful\nrun failed invites them to throw away work that is mostly intact.\n\nrun records are held **in memory only**, and `get /api/dreams/runs` says so. a\nrestart forgets them \u2014 deliberately, because a job record that outlived its\nprocess would report a dead run as live.\n\na run is bounded at 20 iterations and at the ceiling the idle service itself uses.\npast the ceiling the child is killed an",
       "requires_python": ">=3.11",
       "subdirs": [
         "mem20controlz",
@@ -1251,9 +1255,9 @@
       "version": "0.1.0"
     },
     {
-      "bytes": 214906,
+      "bytes": 218532,
       "category": "organ",
-      "code_lines": 4272,
+      "code_lines": 4324,
       "dependencies": [
         "httpx"
       ],
@@ -1280,10 +1284,10 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 4484,
+      "line_count": 4547,
       "lines_by_language": {
-        "markdown": 192,
-        "python": 4272,
+        "markdown": 203,
+        "python": 4324,
         "toml": 20
       },
       "modules": [
@@ -1310,7 +1314,7 @@
       "name": "mem20dreamz",
       "packaged": true,
       "readme_summary": "mem20dreamz",
-      "readme_text": "# mem20dreamz\n\nthe dream engine. iteration must **improve**, never **condense**.\n\n## the defect this replaces\n\n`cog/braid_dream_section.py:115` did `st[\"seed\"] = out[:300]`. every iteration\nread a 300-character tail of the previous output, so early structure could not\nsurvive and each pass was a resample rather than a revision. measured on a real\nrun before the fix, the artifact oscillated `273 -> 993 -> 246 -> 11625` -\nregeneration with a lottery. a lineage now keeps the artifact in full, every\nintermediate version, an invention register, and its own evolving config.\n\n## panel: one model per member\n\nthe owner's rule. a single-model panel makes its blind spot *systematic*: every\nmember can be confidently wrong the same way, and agreement is laundered into\nconsensus. eight distinct models, every one verified to answer on this host by a\nreal call. `assert_roster_valid()` **raises** on a duplicate model - it used to\ndeduplicate silently, which quietly deleted the `systems_inventor` role and left\nthe invention register permanently empty with nothing reporting why.\n\nonly cohere and groq serve a completion today. a provider's catalog is not\nevidence of callability: nvidia returns 82 model ids and answers none of them.\nsee `excluded_providers` in `panel.py` for what was tried and why each failed.\n\n## the iteration\n\n1. load lineage - artifact, changelog, invention register, dreamer config.\n2. assemble context - the full lineage as a digest fitted to each panelist's\n   window, plus the artifact verbatim. never a truncated tail.\n3. panel critiques, each member in its own domain.\n4. omission of the current state - the \"what was never asked for\" list that\n   drives revision. used as input, *not* as the recorded score.\n5. the skeptic, a standing role, recorded even when overruled.\n6. three forecasts - monetary, estate, human - rubrics fixed at seed time.\n7. invention, spawned from what the panel actually found.\n8. the dreamer evolves - techniques and guidance, per lineage, never global.\n9. generate n candidates, **each by a different model**.\n10. score every candidate on both axes, judged by models that wrote none of them.\n11. select: fidelity floor, never-condenses invariant, omission veto, then a\n    blind a/b against the incumbent. only a candidate that wins is adopted, so\n    the artifact can never regress.\n\n## invariants, enforced not requested\n\n* **never condenses** - a revision under 60% of its predecessor is rejected.\n  this fired for real during development, catching a 19% collapse.\n* **fidelity floor** - below 70 the revision is rejected however good it looks.\n* **omission veto** - if the panel found nothing genuinely new, the iteration\n  did no work and fails. omission is a check, not a target: asking a model to\n  maximise \"unasked-for material\" is unbounded and simply rewards padding.\n* **no regression** - adoption requires winning a blind comparison.\n* **no funding, no dream** - the engine refuses rather than faking output.\n\n## judging honestly\n\na panel cannot reliably grade its own output on a self-reported 0-100, so\nselection uses a **blind pairwise comparison** with a randomised order, judged by\nthe strongest model that wrote neither artifact. that matters more than it\nsounds: routing the contest to a 7b model froze the dream at iteration 3, with\nthe incumbent winning every round regardless of candidate quality. a judge that\ncannot tell two artifacts apart returns \"incumbent stands\" every time, which\nlooks like convergence and is actually blindness.\n\n## subsystem awareness\n\n`estate.py` reports what is *measured*, not remembered: real installable packages\non disk, the toolchest inventory's tool counts, and the capability claims braid\nholds. the interesting column is the gap between them.\n\na claim whose name does not match an installed package is reported as\n**unverified, not absent** \u2014 the join is by name only, and `mem20cviz` versus\n`cap.cv-inference.v1` may be the same thing spelled differently. overstating that\ngap would feed the panel a falsehood, which is worse than admitting the join is\nfuzzy. claims that are plainly probe noise (one- and two-letter ids) are called\nout separately.\n\nthe feed goes to the inventor, because an inventor that does not know what exists\nreinvents the tool already sitting two directories away. it explicitly does *not*\nsuppress proposals of nonexistent capabilities; that is the whole point.\n\n## idle dreaming\n\n`idle.py` plus `mem20dream-idle.timer` (every 20 minutes, `type=oneshot`,\n`restart=on-failure`) produce prototypes, proposals and ideas. five iterations per\nturn, which measures at roughly six minutes and leaves headroom inside the tick.\n\n**an active run always wins.** `mem20-dream run` takes a lock for the whole run and\nidle dreaming skips its turn entirely while it is held \u2014 no tokens spent, no write.\na lock older than `mem20dream_lock_stale_s` stops counting, so a crashed run cannot\nwedge idle dreaming for ever.\n\nalerts use a different bar per dream type, because a one-iteration idle idea and a\nlong refinement are not comparable:\n\n- **idle** alerts on *novelty* (omission \u2265 55, or 3+ inventions) \u2014 it may interrupt you\n- **active runs** need 3+ iterations, fidelity held in \u226580% of them, *and* a still-growing artifact\n\ngrowth alone is not enough: a run that abandoned the brief does not alert. a push\nthat failed is reported as `delivered: false` with the reason, never as sent.\n\n## promotion\n\n`mem20-dream promote` writes a portable roadmap pack \u2014 maps, skills, information,\ndesign \u2014 as markdown plus json, one directory per dream so many dreams share a\nstore. it refuses on a damaged chain **and** on a hollow lineage, because a valid\nsignature proves the bytes are intact, not that a dream happened.\n\nskills are labelled *learned observations*, not verified procedures: they came from\na panel critique, not from a test that passed. scores are labelled panel judgements,\nnot measurements. the pack leads with what it is not.\n\n### a failed promotion rolls back\n\neach file is written atomically, but the *pair* used to be written in place with no\nrecovery, and the overwrite guard only asked whether the target directory had\nanything in it. so a crash between the two files left a non-empty target that then\nrefused every future retry without `--force` \u2014 and an operator could not tell a\nhalf-written pack from a real one. proven, not theorised: under a real\n`efbig` (a `ulimit -f` cap) the old code left a stray `.json.tmp` behind and every\nsubsequent retry raised `fileexistserror`.\n\nnow the pack is **rendered, then staged, then installed**:\n\n* nothing touches the target until the whole pack is rendered and fsynced, so a\n  renderer error fails before writing rather than halfway through;\n* a staging directory is removed on any failure, so a failed promotion leaves the\n  store exactly as it found it and a plain retry works;\n* replacing an existing pack sets the old one aside under a `.bak` name first, so\n  a failure at the install rename is recoverable \u2014 and if the rollback itself\n  fails, the surviving path is named in the raised error rather than the pack\n  quietly disappearing;\n* a pack stranded by a process killed *between* the two renames is restored on the\n  next attempt, and `promote` reports that it did.\n\nthe overwrite guard also learned to tell debris from real work, narrowly: a\ndirectory counts as interrupted debris only when everything in it is a filename\nthis code would have written. a directory holding anything else is a human's, and\nis refused rather than cleaned up.\n\n## the run lock is exclusive\n\nan active run always wins over idle dreaming \u2014 and now over *another run*. the old\n`claim_active` wrote the lock unconditionally, which is enough to stop idle\ndreaming from crowding out real work but does nothing about run versus run: the\nsecond writer silently replaced the first's claim, so both dreamed at once and the\nlock named whichever wrote last. harmless when a person runs one command at a time;\nnot harmless the moment a b",
+      "readme_text": "# mem20dreamz\n\nthe dream engine. iteration must **improve**, never **condense**.\n\n## the defect this replaces\n\n`cog/braid_dream_section.py:115` did `st[\"seed\"] = out[:300]`. every iteration\nread a 300-character tail of the previous output, so early structure could not\nsurvive and each pass was a resample rather than a revision. measured on a real\nrun before the fix, the artifact oscillated `273 -> 993 -> 246 -> 11625` -\nregeneration with a lottery. a lineage now keeps the artifact in full, every\nintermediate version, an invention register, and its own evolving config.\n\n## panel: one model per member\n\nthe owner's rule. a single-model panel makes its blind spot *systematic*: every\nmember can be confidently wrong the same way, and agreement is laundered into\nconsensus. eight distinct models, every one verified to answer on this host by a\nreal call. `assert_roster_valid()` **raises** on a duplicate model - it used to\ndeduplicate silently, which quietly deleted the `systems_inventor` role and left\nthe invention register permanently empty with nothing reporting why.\n\nonly cohere and groq serve a completion today. a provider's catalog is not\nevidence of callability: nvidia returns 82 model ids and answers none of them.\nsee `excluded_providers` in `panel.py` for what was tried and why each failed.\n\n**funding is resolved through `llm.env_value`, never `os.environ`.** it used to\nread the environment directly, which worked only by accident: `llm` published the\nentire secrets file into the process environment at import time, so\n`cohere_api_key` and `groq_api_key` happened to be sitting there. when that leak\nwas closed \u2014 it was handing every process that imported `llm` the control-plane\nadmin password, the sudo password and every cloud key in the estate \u2014 the panel\nquietly reported *no funded members* and `panel()` returned an empty list. nothing\nraised and nothing was logged. a panel whose whole purpose is noticing it has lost\na member must never be the thing that loses it silently, so the resolution lives\nin one place and there are tests for both directions: funded resolves, unfunded\nreports unfunded.\n\n## the iteration\n\n1. load lineage - artifact, changelog, invention register, dreamer config.\n2. assemble context - the full lineage as a digest fitted to each panelist's\n   window, plus the artifact verbatim. never a truncated tail.\n3. panel critiques, each member in its own domain.\n4. omission of the current state - the \"what was never asked for\" list that\n   drives revision. used as input, *not* as the recorded score.\n5. the skeptic, a standing role, recorded even when overruled.\n6. three forecasts - monetary, estate, human - rubrics fixed at seed time.\n7. invention, spawned from what the panel actually found.\n8. the dreamer evolves - techniques and guidance, per lineage, never global.\n9. generate n candidates, **each by a different model**.\n10. score every candidate on both axes, judged by models that wrote none of them.\n11. select: fidelity floor, never-condenses invariant, omission veto, then a\n    blind a/b against the incumbent. only a candidate that wins is adopted, so\n    the artifact can never regress.\n\n## invariants, enforced not requested\n\n* **never condenses** - a revision under 60% of its predecessor is rejected.\n  this fired for real during development, catching a 19% collapse.\n* **fidelity floor** - below 70 the revision is rejected however good it looks.\n* **omission veto** - if the panel found nothing genuinely new, the iteration\n  did no work and fails. omission is a check, not a target: asking a model to\n  maximise \"unasked-for material\" is unbounded and simply rewards padding.\n* **no regression** - adoption requires winning a blind comparison.\n* **no funding, no dream** - the engine refuses rather than faking output.\n\n## judging honestly\n\na panel cannot reliably grade its own output on a self-reported 0-100, so\nselection uses a **blind pairwise comparison** with a randomised order, judged by\nthe strongest model that wrote neither artifact. that matters more than it\nsounds: routing the contest to a 7b model froze the dream at iteration 3, with\nthe incumbent winning every round regardless of candidate quality. a judge that\ncannot tell two artifacts apart returns \"incumbent stands\" every time, which\nlooks like convergence and is actually blindness.\n\n## subsystem awareness\n\n`estate.py` reports what is *measured*, not remembered: real installable packages\non disk, the toolchest inventory's tool counts, and the capability claims braid\nholds. the interesting column is the gap between them.\n\na claim whose name does not match an installed package is reported as\n**unverified, not absent** \u2014 the join is by name only, and `mem20cviz` versus\n`cap.cv-inference.v1` may be the same thing spelled differently. overstating that\ngap would feed the panel a falsehood, which is worse than admitting the join is\nfuzzy. claims that are plainly probe noise (one- and two-letter ids) are called\nout separately.\n\nthe feed goes to the inventor, because an inventor that does not know what exists\nreinvents the tool already sitting two directories away. it explicitly does *not*\nsuppress proposals of nonexistent capabilities; that is the whole point.\n\n## idle dreaming\n\n`idle.py` plus `mem20dream-idle.timer` (every 20 minutes, `type=oneshot`,\n`restart=on-failure`) produce prototypes, proposals and ideas. five iterations per\nturn, which measures at roughly six minutes and leaves headroom inside the tick.\n\n**an active run always wins.** `mem20-dream run` takes a lock for the whole run and\nidle dreaming skips its turn entirely while it is held \u2014 no tokens spent, no write.\na lock older than `mem20dream_lock_stale_s` stops counting, so a crashed run cannot\nwedge idle dreaming for ever.\n\nalerts use a different bar per dream type, because a one-iteration idle idea and a\nlong refinement are not comparable:\n\n- **idle** alerts on *novelty* (omission \u2265 55, or 3+ inventions) \u2014 it may interrupt you\n- **active runs** need 3+ iterations, fidelity held in \u226580% of them, *and* a still-growing artifact\n\ngrowth alone is not enough: a run that abandoned the brief does not alert. a push\nthat failed is reported as `delivered: false` with the reason, never as sent.\n\n## promotion\n\n`mem20-dream promote` writes a portable roadmap pack \u2014 maps, skills, information,\ndesign \u2014 as markdown plus json, one directory per dream so many dreams share a\nstore. it refuses on a damaged chain **and** on a hollow lineage, because a valid\nsignature proves the bytes are intact, not that a dream happened.\n\nskills are labelled *learned observations*, not verified procedures: they came from\na panel critique, not from a test that passed. scores are labelled panel judgements,\nnot measurements. the pack leads with what it is not.\n\n### a failed promotion rolls back\n\neach file is written atomically, but the *pair* used to be written in place with no\nrecovery, and the overwrite guard only asked whether the target directory had\nanything in it. so a crash between the two files left a non-empty target that then\nrefused every future retry without `--force` \u2014 and an operator could not tell a\nhalf-written pack from a real one. proven, not theorised: under a real\n`efbig` (a `ulimit -f` cap) the old code left a stray `.json.tmp` behind and every\nsubsequent retry raised `fileexistserror`.\n\nnow the pack is **rendered, then staged, then installed**:\n\n* nothing touches the target until the whole pack is rendered and fsynced, so a\n  renderer error fails before writing rather than halfway through;\n* a staging directory is removed on any failure, so a failed promotion leaves the\n  store exactly as it found it and a plain retry works;\n* replacing an existing pack sets the old one aside under a `.bak` name first, so\n  a failure at the install rename is recoverable \u2014 and if the rollback itself\n  fails, the surviving path is named in the raised error rather than the pack\n  quietly disappearing;\n* a pack stranded by a process killed *between* the two",
       "requires_python": ">=3.11",
       "subdirs": [
         "mem20dreamz",
@@ -1496,9 +1500,9 @@
       "version": "0.2.0"
     },
     {
-      "bytes": 2170992,
+      "bytes": 2216620,
       "category": "organ",
-      "code_lines": 45530,
+      "code_lines": 46294,
       "dependencies": [],
       "description": "Native mem20 3D subsystem (KilNZ): AI-first cleanroom mesh and geometry modeler with a 103-op agent surface, procedural generation, glTF/OBJ import-export, rigging, text-to-3D asset pipeline, and a budget/naming validation gate",
       "dir": "mem20kilnz",
@@ -1513,7 +1517,7 @@
         "kiln": "mem20kilnz.cli:main",
         "mem20kilnz": "mem20kilnz.cli:main"
       },
-      "file_count": 91,
+      "file_count": 92,
       "keywords": [],
       "languages": {
         "c": 1,
@@ -1521,19 +1525,19 @@
         "make": 1,
         "markdown": 7,
         "other": 4,
-        "python": 37,
+        "python": 38,
         "shell": 2,
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 48691,
+      "line_count": 49572,
       "lines_by_language": {
         "c": 1520,
-        "cpp": 36991,
+        "cpp": 37432,
         "make": 57,
-        "markdown": 2988,
+        "markdown": 3105,
         "other": 140,
-        "python": 6935,
+        "python": 7258,
         "shell": 27,
         "toml": 33
       },
@@ -1567,6 +1571,7 @@
         "test_fbx",
         "test_ingest",
         "test_mesh_attributes",
+        "test_node_graph",
         "test_pipeline",
         "test_refine",
         "test_replay",
@@ -1584,7 +1589,7 @@
         "mem20kilnz",
         "tests"
       ],
-      "test_files": 15,
+      "test_files": 16,
       "version": "0.1.0"
     },
     {
@@ -2374,17 +2379,19 @@
       "version": "0.1.0"
     },
     {
-      "bytes": 69771,
+      "bytes": 95844,
       "category": "organ",
-      "code_lines": 1876,
+      "code_lines": 2280,
       "dependencies": [],
       "description": "Machine-readable sitemap of the mem20 monorepo for AI agents, plus a quiescence poller and source-only snapshotter.",
       "dir": "mem20sitemapz",
-      "docs": [],
+      "docs": [
+        "mem20sitemapz/README.md"
+      ],
       "entry_points": {
         "sitemap": "mem20sitemapz.cli:main"
       },
-      "file_count": 13,
+      "file_count": 15,
       "keywords": [
         "mem20",
         "sitemap",
@@ -2396,29 +2403,32 @@
       ],
       "languages": {
         "json": 1,
-        "python": 11,
+        "markdown": 1,
+        "python": 12,
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 1902,
+      "line_count": 2402,
       "lines_by_language": {
         "json": 7,
-        "python": 1876,
+        "markdown": 96,
+        "python": 2280,
         "toml": 19
       },
       "modules": [
+        "test_extra_roots",
         "test_mem20sitemapz"
       ],
       "name": "mem20sitemapz",
       "packaged": true,
-      "readme_summary": "",
-      "readme_text": "",
+      "readme_summary": "mem20sitemapz",
+      "readme_text": "# mem20sitemapz\n\na machine-readable **sitemap of the mem20 monorepo** so an agent can find the right\nsubsystem without being told, plus a **quiescence poller** and a **source-only snapshotter**.\n\nconsole script: `sitemap` (also runnable as `python -m mem20sitemapz`).\n\n## why this exists\n\n`/opt/mem20` holds 113 top-level entries and roughly 71k files. a new agent has no\nreliable way to learn what is there. this indexes the tree into\n`/opt/mem20/.sitemap/sitemap.json` (machine-readable) and `/opt/mem20/sitemap.md`\n(human/agent-readable appendix), and makes both queryable from the shell.\n\n## commands\n\n```\nsitemap                      # same as: sitemap build\nsitemap build                # scan tree, write .sitemap/sitemap.json + sitemap.md\nsitemap build -v             # ... and report each outside root and what it added\nsitemap build --no-extra-roots   # monorepo only, ignoring every outside root\nsitemap search \"secret zzz\"  # ranked search over the index\nsitemap show mem20ops        # full detail for one subsystem\nsitemap watch ...            # wait until every target agent stops working, then snapshot\nsitemap snapshot             # write a source-only zip now\nsitemap verify               # check a zip for corruption and secret paths\n```\n\nbare `sitemap` with no arguments runs `build`.\n\n## roots outside the monorepo\n\nnot everything real lives under `/opt/mem20`. `/sb` (the scoreboard) is a full\ntool that deliberately lives elsewhere, and an index that cannot find it is\nworse than useless, because it looks complete. so `build` also indexes a list of\n**extra roots** \u2014 `/sb` by default, overridable with a repeated\n`--extra-root dir` or dropped with `--no-extra-roots`.\n\nan extra root becomes **one** entry, not a directory listing. scanning `/sb` the\nordinary way would yield entries called \"backend\", \"frontend\" and \"data\", which\ntells a reader nothing. instead the whole project is one entry, named after the\npackage that defines it (found by looking a few levels down, since its\n`pyproject.toml` is not at the root), carrying:\n\n- its real absolute path, so nobody opens the wrong directory\n- `external: true` and `external_root`, and `show` prints\n  `location outside the monorepo`\n- its own readme summary, keywords, entry points and version\n\nthese entries get their own **\"outside the monorepo\"** table in `sitemap.md`\nand are excluded from the organ/service/other tables, so an outside project is\nnever presented as though it were a mem20 subsystem. the index `totals` are\nrecomputed after merging, so the reported estate is the estate actually indexed.\n\n### measured on this box\n\nfull-depth build of `/opt/mem20` plus `/sb`: **1.75s**, 62 subsystems (61 inside\nthe monorepo + `mem20scoreboardz` at `/sb`), 8,159 source files, 586,732 code\nlines (1,568,329 including json/markdown).\n\n## how search works\n\ntokens are anded across ranked fields: name, entry points, keywords, directory,\nmodule names, description, readme body, subdirectories, docs, dependencies. all\ntokens must match somewhere, so multi-word queries narrow rather than widen. a\nname match outranks a readme mention, so `sitemap search mem20ops` ranks\n`mem20ops` first.\n\n## how the poller decides an agent has stopped\n\na target counts as quiescent only when **all** of these hold:\n\n1. its cpu time did not move during the window.\n2. **no cpu was burned anywhere in its process subtree** \u2014 descendants included.\n   this is the load-bearing signal: an agent blocked on a `pytest` or `git`\n   subprocess shows up here, and so does work delegated to child processes.\n3. no in-flight tool call exists in `opencode.db` for any session other than the\n   poller's own. this catches an agent waiting on a slow model call, which burns\n   no local cpu and would otherwise look idle.\n\nquiet must hold for `--streak` consecutive windows (`--window` seconds each,\ndefault 20s x 3). the first window only establishes a baseline and does not\ncount toward the streak, because silence cannot be measured without a prior\nreading. a target that exits is treated as stopped.\n\nthe poller is bounded: it always terminates at `--max-wait` (default 6h) and\nexits non-zero rather than waiting forever.\n\n## snapshot contents\n\nthe zip is **source only**. excluded: `.git`, caches, `__pycache__`, virtualenvs,\n`node_modules`, `*.egg-info`, `secrets/`, `backups/`, plus every binary, database,\nmodel-weight and media file. any path containing a `secrets` directory or named\n`.env*`, `*.pem`, `*.key`, `auth.json` or `credentials` is dropped and counted.\n\nmeasured on this box: 8,040 files, 164 mb raw, **28.3 mb** zipped, ~29s.\n`sitemap verify` re-opens the archive, runs `testzip()`, and re-scans the entry\nnames for secret paths.\n\n### known limitation\n\nexclusion is **path and filename based only**. this tool does not scan file\n*contents* for hardcoded credentials. before sending the archive anywhere\nsensitive, run `mem20secretz` against the extracted tree.\n\n## files\n\n- `src/mem20sitemapz/policy.py` \u2014 what counts as source, what never ships\n- `src/mem20sitemapz/index.py` \u2014 single-pass tree scanner\n- `src/mem20sitemapz/search.py` \u2014 ranked field-weighted search\n- `src/mem20sitemapz/procinfo.py` \u2014 procfs and tty inspection\n- `src/mem20sitemapz/watch.py` \u2014 quiescence poller\n- `src/mem20sitemapz/snapshot.py` \u2014 source-only zip writer and verifier\n- `src/mem20sitemapz/report.py` \u2014 markdown appendix renderer\n- `src/mem20sitemapz/cli.py` \u2014 argument parsing and command dispatch\n\n## tests\n\n```\n/root/.venv/bin/python -m pytest tests -q\n```\n\n22 tests, all bounded: fake process tables, a fake clock, and a synthetic sqlite\n`part` table. no real sleeps, no live process dependencies.\n\n## rebuilding the index\n\nrun `sitemap build` after adding or removing a subsystem. do not hand-edit\n`sitemap.md`; it is generated.\n",
       "requires_python": ">=3.11",
       "subdirs": [
         "src",
         "tests"
       ],
-      "test_files": 1,
+      "test_files": 2,
       "version": "0.1.0"
     },
     {
@@ -3018,7 +3028,7 @@
       "version": null
     },
     {
-      "bytes": 4577452,
+      "bytes": 5605040,
       "category": "service",
       "code_lines": 0,
       "dependencies": [],
@@ -3026,17 +3036,17 @@
       "dir": "store",
       "docs": [],
       "entry_points": {},
-      "file_count": 128,
+      "file_count": 238,
       "keywords": [],
       "languages": {
-        "json": 125,
-        "markdown": 3
+        "json": 225,
+        "markdown": 13
       },
       "license": null,
-      "line_count": 49986,
+      "line_count": 62934,
       "lines_by_language": {
-        "json": 49683,
-        "markdown": 303
+        "json": 62034,
+        "markdown": 900
       },
       "modules": [],
       "name": "store",
@@ -3046,6 +3056,7 @@
       "requires_python": null,
       "subdirs": [
         "braid",
+        "dream-runs",
         "dreams",
         "harness",
         "promotions",
@@ -3090,26 +3101,27 @@
       "version": null
     },
     {
-      "bytes": 33326,
+      "bytes": 39613,
       "category": "other",
-      "code_lines": 765,
+      "code_lines": 898,
       "dependencies": [],
       "description": "",
       "dir": "tests",
       "docs": [],
       "entry_points": {},
-      "file_count": 8,
+      "file_count": 9,
       "keywords": [],
       "languages": {
-        "python": 8
+        "python": 9
       },
       "license": null,
-      "line_count": 765,
+      "line_count": 898,
       "lines_by_language": {
-        "python": 765
+        "python": 898
       },
       "modules": [
         "conftest",
+        "test_llm_dotenv_isolation",
         "test_llm_fallback",
         "test_mcp_dispatch",
         "test_namespace_acl",
@@ -3124,11 +3136,11 @@
       "readme_text": "",
       "requires_python": null,
       "subdirs": [],
-      "test_files": 7,
+      "test_files": 8,
       "version": null
     },
     {
-      "bytes": 642926,
+      "bytes": 647182,
       "category": "service",
       "code_lines": 1131,
       "dependencies": [],
@@ -3155,9 +3167,9 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 22337,
+      "line_count": 22480,
       "lines_by_language": {
-        "json": 21121,
+        "json": 21264,
         "markdown": 66,
         "python": 1131,
         "toml": 19
@@ -3241,38 +3253,99 @@
       "subdirs": [],
       "test_files": 0,
       "version": null
+    },
+    {
+      "bytes": 63691,
+      "category": "organ",
+      "code_lines": 1478,
+      "dependencies": [
+        "fastapi>=0.110",
+        "uvicorn>=0.27"
+      ],
+      "description": "Append-only agent scoreboard with a read-only web board, living at /sb.",
+      "dir": "/sb",
+      "docs": [
+        "README.md"
+      ],
+      "entry_points": {
+        "scoreboard": "mem20scoreboardz.cli:main"
+      },
+      "external": true,
+      "external_root": "/sb",
+      "file_count": 9,
+      "keywords": [
+        "mem20",
+        "scoreboard",
+        "ledger",
+        "agents",
+        "cli"
+      ],
+      "languages": {
+        "html": 1,
+        "markdown": 1,
+        "python": 6,
+        "toml": 1
+      },
+      "license": "MIT",
+      "line_count": 1555,
+      "lines_by_language": {
+        "html": 221,
+        "markdown": 58,
+        "python": 1257,
+        "toml": 19
+      },
+      "modules": [
+        "__init__",
+        "__main__",
+        "cli",
+        "store",
+        "test_scoreboard",
+        "web"
+      ],
+      "name": "mem20scoreboardz",
+      "packaged": true,
+      "readme_summary": "/sb \u2014 scoreboard",
+      "readme_text": "# /sb \u2014 scoreboard\n\nan append-only ledger of agent marks, with a terminal view and a read-only web\nboard. everything lives in this directory: backend, frontend, and data.\n\n## layout\n\n| path | what it is |\n| --- | --- |\n| `backend/mem20scoreboardz/store.py` | the ledger and the fold that derives the board |\n| `backend/mem20scoreboardz/cli.py` | argument parsing, terminal output, exit codes |\n| `backend/mem20scoreboardz/web.py` | the read-only http surface |\n| `frontend/index.html` | the page, self-contained, no build step and no cdn |\n| `data/scoreboard.db` | the sqlite ledger |\n| `tests/test_scoreboard.py` | 61 tests |\n\n## the model\n\nthe board is a sum of marks, and every mark is an immutable event row. nothing\nis ever updated or deleted.\n\n| command | effect |\n| --- | --- |\n| `scoreboard -enroll agent` | put an agent on the board at 0 |\n| `scoreboard -add agent \"reason\"` | +1 |\n| `scoreboard -del agent \"reason\"` | \u22121 |\n| `scoreboard --dsq agent \"reason\"` | disqualify |\n| `scoreboard -reward agent [\"reason\"]` | +3, reason optional |\n| `scoreboard -remove agent` | take off the board, history kept |\n| `scoreboard -display` | the ranked table |\n| `scoreboard -history [agent]` | the event log, newest first |\n| `scoreboard -serve` | the web board on 127.0.0.1:8892 |\n\n`--dsq`, `--add`, `--del` and the rest all work with one or two dashes.\n\n## rules the ledger enforces\n\n- a reason is required for `-add`, `-del` and `-dsq`, and it must arrive as **one\n  quoted argument**. `scoreboard -add alpha did the work` is refused with the\n  corrected command, rather than quietly storing two words as the reason.\n- marking an agent that is not on the board is refused and names the fix.\n- a disqualified agent cannot be scored until they are removed.\n- disqualifying an already-disqualified agent is refused, because accepting it\n  would overwrite the original reason and lose it.\n- scores may go negative. nothing clamps them.\n- ranks are **dense**: agents on the same score share a rank and the next rank\n  skips, so a tie is never drawn as an order.\n- re-enrolling a removed agent opens a fresh stint at 0. the earlier events stay\n  in the ledger, so `-history` still shows the whole story.\n\n## the web board\n\nloopback only, on `127.0.0.1:8892`, under `scoreboard.service` (enabled, restarts\non failure). from another machine:\n\n```sh\nssh -l 8892:127.0.0.1:8892 jnet1\n# then open http://127.0.0.1:8892/\n```\n\nit is a **viewer**. only get routes exist, so a write attempt is answered 405 by\nthe router itself rather than by a check that could be forgotten. the cli is the\nonly write path.\n\nthe page polls every 5 seconds. if a poll fails it says so and labels what is on\nscreen as the last good data \u2014 it never presents stale rows as live.\n\n## running the tests\n\n```sh\ncd /sb/backend && /root/.venv/bin/python -m pytest /sb/tests -q\n```\n\n61 tests, all against temporary ledgers. nothing in the suite can touch\n`/sb/data/scoreboard.db`.\n",
+      "requires_python": ">=3.11",
+      "subdirs": [
+        "backend",
+        "frontend",
+        "tests"
+      ],
+      "test_files": 1,
+      "version": "0.1.0"
     }
   ],
   "totals": {
     "categories": {
-      "organ": 35,
+      "organ": 36,
       "other": 9,
       "service": 17
     },
-    "code_lines": 583673,
-    "files": 8068,
+    "code_lines": 586732,
+    "files": 8159,
     "languages": {
       "c": 1,
       "cpp": 39,
       "csharp": 970,
       "css": 11,
-      "html": 19,
+      "html": 20,
       "javascript": 63,
-      "json": 3809,
+      "json": 3909,
       "jsonl": 13,
       "make": 3,
-      "markdown": 1367,
+      "markdown": 1379,
       "other": 194,
-      "python": 787,
+      "python": 796,
       "rust": 74,
       "shell": 12,
       "svg": 5,
-      "toml": 52,
+      "toml": 53,
       "typescript": 513,
       "xml": 8,
       "yaml": 96
     },
-    "lines": 1556863,
-    "subsystems": 61
+    "lines": 1568843,
+    "subsystems": 62
   }
 }

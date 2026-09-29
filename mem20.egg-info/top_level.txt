@@ -1,4 +1,5 @@
 launcher
+mem20path
 memory
 memory_engine
 metrics_collector

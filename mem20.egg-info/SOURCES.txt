@@ -1,6 +1,7 @@
 LICENSE
 README.md
 launcher.py
+mem20path.py
 memory.py
 metrics_collector.py
 procedural.py
@@ -13,7 +14,12 @@ mem20.egg-info/requires.txt
 mem20.egg-info/top_level.txt
 memory_engine/__init__.py
 memory_engine/memory.py
+tests/test_llm_dotenv_isolation.py
 tests/test_llm_fallback.py
 tests/test_mcp_dispatch.py
+tests/test_mem20path.py
+tests/test_namespace_acl.py
 tests/test_phase7_safety.py
 tests/test_phase8_1_engine.py
+tests/test_self_model_identity.py
+tests/test_world_model.py

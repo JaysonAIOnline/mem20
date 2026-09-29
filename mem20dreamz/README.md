@@ -24,6 +24,18 @@ Only Cohere and Groq serve a completion today. A provider's catalog is not
 evidence of callability: NVIDIA returns 82 model ids and answers none of them.
 See `EXCLUDED_PROVIDERS` in `panel.py` for what was tried and why each failed.
 
+**Funding is resolved through `llm.env_value`, never `os.environ`.** It used to
+read the environment directly, which worked only by accident: `llm` published the
+entire secrets file into the process environment at import time, so
+`COHERE_API_KEY` and `GROQ_API_KEY` happened to be sitting there. When that leak
+was closed — it was handing every process that imported `llm` the control-plane
+admin password, the sudo password and every cloud key in the estate — the panel
+quietly reported *no funded members* and `panel()` returned an empty list. Nothing
+raised and nothing was logged. A panel whose whole purpose is noticing it has lost
+a member must never be the thing that loses it silently, so the resolution lives
+in one place and there are tests for both directions: funded resolves, unfunded
+reports unfunded.
+
 ## The iteration
 
 1. Load lineage - artifact, changelog, invention register, dreamer config.
@@ -222,7 +234,7 @@ non-zero on any damage.
 ## Tests
 
 ```sh
-/root/.venv/bin/python -m pytest tests -q    # 117 tests
+/root/.venv/bin/python -m pytest tests -q    # 120 tests
 /root/.venv/bin/ruff check .
 ```
 

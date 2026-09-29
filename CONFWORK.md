@@ -49,3 +49,101 @@ Only 100% true, verified facts. Format: Action / feature — access — (WORKED|
 ### 2026-09-23 — market journal — (BLOCKED, honest)
 - braid offer journal via mem20mktz.braid_hook failed to yield a cid
   (PyBraidEngine missing from runtime braid_python) — NOT journaled, NOT claimed.
+
+### 2026-09-29 — /sb scoreboard — (WORKED)
+- `/sb` holds the whole tool: `backend/mem20scoreboardz/` (store, cli, web),
+  `frontend/index.html`, `data/scoreboard.db`, `tests/`, `README.md`.
+  Access: `/root/.venv/bin/scoreboard` (editable install of `/sb/backend`).
+  `python -m mem20scoreboardz` also works (WORKED).
+- Marks are append-only event rows in SQLite; roster, status and score are
+  derived by `store.fold()` replaying the ledger, so the board can be rebuilt
+  from scratch. `-add` +1, `-del` -1, `--reward` +3, `--dsq` disqualifies,
+  `-enroll` opens a stint at 0, `-remove` takes off the board keeping history.
+- `scoreboard -display` ranks densely (1, 2, 2, 4) so a tie is never drawn as an
+  order. Verified: 5-agent fixture produced 1,2,2,4,4 in both the CLI and the
+  page's rendered DOM (WORKED).
+- Refusals verified by direct execution, each exiting non-zero with the fix in
+  the message: marking an unenrolled agent, unquoted multi-word reason,
+  re-enrolling an active agent, a name containing spaces, scoring a disqualified
+  agent, re-disqualifying (would overwrite the original reason), marking a
+  removed agent, removing twice (WORKED).
+- Web board is loopback-only on 127.0.0.1:8892 under `scoreboard.service`
+  (systemd, enabled, `Restart=on-failure`, MainPPID=1, verified across a real
+  `systemctl restart`). Health: `curl -s http://127.0.0.1:8892/api/health`
+  -> `{"ok":true,...,"writable_from_http":false}` (WORKED).
+- Read-only is structural, not a check: only GET routes are registered, so
+  POST/PUT/PATCH/DELETE on /api/board and /api/history all return **405**
+  (verified) — the CLI is the single write path.
+- Page rendered in real headless Chromium 151 against the live service:
+  standings, disqualified and removed sections all populated, dense ranks
+  1,2,2,4,4 present in the DOM, zero JS page errors (WORKED).
+- Concurrency: 20 rapid CLI writes against a running reader produced 20 ledger
+  rows, no lost writes, and CLI and HTTP views agreed (WAL + busy_timeout).
+- Tests: 61 passing (`cd /sb/backend && /root/.venv/bin/python -m pytest /sb/tests -q`).
+- Registered: `toolchest refresh` -> inventory 581 -> 582 entries;
+  `toolchest show scoreboard` -> runtime_status "ok" (WORKED).
+- Not in /opt/mem20 and not a mem20*z organ: it lives at /sb by Jayson's
+  instruction. Do not "fix" this by moving it.
+
+### 2026-09-29 — sitemap indexes outside roots — (WORKED)
+- `sitemap build` now also indexes extra roots outside the monorepo; `/sb` is
+  the default, overridable with repeated `--extra-root DIR` or dropped with
+  `--no-extra-roots`. Each becomes ONE entry (not a directory listing), named
+  after the package whose pyproject is found within 3 levels, tagged
+  `external: true` + `external_root`, and `show` prints
+  `location OUTSIDE the monorepo` (WORKED).
+- `sitemap search "scoreboard"` and `sitemap show mem20scoreboardz` both resolve
+  to `/sb`; SITEMAP.md gained an "Outside the monorepo" table and outside
+  entries are excluded from the organ/service/other tables so an outside project
+  is never presented as a mem20 subsystem. Totals are recomputed after merging
+  (WORKED).
+- Pre-existing 22 sitemap tests still pass unchanged; 21 new tests added
+  (`tests/test_extra_roots.py`), 43 total (WORKED).
+
+### 2026-09-29 — mem20 CLIs on the default PATH — (WORKED)
+- CORRECTION to an earlier claim in this session: I first reported that `sitemap`,
+  `chroma`, `fs-ops` and `mem20agentz` were "not on PATH" at all. That was
+  measured with the *ambient* PATH of the opencode process, which does not
+  include /root/.venv/bin. Measured properly, `/etc/profile.d/thestack-env.sh`
+  already puts /root/.venv/bin on the PATH of every interactive login shell
+  (bash and zsh both resolve `sitemap` with no changes) — (CORRECTED)
+- The real gap is narrower and specific: a context with only the *default*
+  system PATH cannot resolve any mem20 CLI. Verified with
+  `env -i PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin sh -c` — a systemd
+  unit, a cron job, `ssh host 'cmd'`, or any non-login `sh -c` gets that PATH.
+  Reproduced the failure before fixing it (WORKED).
+- Fixed with `tools/mem20path.py` (17 tests, /opt/mem20/tests/test_mem20path.py).
+  It reads installed dist metadata to decide ownership — not directory names —
+  and links 36 mem20-owned console scripts into /root/.local/bin, which IS on
+  the default PATH. Verified 36/36 resolve AND run from a bare default PATH
+  (WORKED).
+- Deliberately NOT linked, with reasons recorded in code:
+  - `mem20-metrics` — not a CLI at all. metrics_collector.main() calls
+    serve_forever() and ignores argv, so it never returns; a --help probe times
+    out because it *works*. Linking it would put a blocking server on the PATH.
+  - third-party console scripts in the same venv (`chroma` from chromadb,
+    pytest, uvicorn...). Promoting those estate-wide is the owner's call.
+- Safety properties, each covered by a test: dry run is the default; a real
+  (non-symlink) file in the target is never clobbered; a stale symlink is
+  repaired; re-running is idempotent; malformed METADATA does not abort the
+  sweep (WORKED).
+- `mem20-path-links.service` (systemd, enabled, oneshot + RemainAfterExit) runs
+  it at boot and `ExecStartPost --verify` fails the unit if any tool is still
+  unresolvable. Proof it works, not just that it is enabled: deleted all 36
+  links, confirmed `sitemap` was gone, then `systemctl restart` restored them
+  (WORKED).
+- PRE-EXISTING and NOT mine, reported not touched: blue-hydra.service and
+  searxng.service have ExecStart paths that do not exist
+  (/usr/bin/blue-hydra, /opt/search/searxng-venv/bin/searxng-run). Both units
+  are dated 2026-08-18, both are inactive, and I did not create or modify them.
+  Not fixed — they are services I do not own.
+- Follow-up: registered as the `mem20-path` console script (py-modules +
+  [project.scripts] in /opt/mem20/pyproject.toml) and it linked itself on first
+  run — the tool fixed its own class of problem. toolchest 582 -> 583 entries,
+  `toolchest show mem20-path` -> runtime_status "ok" (WORKED).
+- Final sweep from `env -i PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin`:
+  68 commands in /root/.local/bin resolve and run. Two entries report rc=126
+  and are NOT mem20's and NOT mine: `omp` (a 13MB prebuilt binary dated
+  2026-08-19) and `env.fish` (a fish-shell helper dated 2026-08-17). Both are
+  not shell scripts, so `sh -c "$c --help"` cannot exec them. Pre-existing,
+  left alone (WORKED, scoped honestly).
