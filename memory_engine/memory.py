@@ -369,6 +369,36 @@ def _slug(topic: str) -> str:
     return topic.replace(" ", "_").replace("/", "_").replace(":", "_").lower()
 
 
+# The entries/ mirror writes one "<slug>.md" per topic, so the filename has to fit
+# the filesystem's NAME_MAX. The ledger itself is JSONL and has no such limit, so a
+# long topic is storable in the ledger but was previously unwriteable to the mirror
+# and raised a bare [Errno 36] that surfaced to the caller as a crash.
+#
+# Identities are the worst case: a caller that passes the identity *sentence* where
+# a short key was expected produces keys of 274-427 characters. Rather than reject
+# those writes, bound the filename and keep the digest so distinct long topics can
+# never collide onto one file.
+#
+# Existing short slugs are untouched: the bound only applies past the limit, so no
+# already-written mirror is renamed or orphaned.
+_MIRROR_NAME_MAX = 255 - len(".md")
+
+
+def _mirror_filename(topic: str) -> str:
+    """Return a filesystem-safe '<name>.md' for a topic's entries/ mirror.
+
+    Short topics keep their historical name exactly. Long topics are truncated and
+    given a stable sha256 prefix so two different long topics never share a file.
+    """
+    slug = _slug(topic)
+    if len(slug) <= _MIRROR_NAME_MAX:
+        return f"{slug}.md"
+    digest = hashlib.sha256(slug.encode("utf-8")).hexdigest()[:16]
+    keep = _MIRROR_NAME_MAX - len(digest) - 1  # "-" separator
+    return f"{slug[:keep]}-{digest}.md"
+
+
+
 def _validate_partition_tags(rec: dict) -> None:
     """Issue #3: assert the origin/store tags at the lowest write path.
 
@@ -464,7 +494,7 @@ def remember(topic: str, content: str, tags: list[str] | None = None,
     }
     _append_ledger(rec)
 
-    path = os.path.join(ENTRIES, f"{_slug(topic)}.md")
+    path = os.path.join(ENTRIES, _mirror_filename(topic))
     header = f"\n\n## {now}  (pri={priority}, tags={tags or []})\\\\n"
     if valid_from:
         header += f"  **Valid from:** {valid_from}\\\\n"
@@ -994,7 +1024,7 @@ def remember(topic: str, content: str, tags: list[str] | None = None,
     }
     _append_ledger(rec)
 
-    path = os.path.join(ENTRIES, f"{_slug(topic)}.md")
+    path = os.path.join(ENTRIES, _mirror_filename(topic))
     header = f"\n\n## {now}  (pri={priority}, tags={tags or []})\\\\n"
     if valid_from:
         header += f"  **Valid from:** {valid_from}\\\\n"
@@ -1189,7 +1219,7 @@ def _stamp_grounded_record(fact_id: str, **fields) -> bool:
 
 def _stamp_entry_epistemic_status(topic: str, new_status: str) -> None:
     """Mirror the stamped status into the deep-store entry's Epistemic status header."""
-    path = os.path.join(ENTRIES, f"{_slug(topic)}.md")
+    path = os.path.join(ENTRIES, _mirror_filename(topic))
     if not os.path.exists(path):
         return
     with open(path, "r", encoding="utf-8") as f:
