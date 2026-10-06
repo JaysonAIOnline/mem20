@@ -93,7 +93,8 @@ def main():
     if missing:
         failures.append(f"dispatched tools missing handler: {missing}")
     else:
-        print(f"[ok] all {len(re.findall(r'tool_name == \"', ex))} dispatched tools resolve to a handler")
+        dispatched = len(re.findall(r'tool_name == "', ex))
+        print(f"[ok] all {dispatched} dispatched tools resolve to a handler")
 
     # 5. no live eval() in memory engine
     mem_src = read(MEMORY)
