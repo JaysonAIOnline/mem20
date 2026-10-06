@@ -1,0 +1,9 @@
+{
+  "health": 200,
+  "capabilities": 200,
+  "dashboard": 200,
+  "metrics": 200,
+  "compose_state": "succeeded",
+  "plan_generation": 2,
+  "event_count": 8
+}

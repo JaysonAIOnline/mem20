@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Unused capacity becomes productive automatically",
+  "domain_types": [
+    "listings",
+    "participants",
+    "offers",
+    "matches",
+    "transactions"
+  ],
+  "global_id": 85,
+  "id": "RM-085",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "match",
+  "outcome": "Match internal and external demand with available people, agents, compute, and inventory",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 5,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Unused capacity becomes productive automatically",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Resource Exchange Market"
+}

@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Users describe an outcome and receive a usable app in minutes",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 10,
+  "id": "RM-010",
+  "lane": "Composable application kernel and capability exchange",
+  "operation_kind": "compose",
+  "outcome": "Compile a plain-language objective into a working composition of existing FreeStack capabilities",
+  "owner": "FreeStack Core",
+  "owner_code": "freestack",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Users describe an outcome and receive a usable app in minutes",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "adaptive web desktop",
+    "command palette",
+    "SDK",
+    "event-stream inspector"
+  ],
+  "techniques": [
+    "constraint solvers",
+    "semantic matching",
+    "runtime telemetry",
+    "cost-aware scheduling"
+  ],
+  "title": "Instant App Synthesis"
+}

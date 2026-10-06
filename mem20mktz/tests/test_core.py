@@ -4,7 +4,7 @@ market, and the journaled-trade exit path (executed trade == a braid node)."""
 from __future__ import annotations
 
 import pytest
-from conftest import requires_ucg
+from .conftest import requires_ucg
 
 from mem20mktz import braid_hook
 from mem20mktz.attest import generate_keypair, sign, verify

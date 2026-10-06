@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Services authenticate safely without secret sprawl",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 94,
+  "id": "RM-094",
+  "lane": "Technical foundation, resilience, and runtime substrate",
+  "operation_kind": "graph",
+  "outcome": "Use short-lived cryptographic workload identities instead of long-lived application secrets",
+  "owner": "FSGF",
+  "owner_code": "fsgf",
+  "roadmap_index": 4,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Services authenticate safely without secret sprawl",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "foundation console",
+    "live dependency topology",
+    "compatibility matrix",
+    "resource heatmap"
+  ],
+  "techniques": [
+    "resource control",
+    "anomaly detection",
+    "topology optimization",
+    "compatibility analysis",
+    "energy modeling"
+  ],
+  "title": "Secretsless Workload Identity"
+}

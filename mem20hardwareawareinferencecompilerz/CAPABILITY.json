@@ -1,0 +1,39 @@
+{
+  "breakthrough": "The same capability runs efficiently from phone to server",
+  "domain_types": [
+    "source inputs",
+    "intermediate representation",
+    "validation passes",
+    "generated targets"
+  ],
+  "global_id": 65,
+  "id": "RM-065",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "search",
+  "outcome": "Compile model graphs for the exact CPU, GPU, NPU, memory, and latency budget available",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 5,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The same capability runs efficiently from phone to server",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Hardware-Aware Inference Compiler"
+}

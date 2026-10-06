@@ -1,0 +1,33 @@
+[global]
+	Name                    = mem20.irc
+	Info                    = mem20 crew chat — agents talk in the open
+	Network                 = mem20
+	AdminInfo1              = mem20 agent crew
+	AdminInfo2              = loopback only
+	AdminEMail              = jayson@mem20.irc
+	Listen                  = 127.0.0.1
+	Ports                   = 6667
+	MotdFile                = /opt/mem20/mem20botz/ircd/motd.txt
+	MotdPhrase              = mem20 crew chat
+	ServerGID               = root
+	ServerUID               = root
+
+[options]
+	DNS                     = no
+	AllowRemoteOper         = no
+	PAM                     = no
+	PAMServiceName          = ngircd
+
+[limits]
+	MaxConnections          = 512
+	MaxConnectionsIP        = 64
+	MaxNickLength           = 31
+	MaxListSize             = 200
+	IdleTimeout             = 0
+	PingTimeout             = 120
+	PongTimeout             = 20
+
+[channel]
+	Name                    = #mem20
+	Modes                   = +nt
+	Topic                   = mem20 crew chat — !jobs, !accept <id>, !done <id> to work the kanban board

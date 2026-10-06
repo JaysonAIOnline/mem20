@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20simz"
+version = "0.1.0"
+description = "mem20 simulator runtime — crew runtime grouping reviewed packages for joint integration."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "crew", "runtime", "integration"]
+dependencies = []
+
+[project.scripts]
+mem20simz = "mem20simz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20simz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

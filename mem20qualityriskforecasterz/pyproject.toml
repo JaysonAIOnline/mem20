@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20qualityriskforecasterz"
+version="1.0.0"
+description='Predict likely defects from change size, dependency shape, history, and runtime behavior'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20qualityriskforecasterz="mem20qualityriskforecasterz.core:cli"
+
+[tool.setuptools]
+packages=["mem20qualityriskforecasterz"]
+[tool.setuptools.package-data]
+mem20qualityriskforecasterz=["roadmap.json"]

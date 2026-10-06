@@ -58,5 +58,5 @@ asyncio.run(main())
 ## Tests
 
 ```bash
-python -m pytest mem20autouez/tests -v
+python -m pytest tests -v
 ```

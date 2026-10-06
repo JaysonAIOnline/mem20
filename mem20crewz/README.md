@@ -73,3 +73,28 @@ abstraction is backed by a mem20 native.
 - [ ] tests pass (python3 -m unittest mem20crewz.tests.test_mem20crewz)
 - [ ] demo_crew.py runs against real cog + real A2A peers
 - [ ] phase 01 status bumped in hypo-map-1.json
+
+## Managed members (package-review integration)
+
+Single-purpose crew/labor organs grouped here by reference; they live in
+their own top-level directories and are smoke-verified there:
+
+- `mem20adversarialqacrewz`
+- `mem20agentoutputcompilerz`
+- `mem20asynccollaborationcapsulesz`
+- `mem20batteryawareagentschedulerz`
+- `mem20causalroutingbrainz`
+- `mem20emotionsensitivemessagerouterz`
+- `mem20eventshaperouterz`
+- `mem20executableroadmapcompilerz`
+- `mem20goaleconomyschedulerz`
+- `mem20goapagentdesignerz`
+- `mem20hardwareawareinferencecompilerz`
+- `mem20humanagentcoworkcanvasz`
+- `mem20intentcompilerz`
+- `mem20intenttoagentmatchmakerz`
+- `mem20intenttomissioncompilerz`
+- `mem20locationawareworkrouterz`
+- `mem20missionroutingcockpitz`
+- `mem20realitytosoftwarecompilerz`
+- `mem20roamingworkloadschedulerz`

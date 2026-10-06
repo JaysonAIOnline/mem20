@@ -108,3 +108,13 @@ mem20messenger/.test-home/
 # a blobs/ directory that is not present, so git's resolver spins on them and
 # wedges every status/add/push. Weights are fetched at runtime, not committed.
 mem20owebz/data/cache/
+
+# Chat front-end runtime state. vector_db/ holds a regenerable Chroma SQLite
+# index and uploads/ holds what users sent through the UI; neither is source,
+# and the vector index is rebuilt from the store on first run.
+mem20owebz/data/vector_db/
+mem20owebz/data/uploads/
+
+# Point-in-time kanban snapshots taken by hand before the 2026-10-01 merge.
+# Superseded by the live board; the source of truth is kanban/.
+backups/kanban-merge-*/

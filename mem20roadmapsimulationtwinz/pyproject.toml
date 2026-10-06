@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20roadmapsimulationtwinz"
+version="1.0.0"
+description='Simulate schedule, staffing, failures, and changing assumptions across a roadmap'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20roadmapsimulationtwinz="mem20roadmapsimulationtwinz.core:cli"
+
+[tool.setuptools]
+packages=["mem20roadmapsimulationtwinz"]
+[tool.setuptools.package-data]
+mem20roadmapsimulationtwinz=["roadmap.json"]

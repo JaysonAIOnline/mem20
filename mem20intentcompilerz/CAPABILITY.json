@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Natural language becomes a safe intermediate representation for action",
+  "domain_types": [
+    "source inputs",
+    "intermediate representation",
+    "validation passes",
+    "generated targets"
+  ],
+  "global_id": 51,
+  "id": "RM-051",
+  "lane": "Autonomous routing, plans, and execution control",
+  "operation_kind": "compose",
+  "outcome": "Translate goals into typed executable graphs with resources, constraints, and success conditions",
+  "owner": "ARE",
+  "owner_code": "are",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Natural language becomes a safe intermediate representation for action",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "execution map",
+    "route debugger",
+    "scenario sandbox",
+    "autonomous operations console"
+  ],
+  "techniques": [
+    "causal planning",
+    "speculative execution",
+    "constraint optimization",
+    "digital twins",
+    "anomaly detection"
+  ],
+  "title": "Intent Compiler"
+}

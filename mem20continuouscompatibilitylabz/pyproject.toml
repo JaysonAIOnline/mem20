@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20continuouscompatibilitylabz"
+version="1.0.0"
+description='Continuously test modules against current and future interface versions'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20continuouscompatibilitylabz="mem20continuouscompatibilitylabz.core:cli"
+
+[tool.setuptools]
+packages=["mem20continuouscompatibilitylabz"]
+[tool.setuptools.package-data]
+mem20continuouscompatibilitylabz=["roadmap.json"]

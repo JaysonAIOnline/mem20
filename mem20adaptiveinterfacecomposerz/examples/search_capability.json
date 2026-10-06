@@ -1,0 +1,1 @@
+{"capability_id":"knowledge.search","title":"Knowledge Search","description":"Search local knowledge and documents","actions":["search","open_result"],"tags":["knowledge","search"],"risk":"low","latency_ms":3}

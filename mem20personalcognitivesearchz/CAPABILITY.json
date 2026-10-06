@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Private memory becomes more useful than ordinary web search for personal work",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 30,
+  "id": "RM-030",
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "operation_kind": "search",
+  "outcome": "Search personal memory by meaning, relationship, time, emotion, and unfinished intent",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Private memory becomes more useful than ordinary web search for personal work",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "memory timeline",
+    "recall lens",
+    "context diff",
+    "cross-device memory controls"
+  ],
+  "techniques": [
+    "graph retrieval",
+    "temporal embeddings",
+    "compression",
+    "prediction",
+    "counterfactual simulation"
+  ],
+  "title": "Personal Cognitive Search"
+}

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20multidevicecompletioncheckerz"
+version="1.0.0"
+description='Verify end-to-end behavior across desktop, mobile, browser, edge, and spatial clients'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20multidevicecompletioncheckerz="mem20multidevicecompletioncheckerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20multidevicecompletioncheckerz"]
+[tool.setuptools.package-data]
+mem20multidevicecompletioncheckerz=["roadmap.json"]

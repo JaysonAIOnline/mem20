@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20teamz"
+version = "0.1.0"
+description = "Mem20Teamz — humans and AI agents side by side in group chat rooms with memory, routed orchestration, and transcript-to-deliverable studio."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "chat", "agents", "orchestration", "memory"]
+dependencies = []
+
+[project.scripts]
+mem20teamz = "mem20teamz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20teamz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

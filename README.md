@@ -7,12 +7,11 @@
 <p align="center">
   <a href="https://mem20.jaysonai.online"><img src="https://img.shields.io/badge/Website-mem20.jaysonai.online-FFD700?style=for-the-badge" alt="Website"></a>
   <a href="https://github.com/JaysonAIOnline/mem20/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://github.com/JaysonAIOnline/mem20/actions"><img src="https://img.shields.io/github/actions/workflow/status/JaysonAIOnline/mem20/ci.yml?style=for-the-badge" alt="CI"></a>
   <a href="https://github.com/JaysonAIOnline/mem20/releases"><img src="https://img.shields.io/github/v/release/JaysonAIOnline/mem20?style=for-the-badge" alt="Release"></a>
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="#documentation">Docs</a> | <a href="#quick-start">Quick Start</a>
+  <a href="README.md">English</a> | <a href="#documentation">Docs</a> | <a href="#repository-layout">Layout</a> | <a href="#quick-start">Quick Start</a>
 </p>
 
 [![mem20 Dashboard](https://via.placeholder.com/1200x400/1e1b4b/ffffff?text=mem20+Memory+%2B+Cognition+Substrate)](https://mem20.jaysonai.online)
@@ -22,6 +21,8 @@
 **mem20** separates *grounded* memory (real observations, user statements, events) from *simulated* memory (hypotheticals, counterfactuals, model output) and couples forecasting ("world-model") predictions to observed outcomes. Promotions out of the simulated partition are evidence-based rather than honor-system.
 
 Exposed to clients over the [Model Context Protocol](https://modelcontextprotocol.io) as a JSON-RPC 2.0 service on stdio. Connect Hermes Agent, Claude Code, or any MCP host.
+
+This repository is a monorepo. Alongside the memory + cognition core it carries **293 native subsystems** (`mem20*z` organs) and the engines they depend on — agent platforms, game tooling, 3D pipelines, model serving, and operations CLIs. See [Repository layout](#repository-layout).
 
 > **v2.1 (frozen):** Pluggable integrations — Blender and Unity ship as optional, separately-installable modules. Code is frozen until the GitHub release is cut.
 
@@ -49,7 +50,7 @@ Exposed to clients over the [Model Context Protocol](https://modelcontextprotoco
 ```
                         ┌──────────────────────────────────────────┐
    MCP client  --stdio──▶│  mcp/mcp_server.py  (Mem20MCPServer)     │
-   (Hermes, Claude,      │  JSON-RPC 2.0 · ~80 tools · 16 domains   │
+   (Hermes, Claude,      │  JSON-RPC 2.0 · 257 tools · 26 domains   │
     any MCP host)        └───────────────┬──────────────────────────┘
                                          │ calls
                  ┌────────────────────────┼─────────────────────────┐
@@ -63,10 +64,20 @@ Exposed to clients over the [Model Context Protocol](https://modelcontextprotoco
 
 ### Transport / protocol
 
-- **MCP server** (`mcp` package) speaking JSON-RPC 2.0 over stdio.
-- `Mem20MCPServer` (in `server.py`) aggregates per-domain mixin classes and dispatches in `_execute_tool()`.
-- Tool schemas + handlers live in per-domain modules: `memory_tools.py`, `cognitive_tools.py`, `roadmap_tools.py`, `tools/world_tools.py`, `tools/blender_tools.py` (OPTIONAL Blender), `tools/unity_tools.py` (OPTIONAL Unity), and `tools/integration_tools.py` (filesystem + blank template for new optional integrations).
+- **MCP server** speaking JSON-RPC 2.0 over stdio. `mcp/` is a script directory, not an importable package — it has no `__init__.py`, so importing it as `mcp.*` would shadow the upstream `mcp` SDK. That is why `mcp_server.py` does `from server import main` (script-dir relative) and why the installed console script `mem20-mcp` goes through `launcher.py` instead.
+- `Mem20MCPServer` (in `server.py`) aggregates per-domain mixin classes and dispatches in `_execute_tool()`. It exposes **257 tools across 26 domains** (verified by instantiating the server and counting `server.tools`).
+- Tool schemas + handlers live in per-domain modules under `mcp/` and `mcp/tools/`: `memory_tools.py`, `enhanced_memory_tools.py`, `cognitive_tools.py`, `thought_process.py`, `roadmap_tools.py`, `tools/world_tools.py`, `tools/braid_tools.py`, `tools/blender_tools.py` (OPTIONAL Blender), `tools/unity_tools.py` (OPTIONAL Unity), and `tools/integration_tools.py` (filesystem + blank template for new optional integrations).
 - `mcp_server.py` is a thin entry-point shim preserving the systemd unit path.
+
+### Monorepo
+
+The core substrate is a fraction of the tree. Three nested projects carry their own `.git` and are consumed by the root repo as gitlinks:
+
+| Path | Own repo | Notes |
+|------|----------|-------|
+| `mem20oreo/` | [JaysonAIOnline/oreo](https://github.com/JaysonAIOnline/oreo) | OREO visual/NL-first language. The `IDE/` tree was restructured into a proper `mem20oreo/` package. |
+| `mem20kilnz/engine/` | separate repo | Rust/C++ mesh and geometry modeler ("kiln"), built with CMake. |
+| `kanban-mcp/` | upstream fork | Vendored third-party MCP kanban server. Modifications are local and not published from here. |
 
 ### Cognitive layer (`cog/`)
 
@@ -88,23 +99,43 @@ Exposed to clients over the [Model Context Protocol](https://modelcontextprotoco
 
 ---
 
-## Tool domains (13)
+## Tool domains (26)
 
-| Prefix | Domain | What it does |
-|--------|--------|-------------|
-| `memory_*` | Core memory | Store, recall, probe entities, reason across entities, contradiction detection, epistemic audit, namespaces, pins |
-| `self_model_*` | Agent self-model | Track the agent's own beliefs, confidence, and identity over time |
-| `cog_*` | Cognitive processing | Thought processing, reasoning chains, structured reasoning, planning, reflection, working memory |
-| `imagination_*` | Counterfactual simulation | Generate hypotheticals, run "what-if" scenarios, simulate futures |
-| `theory_of_mind_*` | Perspective simulation | Model what another agent believes, knows, or intends |
-| `corrigibility_*` | Shutdown / capability tiers | Control the agent's capability levels and shutdown behavior |
-| `roadmap_*` | Roadmap registry | Create, list, get, and update multi-phase project plans |
-| `world_model_*` | World forecasting | Define variables and rules, record predictions, resolve against observed outcomes |
-| `affective_*` | Values, emotions, goals | Track agent values, emotional states, and goal hierarchies |
-| `procedural_*` | Skill library | Add, get, and search reusable procedural skills (how-to knowledge) |
-| `fs_*` | Sandboxed filesystem | Read/write files within a controlled scope |
-| `blender_*` | Blender automation | **OPTIONAL** — 3D modeling, rendering, scene manipulation (requires Blender app) |
-| `unity_*` | Unity automation | **OPTIONAL** — Game-engine scripting, project builds, test runs (requires Unity Editor) |
+Counts below are the live surface, obtained by instantiating `Mem20MCPServer` and counting its registered tools. 257 total.
+
+| Prefix | Tools | Domain | What it does |
+|--------|------:|--------|-------------|
+| `memory_*` | 52 | Core memory | Store, recall, probe entities, reason across entities, contradiction detection, epistemic audit, namespaces, pins, contamination audit |
+| `cog_*`, `tot_*`, `cognitive_substrate`, `beam_search`, `react_reason`, `least_to_most`, `reflexion` | 18 | Cognitive processing | Reasoning (deductive, inductive, abductive, analogical, causal), planning, reflection, working memory, 28-paradigm substrate, tree-of-thought diagnostics |
+| `world_model_*` | 15 | World forecasting | Variables and rules, record predictions, resolve against observed outcomes |
+| `vcs_*` | 11 | Version control | Git status/diff/log/branch/commit/stash/remote/tag, GitHub issues and PRs |
+| `cloud_*` | 10 | Cloud control planes | AWS EC2/Lambda/S3, Azure blob, GCP storage, Kubernetes, Docker, Heroku, DigitalOcean, Cloudflare Workers |
+| `db_*` | 10 | Databases | SQL across sqlite/postgres/mysql/redis/mongodb, schema inspection, transactions |
+| `prod_*` | 10 | Productivity | Tasks, projects, notes, goals, habits, meetings, time tracking |
+| `fs_*` | 10 | Sandboxed filesystem | Read/write/list/search/watch, permissions, metadata, archives, diff, disk usage |
+| `braid_*` | 9 | Content-addressed ledger | Hash, read, write, prove provenance, intent strand, bridge signer |
+| `comm_*` | 9 | Messaging | Email (SMTP/IMAP), Slack, Discord, Telegram, SMS, push, calendar invites, contacts |
+| `dev_*` | 9 | Development | Run tests, lint, format, search code, dependency analysis, sandboxed exec (bash/python/js), API test |
+| `mkt_*` | 9 | Marketing | A/B tests, analytics, SEO, social posts, content generation, email campaigns, competitor analysis |
+| `scrape_*` | 8 | Web scraping | Page/structured/RSS/sitemap/API scraping, form submission, dynamic Playwright rendering |
+| `cloudstorage_*` | 8 | Object storage | S3/GCS/Azure/R2 list, upload, download, copy, delete, presigned URLs, rclone sync |
+| `design_*` | 8 | Design | Image generation and editing, SVG generation, color palettes, typography, UI components, Figma, asset optimization |
+| `fin_*` | 8 | Finance | Stock and crypto quotes, portfolio, expenses, budget, invoices, tax estimates, market news |
+| `blender_*` | 7 | Blender automation | **OPTIONAL** — 3D modeling, rendering, scene manipulation (requires Blender app) |
+| `search_*` | 7 | Search | Web, news, images, academic (arXiv/Semantic Scholar), code, knowledge base, local files |
+| `affective_*` | 6 | Values, emotions, goals | Track agent values, emotional states, and goal hierarchies |
+| `procedural_*` | 6 | Skill library | Add, get, execute, and search reusable procedural skills (how-to knowledge) |
+| `a2a_*` | 5 | Agent-to-agent | Discover, call, and orchestrate peer agents over A2A |
+| `irc_*` | 5 | Shared channel | Join, read, send on the IRC room where agents coordinate |
+| `unity_*` | 5 | Unity automation | **OPTIONAL** — Game-engine scripting, project builds, test runs (requires Unity Editor) |
+| `imagination_*` | 8 | Counterfactual simulation | Generate hypotheticals, run "what-if" scenarios, simulate futures, recombine concepts, mental models |
+| `roadmap_*` | 4 | Roadmap registry | Create, list, get, and update multi-phase project plans |
+| `self_model_*` | 3 | Agent self-model | Track the agent's own identity, capabilities, and values over time |
+| `corrigibility_*` | 2 | Shutdown / capability tiers | Control the agent's capability levels and shutdown behavior |
+| `theory_of_mind_*` | 2 | Perspective simulation | Model what another agent believes, knows, or intends |
+| `job_*` | 2 | Background jobs | Poll and await long-running mem20 jobs |
+
+> **Naming note:** the table lists tool prefixes; some prefixes are spelled differently from their domain name (`world_model_*` for world forecasting, `vcs_*` for version control, `fs_*` for filesystem, `tot_*` for tree-of-thought).
 
 ---
 
@@ -366,6 +397,32 @@ python -m venv .venv
 
 ## Development / Onboarding
 
+---
+
+## Repository layout
+
+The tree is large, so find code through the sitemap rather than by browsing. `/sitemap search "<terms>"` ranks matches across subsystem names, entry points, keywords, and descriptions.
+
+| Path | What lives there |
+|------|------------------|
+| `mcp/` | MCP server: tool schemas, per-domain mixins, health/metrics |
+| `cog/` | Cognitive engine (LLM-backed reasoning, planning, reflection) |
+| `memory_engine/` | Core memory store engine |
+| `toolchest/` | Tool registry — MCP tools, CLI binaries, subsystems, with runtime status |
+| `roadmaps/` | Roadmap registry (JSON) |
+| `systemd/` | Service unit templates |
+| `verification/` | Verification scripts |
+| `mem20*z/` | 293 native subsystems ("organs"). 300 of 326 indexed subsystems are organs; the rest are engines and services (see below). |
+| `braid/`, `cog/`, `memory_engine/`, `chroma/`, `dashboard/`, `gateway/`, `mcp/`, `kanban/`, `toolchest/`, `reference_store/` | Engines and services. Unprefixed **by design** — they are infrastructure, not organs. Do not rename them. |
+
+Naming is `mem20<name>z` for organs, with deliberate exceptions that must not be "fixed": `mem20agentz_sdk` (the SDK's suffix is its identity), `mem20messenger`, `mem20oreo`, `mem20zimr`, `toolchest`, `mem20ops` (a role over the fleet, not an organ), `mem20sitemapz`.
+
+Current index: **326 subsystems, 8,969 source files, 468k code lines**. Per the sitemap, **632 of 875 registered capabilities report `ok`**, 142 are `unpackaged` (real, but no `pyproject.toml`), and 101 are `degraded`.
+
+---
+
+## Development
+
 - **Engine logic** lives in the store engine (`memory.py` on `MEM20_STORE_PATH`), not in the MCP server. MCP tools are thin handlers that call engine functions.
 - **Adding a tool:** pick the domain module, add the `self.tools["name"] = mt.Tool(...)` block, and add a dispatch branch + handler. Run `verification/verify_refactor.py` after changes.
 - **Adding an OPTIONAL integration:** create `mcp/tools/<name>_tools.py` with a `<Name>ToolsMixin`, guard any external executable with a graceful check, add the mixin to `Mem20MCPServer`'s bases, and call `self.register_<name>_tools()` in `_setup_tools()`.
@@ -387,6 +444,9 @@ Full docs live at **[mem20.jaysonai.online](https://mem20.jaysonai.online)**.
 | [`verification/verify_refactor.py`](verification/verify_refactor.py) | Refactor verification script |
 | [`tests/`](tests/) | pytest suite covering contamination firewall, eval safety, dispatch, metrics |
 | [`roadmaps/`](roadmaps/) | Roadmap registry (JSON) |
+| [`SITEMAP.md`](SITEMAP.md) | Generated map of every subsystem — run `/sitemap search "<terms>"` to find code without grepping |
+| [`toolchest/`](toolchest/) | Runtime-checked tool registry (MCP tools, CLI binaries, subsystems) with status |
+| [`docs/`](docs/) | Extended tool and usage reference |
 | [`mcp/`](mcp/) | MCP server implementation and tool modules |
 | [`cog/`](cog/) | Cognitive engine (LLM-backed reasoning, planning, reflection) |
 | [`memory_engine/`](memory_engine/) | Core memory store engine |
@@ -399,7 +459,7 @@ Full docs live at **[mem20.jaysonai.online](https://mem20.jaysonai.online)**.
 Contributions are welcome! Before submitting a PR:
 
 1. Run `verification/verify_refactor.py` if you touched engine code.
-2. Run `pytest tests/` to confirm all tests pass.
+2. Run `pytest tests/` to confirm all tests pass. A bare `pytest` from the repo root collects **every** package's tests through the root `conftest.py` (see `pytest.ini`) — a bare run restricted to `tests/` covers only the core suite.
 3. Confirm `contamination_rate == 0.0` after any memory-layer changes.
 4. Update docs when behavior or architecture changes.
 

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20locationawareworkrouterz"
+version="1.0.0"
+description='Place physical and digital tasks according to geography, proximity, and local capability'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20locationawareworkrouterz="mem20locationawareworkrouterz.core:cli"
+
+[tool.setuptools]
+packages=["mem20locationawareworkrouterz"]
+[tool.setuptools.package-data]
+mem20locationawareworkrouterz=["roadmap.json"]

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20humancapabilityacceleratorz"
+version="1.0.0"
+description='Combine coaching, tools, agents, memory, and simulation around measurable personal growth'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20humancapabilityacceleratorz="mem20humancapabilityacceleratorz.core:cli"
+
+[tool.setuptools]
+packages=["mem20humancapabilityacceleratorz"]
+[tool.setuptools.package-data]
+mem20humancapabilityacceleratorz=["roadmap.json"]

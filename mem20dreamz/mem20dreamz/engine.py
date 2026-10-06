@@ -22,7 +22,7 @@ from typing import Any
 sys.path.insert(0, "/opt/mem20")
 from llm import LLMError, _load_dotenv, chat
 
-from . import estate
+from . import estate, ledger
 from . import panel as panel_mod
 from . import verdicts as v
 from .lineage import Iteration, Lineage
@@ -301,6 +301,20 @@ def run_iteration(lineage: Lineage, iteration_n: int) -> Iteration:
         rejection = f"rejected: {selection['reason']}"
     else:
         winner = selection["chosen"]
+        genesis = bool(selection.get("genesis"))
+        if genesis:
+            # A candidate this far from the incumbent is not a revision of this
+            # lineage. Adopt it wholesale and say so in the record, so the
+            # lineage's history shows where it stopped being the same thing.
+            # The prior artifact is not discarded: it stays in the braid chain
+            # and in the superseded field, because a dream that erases its own
+            # past cannot be audited.
+            lineage.superseded = {
+                "artifact": lineage.artifact,
+                "at_iteration": iteration_n,
+                "divergence": winner.get("divergence_score"),
+                "reason": selection["reason"],
+            }
         lineage.artifact = winner["text"]
         fidelity = dict(winner["fidelity"])
         omission = dict(winner["omission"])
@@ -308,14 +322,15 @@ def run_iteration(lineage: Lineage, iteration_n: int) -> Iteration:
         omission["delta"] = round(
             float(omission.get("score", 0)) - float(omission_input.get("score", 0)), 1
         )
-        # Adopted, because it won a blind comparison against the incumbent.
+        # Adopted, because it opened ground the lineage had not occupied.
         accepted = True
         rejection = ""
 
     # The full selection record: every candidate, its scores, and why it lost.
     selection_record = {
         "reason": selection["reason"],
-        "ratchet_held": selection.get("ratchet_held", False),
+        "genesis": bool(selection.get("genesis")),
+        "supersedes_lineage": bool(selection.get("supersedes_lineage")),
         "candidates": [
             {k: val for k, val in c.items() if k != "text"} for c in scored
         ],
@@ -343,6 +358,190 @@ def run_iteration(lineage: Lineage, iteration_n: int) -> Iteration:
             item.get("smallest_real_version", ""), iteration_n,
         )
     return iteration
+
+
+def nap_pass(
+    lineage: Lineage,
+    cue: str,
+    pass_n: int,
+    breadth: int | None = None,
+) -> dict[str, Any]:
+    """One hypnagogic pass: many candidates, no panel round, arithmetic judging.
+
+    This is the shallow shape the research points at. The deep iteration is a
+    long convergent grind - critique, forecast, invent, condition, score, then a
+    judged tournament - and the creative effect we are chasing lives at the
+    opposite end of sleep, where it is brief, frequent and unjudged.
+
+    What this pass drops: the critique round, the three forecast axes, the
+    invention spawn, the digest, and every model-as-judge call. What it keeps:
+    one model per candidate so the generations stay genuinely different, the
+    divergence floor so a paraphrase cannot pass as a dream, the genesis path,
+    braid commit, and the refusal to run unfunded.
+    """
+    members = panel_mod.panel()
+    if not members:
+        raise LLMError("no funded panel members; cannot dream honestly")
+
+    width = breadth or len(members)
+    writers = (members * ((width // len(members)) + 1))[:width]
+    previous = lineage.current_artifact()
+
+    def build(member: panel_mod.Panelist, index: int) -> str:
+        head = previous[:1200] if previous else ""
+        return v.DIVERGENT_PROMPT.format(
+            cue=cue, previous=head, chars=v._chars_for_pass(index)
+        )
+
+    with ThreadPoolExecutor(max_workers=len(writers)) as pool:
+        results = list(
+            pool.map(
+                lambda item: _panel_call(item[1], lambda m, i=item[0]: build(m, i)),
+                list(enumerate(writers)),
+            )
+        )
+
+    candidates: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for index, (reply, err) in enumerate(results):
+        if err or not reply:
+            errors.append(f"writer {index}: {err or 'empty reply'}")
+            continue
+        text = reply.get("text") if isinstance(reply, dict) else str(reply)
+        if not text or len(text.strip()) < 200:
+            errors.append(f"writer {index}: reply too short to be a dream")
+            continue
+        travelled = v.divergence(text, previous or cue)
+        candidates.append(
+            {
+                "writer": f"{writers[index].role} via {writers[index].model}",
+                "text": text,
+                "divergence": travelled,
+                "divergence_score": travelled["score"],
+                "genesis": travelled["score"] >= v.GENESIS_DISTANCE,
+                "eligible": travelled["score"] >= v.DIVERGENCE_FLOOR,
+            }
+        )
+
+    if not candidates:
+        return {
+            "pass": pass_n,
+            "accepted": False,
+            "reason": "every writer failed or returned nothing dreamable",
+            "errors": errors,
+            "candidates": [],
+        }
+
+    winner = max(candidates, key=lambda c: c["divergence_score"])
+    if not winner["eligible"]:
+        furthest = max(candidates, key=lambda c: c["divergence_score"])
+        return {
+            "pass": pass_n,
+            "accepted": False,
+            "reason": (
+                f"nothing travelled: furthest was {furthest['divergence_score']}, "
+                f"below the divergence floor of {v.DIVERGENCE_FLOOR}"
+            ),
+            "errors": errors,
+            "candidates": [{k: c[k] for k in ("writer", "divergence_score", "genesis")} for c in candidates],
+        }
+
+    genesis = bool(winner["genesis"])
+    if genesis:
+        lineage.superseded = {
+            "artifact": lineage.artifact,
+            "at_pass": pass_n,
+            "divergence": winner["divergence_score"],
+            "reason": f"pass {pass_n} travelled {winner['divergence_score']}",
+        }
+    lineage.artifact = winner["text"]
+
+    iteration = Iteration(
+        n=len(lineage.iterations) + 1,
+        artifact=lineage.current_artifact(),
+        fidelity={"score": winner["divergence_score"], "summary": "divergence, not fidelity"},
+        omission={"score": 0.0, "summary": "not judged: this pass is shallow by design", "missing": []},
+        forecast={},
+        critiques=[
+            {"role": "nap", "kind": "cue", "text": cue},
+            {
+                "role": "nap",
+                "kind": "divergence",
+                "text": f"{winner['writer']} travelled {winner['divergence_score']} "
+                f"(genesis={genesis})",
+            },
+        ],
+        inventions_added=[],
+        dreamer_evolved=False,
+        accepted=True,
+        rejection_reason="",
+        selection={
+            "reason": (
+                f"{winner['writer']} travelled furthest of {len(candidates)} "
+                f"({winner['divergence_score']})"
+            ),
+            "genesis": genesis,
+            "supersedes_lineage": genesis,
+            "pass": pass_n,
+            "candidates": [
+                {k: c[k] for k in ("writer", "divergence_score", "genesis", "eligible")}
+                for c in candidates
+            ],
+        },
+    )
+    if errors:
+        iteration.critiques.append({"role": "system", "kind": "errors", "text": "; ".join(errors)[:1500]})
+    lineage.record(iteration)
+    committed = ledger.commit_iteration(lineage, iteration)
+    if committed.get("committed"):
+        lineage.braid_cids.append(str(committed.get("cid", "")))
+    else:
+        lineage.uncommitted.append({"at_pass": pass_n, "reason": committed.get("reason", "")})
+    lineage.save()
+
+    return {
+        "pass": pass_n,
+        "accepted": True,
+        "genesis": genesis,
+        "reason": iteration.selection["reason"],
+        "divergence": winner["divergence_score"],
+        "writer": winner["writer"],
+        "candidates": len(candidates),
+        "errors": errors,
+        "braid": bool(committed.get("committed")),
+        "artifact_chars": len(lineage.current_artifact()),
+    }
+
+
+def nap(
+    cue: str,
+    passes: int = 8,
+    breadth: int = 6,
+    lineage: Lineage | None = None,
+) -> dict[str, Any]:
+    """Run several shallow passes on one lineage, keeping every keeper.
+
+    Each pass starts from whatever the previous one left, so the lineage drifts
+    rather than restarting - and because a pass may supersede outright, the
+    drift is allowed to become a jump.
+    """
+    lineage = lineage or new_dream(cue, kind="idle_idea", foundation=cue)
+    results = []
+    for pass_n in range(1, passes + 1):
+        result = nap_pass(lineage, cue, pass_n, breadth=breadth)
+        results.append(result)
+        if not result["accepted"]:
+            break
+    return {
+        "dream_id": lineage.dream_id,
+        "cue": cue,
+        "passes_run": len(results),
+        "accepted": sum(1 for r in results if r["accepted"]),
+        "genesis": any(r.get("genesis") for r in results),
+        "results": results,
+        "artifact_chars": len(lineage.current_artifact()),
+        "iterations": len(lineage.iterations),
+    }
 
 
 def _generate_candidate(
@@ -416,7 +615,13 @@ def _score_candidate(
     seed: str,
     previous: str,
 ) -> dict[str, Any]:
-    """Judge one candidate on both axes, using models that did not write it."""
+    """Judge one candidate on both axes, using models that did not write it.
+
+    Eligibility is now *divergence from the incumbent*, not fidelity to it and
+    not length relative to it. A revision that rewords the brief scores zero
+    however well it is written; one that opens new ground is eligible however
+    little it resembles what came before.
+    """
     members = panel_mod.panel()
     judges = [m for m in members if m.model != writer.model]
     fid_judge = next((m for m in judges if m.role != "product"), judges[0])
@@ -440,20 +645,22 @@ def _score_candidate(
     fidelity["judged_by"] = f"{fid_judge.role} via {fid_judge.model}"
     omission["judged_by"] = f"{om_judge.role} via {om_judge.model}"
 
-    shrunk, why = v.condenses(previous, candidate)
-    fidelity_score = float(fidelity.get("score", 0))
-    omission_score = float(omission.get("score", 0))
+    travelled = v.divergence(candidate, previous or seed)
+    from_seed = v.divergence(candidate, seed)
+    genesis = travelled["score"] >= v.GENESIS_DISTANCE
     return {
         "writer": f"{writer.role} via {writer.model}",
         "length": len(candidate),
         "fidelity": fidelity,
         "omission": omission,
-        "fidelity_score": fidelity_score,
-        "omission_score": omission_score,
-        "condensed": shrunk,
-        "condense_reason": why,
-        "eligible": (not shrunk) and fidelity_score >= v.FIDELITY_FLOOR,
-        "objective": omission_score,
+        "fidelity_score": float(fidelity.get("score", 0)),
+        "omission_score": float(omission.get("score", 0)),
+        "divergence": travelled,
+        "divergence_score": travelled["score"],
+        "divergence_from_seed": from_seed,
+        "genesis": genesis,
+        "eligible": travelled["score"] >= v.DIVERGENCE_FLOOR,
+        "objective": float(omission.get("score", 0)),
     }
 
 
@@ -534,16 +741,32 @@ def _pairwise(incumbent: str, candidate: str, writer: panel_mod.Panelist, seed: 
 
 
 def _select(scored: list[dict[str, Any]], incumbent: str, seed: str) -> dict[str, Any]:
-    """Choose between eligible candidates by a blind tournament against the incumbent.
+    """Choose the candidate that opened the most territory.
 
-    Gates first: fidelity floor and the never-condenses invariant. Then an
-    omission veto - the panel must have found something real, or the iteration
-    did no work. Only survivors enter the tournament, and only a candidate that
-    actually WINS replaces the incumbent, so the artifact can never regress.
+    The blind tournament is gone. It required a candidate to *beat the
+    incumbent*, which guaranteed the artifact could only ever be a refinement of
+    itself: an engine with no legal way to become something else cannot produce
+    the unprecedented, however it is seeded.
+
+    What remains is honest rather than convergent:
+
+    * a candidate that barely leaves the neighbourhood is ineligible, so
+      paraphrasing the brief is not mistaken for progress;
+    * the omission veto is kept, because it is the one guard that *demands*
+      novelty - an iteration that found nothing real did no work;
+    * the winner is the candidate that travelled furthest, and the pairwise
+      comparison is still run and recorded as evidence, but it no longer vetoes.
     """
     eligible = [c for c in scored if c["eligible"]]
     if not eligible:
-        return {"chosen": None, "reason": "no candidate cleared the fidelity floor", "contests": []}
+        return {
+            "chosen": None,
+            "reason": (
+                f"no candidate travelled: all {len(scored)} stayed within "
+                f"{v.DIVERGENCE_FLOOR} of the incumbent, so none of them is a dream"
+            ),
+            "contests": [],
+        }
 
     vetoed = [c for c in eligible if float(c["omission_score"]) < v.OMISSION_VETO_FLOOR]
     pool = [c for c in eligible if float(c["omission_score"]) >= v.OMISSION_VETO_FLOOR]
@@ -559,30 +782,28 @@ def _select(scored: list[dict[str, Any]], incumbent: str, seed: str) -> dict[str
         }
 
     contests: list[dict[str, Any]] = []
-    winners: list[dict[str, Any]] = []
     for candidate in pool:
         result = _pairwise(incumbent, candidate["text"], _writer_of(candidate), seed)
-        contests.append({"candidate": candidate["writer"], **result})
         candidate["pairwise"] = result
-        if result["winner"] == "candidate":
-            winners.append(candidate)
+        contests.append({"candidate": candidate["writer"], "evidence_only": True, **result})
 
-    if not winners:
-        return {
-            "chosen": None,
-            "reason": "incumbent won every blind comparison, so it stands",
-            "contests": contests,
-        }
-    # Several candidates beat the incumbent; take the one the omission check
-    # rated highest, since that is the axis the brief asked us to chase.
-    winner = max(winners, key=lambda c: c["omission_score"])
+    winner = max(pool, key=lambda c: (float(c["divergence_score"]), float(c["omission_score"])))
+    genesis = bool(winner.get("genesis"))
     return {
         "chosen": winner,
+        "genesis": genesis,
         "reason": (
-            f"{winner['writer']} won {len(winners)}/{len(pool)} blind comparisons "
-            f"and scored highest on omission ({winner['omission_score']})"
+            f"{winner['writer']} travelled furthest "
+            f"(divergence {winner['divergence_score']}, omission {winner['omission_score']})"
+            + (
+                f"; at or above the genesis distance of {v.GENESIS_DISTANCE} it is not a "
+                f"revision of this lineage and may supersede it outright"
+                if genesis
+                else ""
+            )
         ),
         "contests": contests,
+        "supersedes_lineage": genesis,
     }
 
 

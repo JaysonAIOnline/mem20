@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Any tool can be tried safely with precise resource and data boundaries",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 9,
+  "id": "RM-009",
+  "lane": "Composable application kernel and capability exchange",
+  "operation_kind": "forecast",
+  "outcome": "Execute risky or untrusted tasks in disposable capability-scoped sandboxes",
+  "owner": "FreeStack Core",
+  "owner_code": "freestack",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Any tool can be tried safely with precise resource and data boundaries",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "adaptive web desktop",
+    "command palette",
+    "SDK",
+    "event-stream inspector"
+  ],
+  "techniques": [
+    "constraint solvers",
+    "semantic matching",
+    "runtime telemetry",
+    "cost-aware scheduling"
+  ],
+  "title": "Secure Compute Capsules"
+}

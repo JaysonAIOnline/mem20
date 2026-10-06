@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -10,7 +11,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from mem20path import EXCLUDED, discover_scripts, plan, run  # noqa: E402
+from mem20path import (  # noqa: E402
+    DEFAULT_TARGET,
+    EXCLUDED,
+    SYSTEMD_DEFAULT_PATH,
+    discover_scripts,
+    plan,
+    run,
+)
 
 
 def _dist(site: Path, name: str, scripts: dict[str, str]) -> None:
@@ -193,3 +201,50 @@ class TestRun:
         monkeypatch.setattr(mem20path, "VENV_BIN", venv)
         run(self._args(site, venv, tmp_path, "--apply"))
         assert (target_dir / "fs-ops").resolve() == (venv / "fs-ops").resolve()
+
+
+class TestDefaultTargetIsOnTheSystemdPath:
+    """The bug this file exists to prevent: linking into a directory systemd
+    cannot see, while the tool's own verify() said everything was fine.
+
+    ``/root/.local/bin`` looked right -- an interactive shell has it -- but
+    systemd's compiled-in default PATH does not, so 19 units could not resolve a
+    single mem20 CLI. Nothing tested the default, so nothing caught it.
+    """
+
+    def test_default_target_is_on_the_systemd_default_path(self):
+        assert str(DEFAULT_TARGET) in SYSTEMD_DEFAULT_PATH.split(":")
+
+    def test_systemd_default_path_excludes_the_shell_only_bin(self):
+        # /root/.local/bin arrives from root's rc files, not from systemd.
+        # If this ever passes, the old wrong premise has crept back in.
+        assert "/root/.local/bin" not in SYSTEMD_DEFAULT_PATH.split(":")
+
+    def test_verify_flags_a_link_that_systemd_cannot_see(
+        self, site, venv, tmp_path, monkeypatch
+    ):
+        import mem20path
+
+        # Stand in for systemd's PATH so the test is hermetic and still proves
+        # the point: verify() measures against SYSTEMD_DEFAULT_PATH, and a link
+        # outside that list is MISSING no matter that it exists and is valid.
+        name = "mem20ghostz"
+        _dist(site, "mem20ghostz", {name: "x:main"})
+        _script(venv, name)
+        visible = tmp_path / "usr-local-bin"
+        visible.mkdir()
+        invisible = tmp_path / "root-local-bin"
+        invisible.mkdir()
+        # The link exists and is a perfectly valid symlink. It is simply in a
+        # directory systemd's PATH does not contain -- exactly the shipped bug.
+        (invisible / name).symlink_to(venv / name)
+        monkeypatch.setattr(
+            mem20path, "SYSTEMD_DEFAULT_PATH", str(visible), raising=True
+        )
+
+        assert shutil.which(name, path=str(invisible)), "precondition: the link is valid"
+        missing = mem20path.verify(site_packages=site, target_dir=invisible)
+        assert name in missing, (
+            "a link systemd cannot see must read as MISSING; this is the "
+            "false negative that shipped"
+        )

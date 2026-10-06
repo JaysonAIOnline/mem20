@@ -1,1 +1,1 @@
-Research on 'cleanroom': confirmed from the substrate that reference_store is built with 10 passing tests and a valid chain proof (24 unique cids); honest-failure llm gate verified.
+[max_iter reached] [tool bm25_search] [skill bm25_search ok]

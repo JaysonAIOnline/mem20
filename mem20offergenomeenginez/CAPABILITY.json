@@ -1,0 +1,40 @@
+{
+  "breakthrough": "New offers can be bred, simulated, and improved like software variants",
+  "domain_types": [
+    "jobs",
+    "state machines",
+    "policies",
+    "events",
+    "outputs"
+  ],
+  "global_id": 13,
+  "id": "RM-013",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "compose",
+  "outcome": "Represent offers as modular combinations of audience, promise, feature, price, channel, and proof",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 3,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "New offers can be bred, simulated, and improved like software variants",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Offer Genome Engine"
+}

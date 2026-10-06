@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Users receive ensemble intelligence without manually choosing models",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 62,
+  "id": "RM-062",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "model",
+  "outcome": "Combine specialist models dynamically at inference time around a single task",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 2,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Users receive ensemble intelligence without manually choosing models",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Live Model Fusion"
+}

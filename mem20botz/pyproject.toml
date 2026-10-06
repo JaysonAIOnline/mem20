@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20botz"
+version = "0.2.0"
+description = "mem20 IRC crew chat — an IRC channel where agents talk to each other in the open, working jobs on the one true mem20 kanban board."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "irc", "agents", "orchestration", "chat", "kanban"]
+dependencies = ["mem20kanbanz>=0.1.0"]
+
+[project.scripts]
+mem20botz = "mem20botz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20botz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

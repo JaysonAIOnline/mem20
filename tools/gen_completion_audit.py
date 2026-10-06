@@ -90,8 +90,12 @@ def services() -> dict:
     failed = sh("systemctl list-units --type=service --state=failed --no-legend --plain")
     mem = [l.split()[0] for l in running.splitlines() if re.search(r"mem20|braid|cloudflared|pickle", l)]
     bad = [l.split()[0] for l in failed.splitlines() if l.strip()]
+    # Count the unit files by counting newline-separated lines, not by
+    # len(str.split()) which returns the number of whitespace tokens.
+    _uf_raw = sh("ls /etc/systemd/system/*.service 2>/dev/null").strip()
+    unit_files = len([ln for ln in _uf_raw.splitlines() if ln.strip()])
     return {
-        "unit_files": len(sh("ls /etc/systemd/system/*.service 2>/dev/null | wc -l").split() or [0]),
+        "unit_files": unit_files,
         "mem20_running": len(mem),
         "mem20_running_names": mem,
         "failed_units": bad,
@@ -188,11 +192,12 @@ def main() -> int:
     add("")
     add("Run with `mem20verify tests` from `/opt/mem20` — the canonical runner.")
     add("")
-    add("> **Trap worth knowing.** A bare `pytest` in `/opt/mem20` runs only "
-        f"{'132'} tests, because `pytest.ini` sets `testpaths = mem20secretz mem20verify "
-        "mem20-orchestration`. That is 3 of 40 packages. Anyone who runs `pytest`, sees "
-        "green, and concludes the estate is healthy would be wrong about most of it. Use "
-        "`mem20verify tests`.")
+    add("> **Trap worth knowing.** A bare `pytest` in `/opt/mem20` does NOT run the whole "
+        f"estate by default. `pytest.ini` sets `testpaths = .` and "
+        f"`addopts = --import-mode=importlib`. The testpaths trap described above is a "
+        "historical note; the current config is fixed. Use `mem20verify tests` as the "
+        "canonical runner regardless, because it also honours per-package venvs and a "
+        "per-package timeout.")
     add("")
     add("### Failing packages")
     add("")
@@ -201,19 +206,24 @@ def main() -> int:
     for f in failing:
         add(f"| `{f['package']}` | {f['passed']} | {f['failed']} |")
     add("")
-    add("**These are pre-existing defects in those packages, not regressions from the work "
-        "done alongside them.** The failures are missing modules and missing public "
-        "exports — code that was never written:")
+    add("**How to read these.** Each row above is a package whose suite did not come back "
+        "green in the canonical sweep. The generator does not hardcode a cause, because "
+        "the cause has to be established per package by direct execution — a bare "
+        "`AttributeError` or `ModuleNotFoundError` in this estate has previously been a "
+        "harness artifact rather than absent code.")
     add("")
-    add("```")
-    add("mem20ucgz   ModuleNotFoundError: No module named 'mem20ucgz.graph'")
-    add("mem20zimr   ModuleNotFoundError: No module named 'mem20zimr.builder'   (x4)")
-    add("mem20gamez  AttributeError: module 'mem20gamez' has no attribute 'DQNAgent'")
-    add("```")
-    add("")
-    add("Each is a package whose tests reference a module or export that does not exist. "
-        "The honest reading is that those subsystems are **incomplete**, not that their "
-        "tests are wrong.")
+    add("Worked example (verified, not assumed): `mem20ucgz` reported "
+        "`ModuleNotFoundError: No module named 'mem20ucgz.graph'` and `mem20gamez` reported "
+        "no attribute `DQNAgent`, yet both packages shipped the code. A meta-path spy "
+        "traced the real cause: during pytest's collection walk the repo root was on "
+        "`sys.path`, so each `<project>/<name>/` directory — which has no top-level "
+        "`__init__.py` — was cached in `sys.modules` as a bare namespace package with "
+        "`__file__ = None` and a `__path__` pointing at the outer project directory instead "
+        "of `src/`. The submodule import then failed even though the file was present. The "
+        "fix is in the root `conftest.py`: eagerly import each real package so collection "
+        "cannot shadow it, which took `mem20ucgz`, `mem20zimr`, `mem20gamez` and two "
+        "`mem20agentz` tests to green under the estate's own default import mode. A failed "
+        "package in this estate is therefore a claim to investigate, not a conclusion.")
     add("")
 
     add("## Test coverage")
@@ -230,8 +240,8 @@ def main() -> int:
         "`mem20oreo` (33) now have real suites. Two of those were mutation-verified.")
     add("")
     add("**Caveat worth stating plainly:** a collected test is not a passing test, and a "
-        "large suite is not a good one. `mem20ucgz` reports a suite that cannot even "
-        "import. Coverage here means *a suite exists and collects*, nothing stronger.")
+        "large suite is not a good one. Coverage here means *a suite exists and collects*, "
+        "nothing stronger.")
     add("")
 
     add("## Braid ledger integrity")
@@ -266,10 +276,17 @@ def main() -> int:
         + (f" — {', '.join(svc['failed_units'])}" if svc["failed_units"] else ""))
     add("")
     if svc["failed_units"]:
-        add("Both failing units are base-system, not mem20 "
-            "(`drkonqi-coredump-processor@…` and `systemd-modules-load`). They were left "
-            "alone deliberately: they are not this estate's to fix.")
-        add("")
+        _ours = [u for u in svc["failed_units"] if re.search(r"mem20|braid|cloudflared|pickle", u)]
+        _theirs = [u for u in svc["failed_units"] if u not in _ours]
+        if _ours:
+            add(f"**{len(_ours)} failed unit(s) belong to this estate and are ours to fix:** "
+                + ", ".join(f"`{u}`" for u in _ours) + ".")
+            add("")
+        if _theirs:
+            add(f"**{len(_theirs)} failed unit(s) are outside this estate and were left "
+                "alone deliberately** (not ours to fix): "
+                + ", ".join(f"`{u}`" for u in _theirs) + ".")
+            add("")
     add("| Endpoint | Status |")
     add("|---|---|")
     for e in eps:
@@ -327,11 +344,20 @@ def main() -> int:
         "lost by accident right now.")
     add("2. **Fix `mem20wasmz`'s `update_job` redaction.** It is a small change to a real "
         "credential-leak path, and the test is already written.")
-    add("3. **Decide the six failing packages.** Either implement the missing modules "
-        "(`mem20ucgz.graph`, `mem20zimr.builder`, `mem20gamez.DQNAgent`) or delete the "
-        "tests that reference them. Leaving them failing trains everyone to ignore red.")
-    add("4. **Make `pytest.ini` stop under-reporting.** The default run covering 3 of 40 "
-        "packages is a trap that will mislead the next person who runs it.")
+    if failing:
+        add(f"3. **Triage the {len(failing)} package(s) still failing** by direct execution "
+            "before changing any code: reproduce each failure, establish the real cause, "
+            "then fix the cause. Do not delete or skip the test and do not assume a missing "
+            "symbol means missing code — in this estate that assumption has already been "
+            "wrong once (see the namespace-shadowing note above).")
+    else:
+        add("3. **Nothing is failing in the canonical sweep.** Spend the effort on the "
+            "packages that ship no suite at all, which is a real coverage gap rather than a "
+            "cosmetic one.")
+    add("4. **Keep the import-mode default, and keep the conftest fix.** `pytest.ini` uses "
+        "`--import-mode=importlib` deliberately; forcing `append` estate-wide collides "
+        "duplicate conftest basenames and turns passing packages red. The conftest eager "
+        "import is what makes the default mode correct.")
     add("5. **Then** the commerce work, which is blocked on keys rather than on code.")
     add("")
 
@@ -341,9 +367,13 @@ def main() -> int:
         "assert the wrong thing.")
     add("- Test *counts* say nothing about quality. The braid float defect survived "
         "alongside hundreds of passing tests.")
-    add("- The six failing packages are attributed from their error messages and the fact "
-        "that their sources were not touched alongside this work. That is strong evidence, "
-        "not a verified before/after baseline — nobody captured one.")
+    add("- The namespace-shadowing defects in this estate were found by direct execution, "
+        "with a before/after baseline captured (the failing suites were reproduced, the "
+        "root cause traced with a meta-path spy, the fix applied, and the same commands "
+        "re-run to green). Earlier audits asserted a cause from error text alone; that "
+        "assertion was wrong and is corrected here.")
+    add("- Remaining failures in the table above are *not* root-caused by this audit. They "
+        "are listed as observed, and each still needs a reproduce-first investigation.")
     add("- Service health is `active`/`inactive`, not a functional probe of each surface "
         "except the two public endpoints listed above.")
     add("")

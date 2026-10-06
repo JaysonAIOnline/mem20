@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20useracceptancesimulatorz"
+version="1.0.0"
+description='Model how different users attempt tasks and where they fail or abandon'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20useracceptancesimulatorz="mem20useracceptancesimulatorz.core:cli"
+
+[tool.setuptools]
+packages=["mem20useracceptancesimulatorz"]
+[tool.setuptools.package-data]
+mem20useracceptancesimulatorz=["roadmap.json"]

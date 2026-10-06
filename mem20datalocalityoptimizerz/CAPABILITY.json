@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Performance improves while sensitive data stays where it belongs",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 96,
+  "id": "RM-096",
+  "lane": "Technical foundation, resilience, and runtime substrate",
+  "operation_kind": "schedule",
+  "outcome": "Place data and compute together according to privacy, latency, and transfer cost",
+  "owner": "FSGF",
+  "owner_code": "fsgf",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Performance improves while sensitive data stays where it belongs",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "foundation console",
+    "live dependency topology",
+    "compatibility matrix",
+    "resource heatmap"
+  ],
+  "techniques": [
+    "resource control",
+    "anomaly detection",
+    "topology optimization",
+    "compatibility analysis",
+    "energy modeling"
+  ],
+  "title": "Data Locality Optimizer"
+}

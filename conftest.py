@@ -30,6 +30,7 @@ The canonical way to run the estate's suites is still:
 which additionally honours per-package venvs and a per-package timeout.
 """
 
+import importlib
 import os
 import sys
 
@@ -65,22 +66,43 @@ for _project in reversed(_project_roots()):
     if _project not in sys.path:
         sys.path.insert(0, _project)
 
-# 3. Purge any namespace-package entries pytest cached during collection.
-#    pytest walks the directory tree before running tests, and because every
-#    package here lives at <project>/<name>/, that walk can leave `mem20gamez`
-#    (and friends) in sys.modules as a bare namespace package - no __init__, no
-#    attributes, no submodules. sys.path was already correct by then, so the only
-#    cure is to drop the stale entries and let the real package import. This is
-#    what made mem20gamez report "no attribute DQNAgent" and mem20ucgz report
-#    "no module graph", when both were present and correct all along.
+# 3. Purge any namespace-package entries cached before this file ran.
+#    A purge alone is not enough: pytest creates the bad entries *during* its
+#    collection walk, which happens after this module is imported, so a
+#    conftest-load purge has nothing to remove by then.
 for _name, _module in list(sys.modules.items()):
     if _name.startswith("mem20") or _name in {"braid", "bpy", "mcp", "toolchest"}:
         _file = getattr(_module, "__file__", None)
         if _file is None and getattr(_module, "__path__", None) is not None:
             del sys.modules[_name]
 
-# 4. Nothing to reorder.
-#    Tried putting the editable-install finders ahead of PathFinder; it made no
-#    difference, because the real problem was the repo root on sys.path (step 1)
-#    and the stale namespace entries above, not finder precedence.
+# 4. Proactively import each real package so collection cannot shadow it.
+#    Binding the real module into sys.modules first turns the later
+#    `import mem20x` into a cache hit, so a bare namespace portion (no
+#    __file__, no __path__ to src/) can never win. This is what deterministically
+#    fixed mem20ucgz / mem20zimr collection errors and the mem20gamez
+#    "no attribute DQNAgent" failure under the estate default
+#    --import-mode=importlib, without changing that default.
+def _importable(project):
+    mod = os.path.basename(project).replace("-", "_")
+    for candidate in (os.path.join(project, "src", mod), os.path.join(project, mod)):
+        if os.path.isfile(os.path.join(candidate, "__init__.py")):
+            return mod, os.path.dirname(candidate)
+    return None
+
+
+for _project in _project_roots():
+    _found = _importable(_project)
+    if not _found:
+        continue
+    _mod, _parent = _found
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    try:
+        importlib.import_module(_mod)
+    except Exception:
+        # A package whose import needs optional native deps may not load here;
+        # that is fine. We only need the ones pytest will import in this session
+        # to be pre-bound, and any that fail still import normally on demand.
+        pass
 

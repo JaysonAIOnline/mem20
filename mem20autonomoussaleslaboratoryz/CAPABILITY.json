@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Sales experiments improve automatically without turning into spam",
+  "domain_types": [
+    "experiments",
+    "hypotheses",
+    "datasets",
+    "runs",
+    "results"
+  ],
+  "global_id": 17,
+  "id": "RM-017",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "route",
+  "outcome": "Generate, route, test, and learn from sales conversations across approved channels",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 7,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Sales experiments improve automatically without turning into spam",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Autonomous Sales Laboratory"
+}

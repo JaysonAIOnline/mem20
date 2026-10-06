@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Cameras, sensors, GPUs, and peripherals become reusable software building blocks",
+  "domain_types": [
+    "source inputs",
+    "intermediate representation",
+    "validation passes",
+    "generated targets"
+  ],
+  "global_id": 46,
+  "id": "RM-046",
+  "lane": "Provider, device, research, and remote-compute fleet control",
+  "operation_kind": "simulate",
+  "outcome": "Turn raw hardware features into standardized callable capabilities",
+  "owner": "HSP2",
+  "owner_code": "hsp2",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Cameras, sensors, GPUs, and peripherals become reusable software building blocks",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "fleet globe",
+    "node cockpit",
+    "workload map",
+    "remote experiment terminal"
+  ],
+  "techniques": [
+    "distributed scheduling",
+    "federated search",
+    "capability discovery",
+    "energy models",
+    "fault prediction"
+  ],
+  "title": "Device Capability Compiler"
+}

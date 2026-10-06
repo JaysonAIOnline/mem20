@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20autonomouscodesurgeonz"
+version="1.0.0"
+description='Diagnose and repair narrowly scoped defects with executable tests and reversible patches'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20autonomouscodesurgeonz="mem20autonomouscodesurgeonz.core:cli"
+
+[tool.setuptools]
+packages=["mem20autonomouscodesurgeonz"]
+[tool.setuptools.package-data]
+mem20autonomouscodesurgeonz=["roadmap.json"]

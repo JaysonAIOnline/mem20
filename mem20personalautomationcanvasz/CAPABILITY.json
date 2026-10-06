@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Non-programmers build reliable local-first software by connecting live blocks",
+  "domain_types": [
+    "workspaces",
+    "blocks",
+    "links",
+    "commands",
+    "execution state"
+  ],
+  "global_id": 8,
+  "id": "RM-008",
+  "lane": "Composable application kernel and capability exchange",
+  "operation_kind": "analyze",
+  "outcome": "Let users draw automations that combine agents, APIs, files, devices, and schedules",
+  "owner": "FreeStack Core",
+  "owner_code": "freestack",
+  "roadmap_index": 8,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Non-programmers build reliable local-first software by connecting live blocks",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "adaptive web desktop",
+    "command palette",
+    "SDK",
+    "event-stream inspector"
+  ],
+  "techniques": [
+    "constraint solvers",
+    "semantic matching",
+    "runtime telemetry",
+    "cost-aware scheduling"
+  ],
+  "title": "Personal Automation Canvas"
+}

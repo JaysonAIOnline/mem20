@@ -51,6 +51,9 @@ _PROBE_CWD = Path(tempfile.gettempdir())
 AGENT_PLATFORM = {
     "mem20agentz", "mem20agentz_sdk", "mem20crewz", "mem20kimiz", "mem20langz",
     "mem20orcaz", "mem20googlez", "mem20messenger",
+    # The crew chat the agents meet in, and the one board their work is
+    # tracked on. Both are agent-platform surfaces, not utilities.
+    "mem20botz", "mem20kanbanz",
 }
 GAMES_3D = {
     "mem20gamez", "mem20unitiz", "mem20factoryz", "mem20autouez", "mem20yetiz",

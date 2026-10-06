@@ -1,0 +1,23 @@
+{
+  "roadmap": "RM-055",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "title": "Self-Healing Plans",
+  "validation": {
+    "benchmark": {
+      "cost_model": "local CPU only",
+      "energy_proxy_ms": 3.295952,
+      "iterations": 20,
+      "memory_model": "bounded input + sqlite WAL",
+      "network_transfer": "0 bytes in local benchmark",
+      "ops_per_sec": 6068.05,
+      "p50_ms": 0.146521,
+      "p95_ms": 0.291049
+    },
+    "crud_versioning": "pass",
+    "idempotency": "pass",
+    "mesh_failover": "pass",
+    "operation_branch": "pass",
+    "simulator": "6/6",
+    "status": "PASS"
+  }
+}

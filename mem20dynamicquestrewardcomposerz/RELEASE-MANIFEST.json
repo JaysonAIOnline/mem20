@@ -1,0 +1,39 @@
+{
+  "package_schema": "2.0",
+  "roadmap": "RM-206",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "title": "Dynamic Quest Reward Composer",
+  "validation": {
+    "benchmark": {
+      "cost_model": "local CPU only",
+      "energy_proxy_ms": 7.159241,
+      "iterations": 20,
+      "memory_model": "bounded input + sqlite WAL + 128-entry LRU",
+      "network_transfer": "0 bytes local benchmark",
+      "ops_per_sec": 2793.59,
+      "p50_ms": 0.218335,
+      "p95_ms": 1.189754
+    },
+    "checks": {
+      "benchmark": "PASS",
+      "cancellation": "PASS",
+      "create": "PASS",
+      "delete": "PASS",
+      "event_history": "PASS",
+      "feedback": "PASS",
+      "idempotency": "PASS",
+      "install_rollback": "PASS",
+      "mesh_failover": "PASS",
+      "replica_reconciliation": "PASS",
+      "roadmap_coverage": "18/18 mapped",
+      "roadmap_operation": "PASS",
+      "runtime_compile": "PASS",
+      "safety_guard": "PASS",
+      "simulator": "10/10",
+      "snapshot": "PASS",
+      "versioned_update": "PASS"
+    },
+    "simulator": "10/10",
+    "status": "PASS"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "breakthrough": "New integrations can be created in hours instead of weeks",
+  "domain_types": [
+    "source inputs",
+    "intermediate representation",
+    "validation passes",
+    "generated targets"
+  ],
+  "global_id": 71,
+  "id": "RM-071",
+  "lane": "Integration fabric, protocols, and node transport",
+  "operation_kind": "route",
+  "outcome": "Compile API descriptions, examples, and observed traffic into working typed connectors",
+  "owner": "FSIF",
+  "owner_code": "fsif",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "New integrations can be created in hours instead of weeks",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "visual dataflow canvas",
+    "connector lab",
+    "live packet map",
+    "integration debugger"
+  ],
+  "techniques": [
+    "schema inference",
+    "protocol learning",
+    "anomaly repair",
+    "stream processing",
+    "semantic transformation"
+  ],
+  "title": "Universal Integration Compiler"
+}

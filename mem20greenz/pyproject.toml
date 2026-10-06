@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20greenz"
+version = "0.1.0"
+description = "mem20 greenroom — stage clones of external software and websites, build original cleanroom baselines from observed behavior, verify, then promote."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "greenroom", "cleanroom", "cloning", "staging"]
+dependencies = []
+
+[project.scripts]
+mem20greenz = "mem20greenz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20greenz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

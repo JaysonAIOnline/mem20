@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20scopemutationsandboxz"
+version="1.0.0"
+description='Apply proposed additions or cuts and calculate downstream impact immediately'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20scopemutationsandboxz="mem20scopemutationsandboxz.core:cli"
+
+[tool.setuptools]
+packages=["mem20scopemutationsandboxz"]
+[tool.setuptools.package-data]
+mem20scopemutationsandboxz=["roadmap.json"]

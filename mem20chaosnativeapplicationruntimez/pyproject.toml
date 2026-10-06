@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20chaosnativeapplicationruntimez"
+version="1.0.0"
+description='Design applications that expect components, networks, and providers to fail'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20chaosnativeapplicationruntimez="mem20chaosnativeapplicationruntimez.core:cli"
+
+[tool.setuptools]
+packages=["mem20chaosnativeapplicationruntimez"]
+[tool.setuptools.package-data]
+mem20chaosnativeapplicationruntimez=["roadmap.json"]

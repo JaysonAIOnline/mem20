@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Owners can test business decisions before making them real",
+  "domain_types": [
+    "entities",
+    "state snapshots",
+    "predictions",
+    "scenario branches"
+  ],
+  "global_id": 81,
+  "id": "RM-081",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "simulate",
+  "outcome": "Mirror customers, operations, costs, capacity, and revenue in a live simulation",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Owners can test business decisions before making them real",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Real-Time Business Twin"
+}

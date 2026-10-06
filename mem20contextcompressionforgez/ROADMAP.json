@@ -1,0 +1,76 @@
+{
+  "breakthrough": "Large projects stay coherent without overwhelming model context windows",
+  "global_id": 25,
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "outcome": "Distill long project history into compact task-specific working memory",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Context Compression Forge Core",
+      "subphases": [
+        {
+          "name": "1.1 Context Compression Forge Domain Model and State Plane",
+          "work": [
+            "Define typed recipes, source materials, transformations, builds, and artifacts required to distill long project history into compact task-specific working memory, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for episodic memory, semantic recall, multimodal context, personal continuity, and reusable learned skills; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Context Compression Forge Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: distill long project history into compact task-specific working memory.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Context Compression Forge Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Context Compression Forge Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using graph retrieval, temporal embeddings, compression, prediction, and counterfactual simulation.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Context Compression Forge Interaction Surface",
+          "work": [
+            "Build the primary experience in the memory timeline, recall lens, context diff, and cross-device memory controls, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Context Compression Forge into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Context Compression Forge Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Context Compression Forge Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: Large projects stay coherent without overwhelming model context windows. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ],
+  "roadmap_index": 5,
+  "section": "Runtime Roadmaps",
+  "title": "Context Compression Forge"
+}

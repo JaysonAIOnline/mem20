@@ -1,0 +1,41 @@
+{
+  "breakthrough": "The workforce reorganizes itself for each mission",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 34,
+  "id": "RM-034",
+  "lane": "Human-agent work execution and shared workspaces",
+  "operation_kind": "analyze",
+  "outcome": "Spawn temporary multi-agent teams around outcomes and dissolve them when complete",
+  "owner": "HSP",
+  "owner_code": "hsp",
+  "roadmap_index": 4,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The workforce reorganizes itself for each mission",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "collaborative mission canvas",
+    "focus mode",
+    "presence map",
+    "work-cell console"
+  ],
+  "techniques": [
+    "planning graphs",
+    "skill matching",
+    "mixed-initiative control",
+    "simulation",
+    "workload optimization"
+  ],
+  "title": "Autonomous Work Cells"
+}

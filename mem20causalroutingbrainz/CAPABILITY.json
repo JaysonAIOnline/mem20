@@ -1,0 +1,40 @@
+{
+  "breakthrough": "The router optimizes outcomes, not merely throughput",
+  "domain_types": [
+    "signals",
+    "objectives",
+    "scores",
+    "options",
+    "chosen actions"
+  ],
+  "global_id": 54,
+  "id": "RM-054",
+  "lane": "Autonomous routing, plans, and execution control",
+  "operation_kind": "route",
+  "outcome": "Choose routes based on predicted consequences rather than static priorities",
+  "owner": "ARE",
+  "owner_code": "are",
+  "roadmap_index": 4,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The router optimizes outcomes, not merely throughput",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "execution map",
+    "route debugger",
+    "scenario sandbox",
+    "autonomous operations console"
+  ],
+  "techniques": [
+    "causal planning",
+    "speculative execution",
+    "constraint optimization",
+    "digital twins",
+    "anomaly detection"
+  ],
+  "title": "Causal Routing Brain"
+}

@@ -1,0 +1,41 @@
+{
+  "breakthrough": "JamTek discovers compounding partnerships before competitors notice them",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 19,
+  "id": "RM-019",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "analyze",
+  "outcome": "Find complementary products, integration partners, and acquisition candidates",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "JamTek discovers compounding partnerships before competitors notice them",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Acquisition and Partnership Scout"
+}

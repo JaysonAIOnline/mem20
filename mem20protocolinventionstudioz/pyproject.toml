@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20protocolinventionstudioz"
+version="1.0.0"
+description='Design and simulate new lightweight protocols for agents, devices, and components'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20protocolinventionstudioz="mem20protocolinventionstudioz.core:cli"
+
+[tool.setuptools]
+packages=["mem20protocolinventionstudioz"]
+[tool.setuptools.package-data]
+mem20protocolinventionstudioz=["roadmap.json"]

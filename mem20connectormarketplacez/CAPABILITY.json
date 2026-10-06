@@ -1,0 +1,40 @@
+{
+  "breakthrough": "FSIF can become the universal app-store layer for connectivity",
+  "domain_types": [
+    "listings",
+    "participants",
+    "offers",
+    "matches",
+    "transactions"
+  ],
+  "global_id": 80,
+  "id": "RM-080",
+  "lane": "Integration fabric, protocols, and node transport",
+  "operation_kind": "route",
+  "outcome": "Package, test, rate, and distribute reusable integrations",
+  "owner": "FSIF",
+  "owner_code": "fsif",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "FSIF can become the universal app-store layer for connectivity",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "visual dataflow canvas",
+    "connector lab",
+    "live packet map",
+    "integration debugger"
+  ],
+  "techniques": [
+    "schema inference",
+    "protocol learning",
+    "anomaly repair",
+    "stream processing",
+    "semantic transformation"
+  ],
+  "title": "Connector Marketplace"
+}

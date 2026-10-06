@@ -1,0 +1,2 @@
+from mem20ambientdevicecompanionz.core import cli
+if __name__ == "__main__": cli()

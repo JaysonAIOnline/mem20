@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20adaptivedispatchenginez"
+version="1.0.0"
+description='Continuously assign missions based on capability, location, load, urgency, and trust'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20adaptivedispatchenginez="mem20adaptivedispatchenginez.core:cli"
+
+[tool.setuptools]
+packages=["mem20adaptivedispatchenginez"]
+[tool.setuptools.package-data]
+mem20adaptivedispatchenginez=["roadmap.json"]

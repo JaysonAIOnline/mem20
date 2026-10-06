@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Small teams can handle sophisticated deals at software speed",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 86,
+  "id": "RM-086",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "match",
+  "outcome": "Configure complex proposals, discounts, terms, and delivery plans within hard limits",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Small teams can handle sophisticated deals at software speed",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Autonomous Deal Desk"
+}

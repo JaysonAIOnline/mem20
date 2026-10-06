@@ -26,15 +26,25 @@ sys.path.insert(0, "/opt/mem20")
 
 from llm import LLMError
 
-from . import engine, ledger
+from . import engine, seeds
 from .lineage import Lineage, list_lineages
 
 LOCK = os.environ.get("MEM20DREAM_IDLE_LOCK", "/opt/mem20/store/dreams/.active-run.lock")
 STATE = os.path.join(os.path.dirname(LOCK), ".idle-state.json")
 IDLE_KINDS = ("idle_prototype", "idle_proposal", "idle_idea")
 
-#: An idle turn dreams in depth, not in one shallow pass. Five iterations fits
-#: comfortably inside the 20-minute tick: ~7.5 min measured, leaving headroom.
+#: An idle turn is wide and shallow, not long and deep. The creative sweet spot
+#: is the hypnagogic edge: as little as fifteen seconds of N1 tripled insight
+#: rates and the benefit vanished once participants reached N2. So the turn runs
+#: several brief passes, each generating from every panelist at once and judged
+#: only by arithmetic divergence, instead of a few iterations that critique,
+#: forecast, invent and then hold a judged tournament.
+IDLE_PASSES = 8
+#: Writers per pass. Distinct models per candidate is what keeps the generations
+#: genuinely different rather than eight samples of one voice.
+IDLE_BREADTH = 6
+#: Retained for the deep path (``mem20-dream run``), which is still the right
+#: tool when a lineage needs a considered revision rather than a drift.
 IDLE_ITERATIONS = 5
 
 #: Novelty bar for idle dreams, on the omission axis. A short idle idea that
@@ -271,29 +281,17 @@ def release_active(token: str | None = None) -> dict[str, Any]:
 
 # --- idle seeds -------------------------------------------------------------
 
-#: Drawn from the real estate, so idle dreams are about things that exist rather
-#: than invented filler. Reused: 245 packages, 33 subsystems, one control plane.
-SEED_POOL = [
-    "A capability gap mapper that notices what the fleet can do but cannot prove.",
-    "A way to make one cron result readable by ten agents without losing provenance.",
-    "An idea for making service status honest when the service has no health verb.",
-    "A tiny tool that turns a braid node into a human-readable changelog.",
-    "A design for letting a dream lineage be reviewed by a person in one screen.",
-    "Something that would make a 20-iteration dream cheaper to run than a 3-iteration one.",
-    "A prototype for showing what a subsystem invented, separately from what it shipped.",
-    "A way to catch a roadmapped subsystem that was never actually built.",
-    "An idea for a promotion pack that any agent could act on without reading the estate.",
-    "A self-check that would notice when a panel has quietly lost a member.",
-    "Something that would make the shop honest about what it cannot yet do.",
-    "A sketch for a dashboard that shows invented capabilities beside real ones.",
-]
-
 
 def next_seed() -> str:
+    """Draw an estate-derived seed that has never been issued before.
+
+    There is no pool. The previous twelve hardcoded sentences were handed out
+    with ``index % 12``, so the estate re-dreamed the same ideas forever; a
+    canned list cannot know what exists. Seeds are now derived from live estate
+    facts and the issued ledger is persisted, so a restart cannot reissue one.
+    """
     state = _load_state()
-    index = int(state.get("seed_index", 0))
-    seed = SEED_POOL[index % len(SEED_POOL)]
-    state["seed_index"] = index + 1
+    seed = seeds.next_seed(state)
     _save_state(state)
     return seed
 
@@ -432,21 +430,21 @@ def idle_turn() -> dict[str, Any]:
     uncommitted = 0
     paused_reason = ""
     try:
-        for _ in range(IDLE_ITERATIONS):
+        # The hypnagogic shape: many brief, unjudged passes rather than a few
+        # long convergent ones. Fifteen seconds of N1 tripled insight and the
+        # effect vanished at N2, so the turn is now wide and shallow.
+        for pass_n in range(1, IDLE_PASSES + 1):
             if lineage.done:
                 break
-            n = lineage.iteration_count + 1
-            iteration = engine.run_iteration(lineage, n)
-            lineage.record(iteration)
-            receipt = ledger.commit_iteration(lineage, iteration)
-            if receipt.get("committed"):
-                lineage.braid_cids.append(receipt["cid"])
+            result = engine.nap_pass(lineage, seed, pass_n, breadth=IDLE_BREADTH)
+            if not result["accepted"]:
+                paused_reason = result["reason"]
+                break
+            if result.get("braid"):
                 committed += 1
             else:
-                lineage.uncommitted.append({"n": n, "reason": receipt.get("reason", "")})
                 uncommitted += 1
-            lineage.save()
-            last = iteration
+            last = lineage.iterations[-1] if lineage.iterations else None
     except LLMError as exc:
         # A provider outage is not an iteration. Keep what genuinely happened,
         # say plainly where it stopped, and wait for the next tick.
@@ -468,7 +466,7 @@ def idle_turn() -> dict[str, Any]:
         "kind": kind,
         "seed": seed[:120],
         "iterations_run": lineage.iteration_count,
-        "iterations_planned": IDLE_ITERATIONS,
+        "passes_planned": IDLE_PASSES,
         "committed": committed,
         "uncommitted": uncommitted,
         "fidelity": last.fidelity.get("score") if last else None,
@@ -487,7 +485,7 @@ def idle_turn() -> dict[str, Any]:
         "kind": kind,
         "seed": seed,
         "iterations_run": lineage.iteration_count,
-        "iterations_planned": IDLE_ITERATIONS,
+        "passes_planned": IDLE_PASSES,
         "committed": committed,
         "uncommitted": uncommitted,
         "paused": bool(paused_reason),
@@ -507,7 +505,7 @@ def inventory() -> dict[str, Any]:
         "active_run": active_run(),
         "idle_dreams": len(idle),
         "active_dreams": len([r for r in rows if r["kind"] == "active"]),
-        "iterations_per_turn": IDLE_ITERATIONS,
+        "passes_per_turn": IDLE_PASSES, "writers_per_pass": IDLE_BREADTH,
         "state": _load_state().get("last_idle_turn"),
         "alert_bars": {
             "idle_novelty_bar": IDLE_NOVELTY_BAR,

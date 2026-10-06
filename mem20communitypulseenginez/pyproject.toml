@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20communitypulseenginez"
+version="1.0.0"
+description='Detect emerging questions, friction, excitement, and needs across opted-in communities'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20communitypulseenginez="mem20communitypulseenginez.core:cli"
+
+[tool.setuptools]
+packages=["mem20communitypulseenginez"]
+[tool.setuptools.package-data]
+mem20communitypulseenginez=["roadmap.json"]

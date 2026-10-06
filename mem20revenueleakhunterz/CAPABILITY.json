@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Hidden losses become actionable software events",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 89,
+  "id": "RM-089",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "forecast",
+  "outcome": "Detect churn risks, failed handoffs, underbilling, unused entitlements, and broken conversion paths",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Hidden losses become actionable software events",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Revenue Leak Hunter"
+}

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20crosslanguagerefactorenginez"
+version="1.0.0"
+description='Move behavior across Python, Rust, TypeScript, C#, and WebAssembly interfaces'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20crosslanguagerefactorenginez="mem20crosslanguagerefactorenginez.core:cli"
+
+[tool.setuptools]
+packages=["mem20crosslanguagerefactorenginez"]
+[tool.setuptools.package-data]
+mem20crosslanguagerefactorenginez=["roadmap.json"]

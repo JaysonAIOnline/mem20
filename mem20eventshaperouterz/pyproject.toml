@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20eventshaperouterz"
+version="1.0.0"
+description='Route and transform events according to semantic meaning and version compatibility'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20eventshaperouterz="mem20eventshaperouterz.core:cli"
+
+[tool.setuptools]
+packages=["mem20eventshaperouterz"]
+[tool.setuptools.package-data]
+mem20eventshaperouterz=["roadmap.json"]

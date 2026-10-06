@@ -1,0 +1,52 @@
+{
+  "breakthrough": "Audio becomes a live programmable system instead of a folder of files",
+  "domain_types": [
+    "stages",
+    "artifacts",
+    "dependencies",
+    "transformations",
+    "checkpoints"
+  ],
+  "execution_modes": [
+    "local",
+    "hybrid",
+    "cloud"
+  ],
+  "global_id": 243,
+  "hard_safety": {
+    "risk_threshold": 0.75,
+    "sensitive_automatic_actions": "blocked",
+    "unsafe_automatic_actions": "blocked"
+  },
+  "id": "RM-243",
+  "lane": "Software-product roadmaps derived from the earlier idea catalog",
+  "operation_kind": "ingest",
+  "outcome": "Generate or ingest sound, clean it, spatialize it, mix it, subtitle it, and bind it to gameplay",
+  "owner": "Earlier 26 Software Items",
+  "owner_code": "items26",
+  "roadmap_index": 23,
+  "schema_version": "2.0",
+  "section": "Earlier 26 Software-Item Roadmaps",
+  "signature_mode": {
+    "behavior": "Audio becomes a live programmable system instead of a folder of files",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "surfaces": [
+    "production studio UI",
+    "engine plugins",
+    "visual editors",
+    "live dashboards",
+    "SDKs"
+  ],
+  "techniques": [
+    "multi-agent orchestration",
+    "procedural generation",
+    "simulation",
+    "optimization",
+    "multimodal AI"
+  ],
+  "title": "Audio, Voice and Music Pipeline"
+}

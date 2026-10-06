@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20lifescenariosimulatorz"
+version="1.0.0"
+description='Model personal choices, schedules, budgets, tradeoffs, and likely downstream effects'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20lifescenariosimulatorz="mem20lifescenariosimulatorz.core:cli"
+
+[tool.setuptools]
+packages=["mem20lifescenariosimulatorz"]
+[tool.setuptools.package-data]
+mem20lifescenariosimulatorz=["roadmap.json"]

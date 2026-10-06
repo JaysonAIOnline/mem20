@@ -1,0 +1,2 @@
+export TEAMILY_API_KEY=pk_qZQbIASWsVs0fiYezkWkDqi6qZqeTo0o:sk_twQD7bhjoqW5YhguFJjTvlM702buzGtY
+/root/.local/bin/teamily daemon start

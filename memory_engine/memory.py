@@ -170,6 +170,48 @@ def _has_mixed_charset(text: str) -> bool:
     )
 
 
+_PATH_SEGMENT = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
+
+
+def _looks_like_dir_and_uppercase_file(text: str) -> bool:
+    """``lowercase_dir/UPPERCASE_FILE`` is a path, not a secret.
+
+    This box logs file lists constantly, and the 40-character base64 pattern
+    accepts ``/`` in its body, so two adjacent path segments are exactly 40
+    legal characters and satisfy every other check: not hex, not pure alpha,
+    and mixed case once an UPPERCASE filename sits on the right of the slash.
+    Redaction was eating real memory.
+
+    Deliberately narrow: it fires only on the lowercase-dir/uppercase-file
+    shape that produced the corruption. A base64 key is random, so requiring
+    *both* halves to be single-cased would also reject genuine keys, which is
+    how an earlier, broader version of this check caused a miss.
+    """
+    if "/" not in text:
+        return False
+    left, _, right = text.rpartition("/")
+    return bool(left) and bool(right) and left.islower() and right.isupper()
+
+
+def _digit_count_at_least(text: str, minimum: int = 4) -> bool:
+    """Real base64 is uniform over its alphabet, so it carries ~6 digits in 40.
+
+    Identifiers and path segments carry one or two. This is the discriminator
+    that separates them without caring about separators at all.
+    """
+    return sum(1 for c in text if c.isdigit()) >= minimum
+
+
+def _value_carries_digit(text: str) -> bool:
+    """An assignment whose value has no digit is prose, not a credential.
+
+    ``password: rotating MEM20_CONTROL_PASSWORD`` is an instruction to rotate a
+    variable, not a password. Requiring a digit keeps ``password = hunter2000``
+    and ``api_key: 9f83bd2kQ1`` while dropping the instruction.
+    """
+    return any(c.isdigit() for c in text)
+
+
 _TB = r"(?<![A-Za-z0-9+/_-])"
 _TA = r"(?![A-Za-z0-9+/_-])"
 _TB_ALNUM = r"(?<![A-Za-z0-9])"
@@ -192,11 +234,15 @@ SECRET_PATTERNS = [
         _TB + r"[A-Za-z0-9+/]{40}" + _TA,
         "AWS Secret Access Key (base64)",
         "low",
-        lambda t: _not_pure_hex(t) and _not_pure_alpha(t) and _has_mixed_charset(t),
+        lambda t: _not_pure_hex(t)
+        and _not_pure_alpha(t)
+        and _has_mixed_charset(t)
+        and not _looks_like_dir_and_uppercase_file(t)
+        and _digit_count_at_least(t),
     ),
-    (r"(?i)\bpassword\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "Password assignment", "low", None),
-    (r"(?i)\bsecret\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "Secret assignment", "low", None),
-    (r"(?i)\bapi[_-]?key\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "API key assignment", "low", None),
+    (r"(?i)\bpassword\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "Password assignment", "low", _value_carries_digit),
+    (r"(?i)\bsecret\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "Secret assignment", "low", _value_carries_digit),
+    (r"(?i)\bapi[_-]?key\s*[=:]\s*[\"']?[^\s\"']{6,}[\"']?", "API key assignment", "low", _value_carries_digit),
 ]
 
 _CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}

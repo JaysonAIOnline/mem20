@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20musicvisualsynchronizerz"
+version="1.0.0"
+description='Generate and align motion, lighting, UI, and effects to live audio structure'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20musicvisualsynchronizerz="mem20musicvisualsynchronizerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20musicvisualsynchronizerz"]
+[tool.setuptools.package-data]
+mem20musicvisualsynchronizerz=["roadmap.json"]

@@ -130,9 +130,9 @@ class WebGateway:
             # gateway._history parses exactly this shape to resume transcripts,
             # so write user/assistant turns the same way or history is lost.
             self.backend.session_append("gateway", _web_prefix() + chat_id,
-                                        "system", f"in:{chat_id} {message}")
+                                        "user", f"in:{chat_id} {message}")
             self.backend.session_append("gateway", _web_prefix() + chat_id,
-                                        "system", f"out:{chat_id} {reply}")
+                                        "assistant", f"out:{chat_id} {reply}")
         except Exception as exc:  # noqa: BLE001
             import sys
             print(f"[webgateway] ledger write failed: {exc}", file=sys.stderr)

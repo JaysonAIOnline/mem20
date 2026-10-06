@@ -1,0 +1,40 @@
+{
+  "breakthrough": "The platform continually creates new combinations customers can buy",
+  "domain_types": [
+    "jobs",
+    "state machines",
+    "policies",
+    "events",
+    "outputs"
+  ],
+  "global_id": 87,
+  "id": "RM-087",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "compose",
+  "outcome": "Discover complementary capabilities and package them into higher-value services",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 7,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The platform continually creates new combinations customers can buy",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Service Bundling Engine"
+}

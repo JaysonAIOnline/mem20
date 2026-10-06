@@ -25,7 +25,7 @@ from memory import remember, recall, status as mem_status, rebuild_index, ledger
 
 from cognitive_engine import (
     aprocess_thought, arun_chain, areason, aplan, areflect, aworking_memory,
-    aimagination_concept, aimagination_dream, aimagination_critique,
+    aimagination_concept, aimagination_critique,
     aimagination_simulate, aimagination_counterfactual, aimagination_recombine,
     aimagination_model,
     atheory_of_mind_simulate, atheory_of_mind_perspective,
@@ -190,12 +190,8 @@ async def main():
     await run_test("imagination_concept: invert", aimagination_concept("social media", "invert", 3, []))
     await run_test("imagination_concept: analogy", aimagination_concept("quantum computing", "analogy", 3, []))
 
-    # 3.2 Dream
-    print("\n--- 3.2 Dream (Creative Loop) ---")
-    await run_test("imagination_dream: basic", aimagination_dream("City of the future", 2, "concepts", []))
-
-    # 3.3 Critique
-    print("\n--- 3.3 Critique ---")
+    # 3.2 Critique
+    print("\n--- 3.2 Critique ---")
     await run_test("imagination_critique: basic", aimagination_critique("Crypto as daily currency", ["feasibility", "novelty"], True))
 
     # 3.4 Simulate

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20executableroadmapcompilerz"
+version="1.0.0"
+description='Compile a feature vision into callable work packages, dependency graphs, and runnable checks'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20executableroadmapcompilerz="mem20executableroadmapcompilerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20executableroadmapcompilerz"]
+[tool.setuptools.package-data]
+mem20executableroadmapcompilerz=["roadmap.json"]

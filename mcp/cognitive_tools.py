@@ -213,21 +213,6 @@ class CognitiveToolsMixin:
                 "required": ["concept", "project_path"],
             },
         )
-        self.tools["imagination_dream"] = mt.Tool(
-            name="imagination_dream",
-            title="Imagination Dream",
-            description="Free-form creative exploration: memory -> cognitive -> visualize -> prototype loop",
-            input_schema={
-                "type": "object",
-                "properties": {
-                    "prompt": {"type": "string", "description": "Starting prompt or theme"},
-                    "iterations": {"type": "integer", "description": "Number of dream cycles", "default": 3},
-                    "output_mode": {"type": "string", "enum": ["concepts", "blender", "unity", "all"], "description": "What to produce", "default": "all"},
-                    "memory_topics": {"type": "array", "items": {"type": "string"}, "description": "Memory topics to draw from", "default": []},
-                },
-                "required": ["prompt"],
-            },
-        )
         self.tools["imagination_critique"] = mt.Tool(
             name="imagination_critique",
             title="Imagination Critique",
@@ -717,22 +702,6 @@ class CognitiveToolsMixin:
         Path(asmdef_path).write_text(json.dumps(asmdef, indent=2))
 
         return f"🚀 **Prototype: {concept}**\n\n**Mechanic:** {mechanic}\n**Complexity:** {complexity}\n**Project:** {project_path}\n\nCreated:\n- {script_path}\n- {asmdef_path}\n\nCore mechanic: {mechanic} ({complexity})"
-    async def _imagination_dream(self, args: Dict) -> str:
-        prompt = args.get("prompt", "")
-        iterations = args.get("iterations", 3)
-        output_mode = args.get("output_mode", "all")
-        memory_topics = args.get("memory_topics", [])
-
-        if not prompt:
-            return "Error: prompt is required"
-        try:
-            sys.path.insert(0, os.environ.get("MEM20_COG_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cog")))
-            from cognitive_engine import aimagination_dream
-            out = await aimagination_dream(prompt, iterations, output_mode, memory_topics)
-            self._persist_simulated(args, out, "dream")
-            return out
-        except Exception as e:
-            return f"[imagination_dream] Error: {e}"
     async def _imagination_critique(self, args: Dict) -> str:
         concept = args.get("concept", "")
         perspectives = args.get("perspectives", ["feasibility", "novelty", "impact", "coherence"])

@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Each launch increases the value and speed of the entire portfolio",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 20,
+  "id": "RM-020",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "analyze",
+  "outcome": "Make every product capable of feeding capabilities, users, and data advantages into other products",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Each launch increases the value and speed of the entire portfolio",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Compounding Product Ecosystem"
+}

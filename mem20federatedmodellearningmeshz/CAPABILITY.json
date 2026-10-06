@@ -1,0 +1,40 @@
+{
+  "breakthrough": "The ecosystem improves collectively while preserving local control",
+  "domain_types": [
+    "nodes",
+    "topology",
+    "capabilities",
+    "routes",
+    "synchronization state"
+  ],
+  "global_id": 68,
+  "id": "RM-068",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "sync",
+  "outcome": "Learn shared improvements from distributed nodes without centralizing raw private data",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 8,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The ecosystem improves collectively while preserving local control",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Federated Model Learning Mesh"
+}

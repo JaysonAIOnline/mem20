@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20assetremixstudioz"
+version="1.0.0"
+description='Decompose approved assets into reusable style, shape, motion, and material primitives'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20assetremixstudioz="mem20assetremixstudioz.core:cli"
+
+[tool.setuptools]
+packages=["mem20assetremixstudioz"]
+[tool.setuptools.package-data]
+mem20assetremixstudioz=["roadmap.json"]

@@ -1,0 +1,39 @@
+{
+  "breakthrough": "A vague goal becomes a live operating plan in seconds",
+  "domain_types": [
+    "source inputs",
+    "intermediate representation",
+    "validation passes",
+    "generated targets"
+  ],
+  "global_id": 31,
+  "id": "RM-031",
+  "lane": "Human-agent work execution and shared workspaces",
+  "operation_kind": "compose",
+  "outcome": "Convert a human objective into executable missions, dependencies, roles, and completion criteria",
+  "owner": "HSP",
+  "owner_code": "hsp",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "A vague goal becomes a live operating plan in seconds",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "collaborative mission canvas",
+    "focus mode",
+    "presence map",
+    "work-cell console"
+  ],
+  "techniques": [
+    "planning graphs",
+    "skill matching",
+    "mixed-initiative control",
+    "simulation",
+    "workload optimization"
+  ],
+  "title": "Intent-to-Mission Compiler"
+}

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20smartmeetingcopilotz"
+version="1.0.0"
+description='Turn live meetings into decisions, assigned actions, follow-ups, and callable workflows'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20smartmeetingcopilotz="mem20smartmeetingcopilotz.core:cli"
+
+[tool.setuptools]
+packages=["mem20smartmeetingcopilotz"]
+[tool.setuptools.package-data]
+mem20smartmeetingcopilotz=["roadmap.json"]

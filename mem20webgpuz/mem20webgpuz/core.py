@@ -15,9 +15,18 @@ def now() -> float: return time.time()
 def canonical(obj: Any) -> str: return json.dumps(obj, sort_keys=True, separators=(",",":"), ensure_ascii=False, default=str)
 def stable_hash(obj: Any) -> str: return hashlib.sha256(canonical(obj).encode()).hexdigest()
 SENSITIVE_KEYS={'password','passwd','token','access_token','refresh_token','api_key','apikey','secret','authorization','cookie'}
+# Free text carries credentials too: "auth failed for token=abc" has no sensitive
+# KEY to match on, so a dict-only redaction leaves it on disk. This catches the
+# common "sensitive-name, then a separator, then the value" shape and stops at the
+# first delimiter, so ordinary prose is left alone.
+_SECRET_IN_TEXT=re.compile(
+    r'(?i)\b(' + '|'.join(sorted(SENSITIVE_KEYS)) + r')\b(\s*[:=]\s*)'
+    r'([^\s,;"\')\]}]+)'
+)
 def redact(obj):
     if isinstance(obj,dict): return {k:('[REDACTED]' if str(k).lower() in SENSITIVE_KEYS else redact(v)) for k,v in obj.items()}
     if isinstance(obj,list): return [redact(x) for x in obj]
+    if isinstance(obj,str): return _SECRET_IN_TEXT.sub(lambda m: f"{m.group(1)}{m.group(2)}[REDACTED]", obj)
     return obj
 def clamp(x, lo=0.0, hi=1.0): return max(lo, min(hi, x))
 def words(s): return set(re.findall(r"[a-z0-9]+", str(s).lower()))
@@ -56,7 +65,10 @@ class StateStore:
             CREATE TABLE IF NOT EXISTS resources(id TEXT PRIMARY KEY, version INTEGER, created REAL, updated REAL, body TEXT);
             ''')
     def emit(self, kind, job_id=None, payload=None):
-        with self.conn() as c: c.execute("INSERT INTO events(ts,kind,job_id,payload) VALUES(?,?,?,?)", (now(),kind,job_id,canonical(payload or {})))
+        # Redact here too: the events table is a second, easily-forgotten write
+        # path. Fixing only the jobs row left the same credential sitting in the
+        # event log, so the "no secrets on disk" guarantee was still broken.
+        with self.conn() as c: c.execute("INSERT INTO events(ts,kind,job_id,payload) VALUES(?,?,?,?)", (now(),kind,job_id,canonical(redact(payload or {}))))
     def create_job(self, request, idem=None):
         idem=idem or str(uuid.uuid4())
         with self.conn() as c:
@@ -74,7 +86,14 @@ class StateStore:
         with self.conn() as c:
             old=c.execute("SELECT attempts FROM jobs WHERE id=?",(jid,)).fetchone()
             att=attempts if attempts is not None else (old['attempts'] if old else 0)
-            c.execute("UPDATE jobs SET state=?,result=?,error=?,attempts=?,updated=? WHERE id=?",(state,canonical(result) if result is not None else None,error,att,now(),jid))
+            # Redact the result exactly as create_job redacts its request. A
+            # credential returned by a job (a token, an API key) was previously
+            # persisted in the clear, which is a real leak path: results are
+            # written to disk unencrypted and read back by anything with the file.
+            safe_result=canonical(redact(result)) if result is not None else None
+            safe_error=redact(error) if isinstance(error,str) else error
+            c.execute("UPDATE jobs SET state=?,result=?,error=?,attempts=?,updated=? WHERE id=?",
+                      (state,safe_result,safe_error,att,now(),jid))
         self.emit('job.'+state,jid,result if result is not None else {'error':error})
     def cancel(self,jid):
         j=self.get_job(jid)

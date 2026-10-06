@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Continuity follows the user even when the cloud is unavailable",
+  "domain_types": [
+    "nodes",
+    "topology",
+    "capabilities",
+    "routes",
+    "synchronization state"
+  ],
+  "global_id": 26,
+  "id": "RM-026",
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "operation_kind": "sync",
+  "outcome": "Synchronize private memory across trusted devices with selective replication",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Continuity follows the user even when the cloud is unavailable",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "memory timeline",
+    "recall lens",
+    "context diff",
+    "cross-device memory controls"
+  ],
+  "techniques": [
+    "graph retrieval",
+    "temporal embeddings",
+    "compression",
+    "prediction",
+    "counterfactual simulation"
+  ],
+  "title": "Cross-Device Memory Mesh"
+}

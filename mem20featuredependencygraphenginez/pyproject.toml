@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20featuredependencygraphenginez"
+version="1.0.0"
+description='Model technical, data, interface, and capability dependencies at feature level'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20featuredependencygraphenginez="mem20featuredependencygraphenginez.core:cli"
+
+[tool.setuptools]
+packages=["mem20featuredependencygraphenginez"]
+[tool.setuptools.package-data]
+mem20featuredependencygraphenginez=["roadmap.json"]

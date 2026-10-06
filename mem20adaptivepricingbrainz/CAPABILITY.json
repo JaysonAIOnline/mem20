@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Pricing becomes an intelligent system rather than a static settings page",
+  "domain_types": [
+    "signals",
+    "objectives",
+    "scores",
+    "options",
+    "chosen actions"
+  ],
+  "global_id": 15,
+  "id": "RM-015",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "optimize",
+  "outcome": "Continuously test pricing structures while respecting margins, fairness, and customer value",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 5,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Pricing becomes an intelligent system rather than a static settings page",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Adaptive Pricing Brain"
+}

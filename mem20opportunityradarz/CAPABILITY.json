@@ -1,0 +1,41 @@
+{
+  "breakthrough": "A self-updating map of buildable markets ranked by speed to revenue",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 11,
+  "id": "RM-011",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "forecast",
+  "outcome": "Continuously detect underserved problems and quantify whether a software opportunity is worth testing",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "A self-updating map of buildable markets ranked by speed to revenue",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Opportunity Radar"
+}

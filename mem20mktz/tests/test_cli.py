@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
-from conftest import requires_ucg
+from .conftest import requires_ucg
 
 from mem20mktz import braid_hook
 from mem20mktz.cli import main

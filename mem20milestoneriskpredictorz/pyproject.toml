@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20milestoneriskpredictorz"
+version="1.0.0"
+description='Forecast likely delay and failure points from dependency and runtime signals'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20milestoneriskpredictorz="mem20milestoneriskpredictorz.core:cli"
+
+[tool.setuptools]
+packages=["mem20milestoneriskpredictorz"]
+[tool.setuptools.package-data]
+mem20milestoneriskpredictorz=["roadmap.json"]

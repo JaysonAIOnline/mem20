@@ -21,6 +21,7 @@ from typing import Optional
 import yaml
 
 from ._substrate import Backend, get_backend
+from .skill_index import DiskSkillIndex
 from .config import config_dir
 
 BUNDLES_DIR = "skills/bundles"
@@ -38,6 +39,14 @@ def _safe_name(name: str) -> str:
 class SkillInfo:
     name: str
     description: str = ""
+    #: "procedural" (mem20's own store) or "skill" (a SKILL.md on disk).
+    source: str = ""
+    #: Where a disk skill was read from, so a reader can go and look.
+    path: str = ""
+
+
+#: One process-wide scan of the on-disk skills, shared by every store instance.
+_DISK_INDEX = DiskSkillIndex()
 
 
 class SkillsStore:
@@ -47,16 +56,48 @@ class SkillsStore:
         self.root = root or _bundles_dir()
 
     # -------------------------------------------------------------- catalog
-    def catalog(self, query: str = "") -> list[SkillInfo]:
-        skills = self._b.procedural_list(category="")
-        out = []
-        q = query.lower()
-        for s in skills:
-            name = s.get("name") or s.get("skill") or ""
-            desc = s.get("description") or ""
+    def catalog(self, query: str = "", include_disk: bool = True) -> list[SkillInfo]:
+        """Every skill an agent can actually use, from both provenances.
+
+        ``procedural`` entries come from mem20's own store. ``skill`` entries
+        are read from the on-disk ``SKILL.md`` files the agent platform already
+        loads -- see :mod:`mem20agentz.skill_index` for why the catalog used to
+        be four entries while hundreds of real skills sat invisible.
+
+        Set ``include_disk=False`` for the procedural store alone, which is what
+        bundle reconciliation wants: a bundle names procedural skills, and
+        treating an unrelated on-disk skill of the same name as a bundle member
+        would make ``curator`` prune things it should never have looked at.
+        """
+        rows: list[dict] = []
+        for s in self._b.procedural_list(category=""):
+            rows.append({
+                "name": s.get("name") or s.get("skill") or "",
+                "description": s.get("description") or "",
+                "source": "procedural",
+            })
+        if include_disk:
+            rows.extend(_DISK_INDEX.all())
+
+        out: list[SkillInfo] = []
+        q = query.lower().strip()
+        seen: set[str] = set()
+        for row in rows:
+            name = row.get("name") or ""
+            desc = row.get("description") or ""
+            if not name:
+                continue
+            # A name in both provenances is one skill, reported once. The
+            # procedural row wins because that is the store bundles reconcile
+            # against.
+            if name in seen:
+                continue
             if q and q not in name.lower() and q not in desc.lower():
                 continue
-            out.append(SkillInfo(name=name, description=desc))
+            seen.add(name)
+            out.append(SkillInfo(name=name, description=desc,
+                                 source=row.get("source", ""),
+                                 path=row.get("path", "")))
         return sorted(out, key=lambda s: s.name)
 
     # -------------------------------------------------------------- bundles
@@ -95,7 +136,9 @@ class SkillsStore:
         """Report how a bundle on disk diverges from the live inventory."""
         name_s = _safe_name(name)
         wanted = set(self.bundle(name_s))
-        installed = {s.name for s in self.catalog()}
+        # Procedural inventory only: a bundle names mem20 skills, so folding in
+        # unrelated on-disk skills would report them as members mem20 never had.
+        installed = {s.name for s in self.catalog(include_disk=False)}
         return {
             "bundle": name_s,
             "missing_from_mem20": sorted(wanted - installed),
@@ -107,7 +150,9 @@ class SkillsStore:
     def curator(self, min_members: int = 1) -> dict:
         """Prune bundle files that reference only skills mem20 no longer has,
         and nudge empty bundles. Returns a report (no silent deletion)."""
-        installed = {s.name for s in self.catalog()}
+        # Procedural only, for the same reason as sync(): pruning must never be
+        # decided by what happens to be installed on disk.
+        installed = {s.name for s in self.catalog(include_disk=False)}
         report = {"candidates_for_removal": [], "checked": 0}
         if not self.root.exists():
             return report

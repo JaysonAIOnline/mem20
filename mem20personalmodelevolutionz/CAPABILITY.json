@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Each user develops a private intelligence layer that becomes uniquely useful",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 69,
+  "id": "RM-069",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "model",
+  "outcome": "Adapt selected models to an individual vocabulary, workflow, and preferences over time",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Each user develops a private intelligence layer that becomes uniquely useful",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Personal Model Evolution"
+}

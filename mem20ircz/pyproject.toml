@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20ircz"
+version = "0.1.0"
+description = "Agent-side IRC client for the mem20 room: one persistent connection, noise swallowed at the wire, delta reads."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "irc", "agents", "realtime", "tokens"]
+dependencies = ["mem20botz>=0.2.0"]
+
+[project.scripts]
+mem20ircz = "mem20ircz.cli:main"
+mem20ircz-daemon = "mem20ircz.daemon:main"
+
+[tool.setuptools]
+packages = ["mem20ircz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

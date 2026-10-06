@@ -8,12 +8,15 @@ the roadmap budget, because that is the authoritative number.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from mem20kilnz import budgets as B
 from mem20kilnz import validate as V
 
-DEMO = "engine/examples/demo.glb"
+DEMO = str(Path(__file__).resolve().parent.parent
+            / "engine" / "examples" / "demo.glb")
 #: The triangle count three live builds of a crate brief actually produced.
 REAL_BLOCKOUT = 60
 

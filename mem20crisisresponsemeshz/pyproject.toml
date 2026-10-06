@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20crisisresponsemeshz"
+version="1.0.0"
+description='Coordinate rapid diagnosis and action during outages, safety events, or urgent operations'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20crisisresponsemeshz="mem20crisisresponsemeshz.core:cli"
+
+[tool.setuptools]
+packages=["mem20crisisresponsemeshz"]
+[tool.setuptools.package-data]
+mem20crisisresponsemeshz=["roadmap.json"]

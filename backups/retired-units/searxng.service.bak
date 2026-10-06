@@ -1,0 +1,20 @@
+[Unit]
+Description=THESTACK local SearXNG metasearch engine
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/search
+Environment=SEARXNG_SETTINGS_PATH=/opt/search/searxng-settings.yml
+Environment=http_proxy=http://10.3.229.27:8080
+Environment=https_proxy=http://10.3.229.27:8080
+Environment=no_proxy=
+ExecStart=/opt/search/searxng-venv/bin/searxng-run
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target

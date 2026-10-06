@@ -1,0 +1,76 @@
+{
+  "breakthrough": "New products can be assembled from reusable business primitives",
+  "global_id": 84,
+  "lane": "Business operations and commercial behavior fabric",
+  "outcome": "Compose sellable offers from capabilities, service levels, pricing, and delivery capacity",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Offer Assembly Fabric Core",
+      "subphases": [
+        {
+          "name": "1.1 Offer Assembly Fabric Domain Model and State Plane",
+          "work": [
+            "Define typed services, routes, resources, events, and placement state required to compose sellable offers from capabilities, service levels, pricing, and delivery capacity, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for customers, offers, resources, operations, pricing, service delivery, and real-time business decisions; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Offer Assembly Fabric Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: compose sellable offers from capabilities, service levels, pricing, and delivery capacity.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Offer Assembly Fabric Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Offer Assembly Fabric Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using forecasting, optimization, simulation, recommendation, and anomaly detection.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Offer Assembly Fabric Interaction Surface",
+          "work": [
+            "Build the primary experience in the business twin, unit-economics dashboard, offer composer, and deal cockpit, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Offer Assembly Fabric into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Offer Assembly Fabric Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Offer Assembly Fabric Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: New products can be assembled from reusable business primitives. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ],
+  "roadmap_index": 4,
+  "section": "Runtime Roadmaps",
+  "title": "Offer Assembly Fabric"
+}

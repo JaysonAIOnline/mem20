@@ -126,6 +126,11 @@ class Lineage:
     #: ledger is append-only and the signature is valid — but it is marked here
     #: so nobody later mistakes a failed call for a dream that happened.
     hollow: dict[str, Any] | None = None
+    #: Set when a candidate travelled far enough from the incumbent that it was
+    #: not a revision of this lineage at all. The prior artifact is kept here and
+    #: in the braid chain rather than discarded, so a supersession stays
+    #: auditable instead of looking like the lineage always was this.
+    superseded: dict[str, Any] | None = None
     paused: bool = False
     pause_reason: str = ""
     done: bool = False
@@ -175,6 +180,7 @@ class Lineage:
             foundation_revisions=data.get("foundation_revisions", []),
             braid_cids=data.get("braid_cids", []),
             uncommitted=data.get("uncommitted", []),
+            superseded=data.get("superseded"),
             hollow=data.get("hollow"),
             paused=data.get("paused", False),
             pause_reason=data.get("pause_reason", ""),
@@ -201,6 +207,7 @@ class Lineage:
             "braid_cids": self.braid_cids,
             "uncommitted": self.uncommitted,
             "hollow": self.hollow,
+            "superseded": self.superseded,
             "paused": self.paused,
             "pause_reason": self.pause_reason,
             "done": self.done,

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20adaptiveinterfacecomposerz"
+version = "0.3.0"
+description = "RM-003 Adaptive Interface Composer"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+mem20adaptiveinterfacecomposerz = "mem20adaptiveinterfacecomposerz.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,50 @@
+{
+  "breakthrough": "People can build software by showing the system what they need",
+  "domain_types": [
+    "source inputs",
+    "intermediate representation",
+    "validation passes",
+    "generated targets"
+  ],
+  "execution_modes": [
+    "local",
+    "hybrid",
+    "cloud"
+  ],
+  "global_id": 212,
+  "hard_safety": {
+    "risk_threshold": 0.75,
+    "sensitive_automatic_actions": "blocked",
+    "unsafe_automatic_actions": "blocked"
+  },
+  "id": "RM-212",
+  "lane": "Cross-runtime breakthrough systems",
+  "operation_kind": "compose",
+  "outcome": "Convert speech, sketches, screens, physical objects, and observed workflows into executable applications",
+  "owner": "Whole Platform",
+  "owner_code": "overall",
+  "roadmap_index": 2,
+  "schema_version": "2.0",
+  "section": "Whole-Platform Roadmaps",
+  "signature_mode": {
+    "behavior": "People can build software by showing the system what they need",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "surfaces": [
+    "unified command center",
+    "spatial interface",
+    "conversational desktop",
+    "developer SDK"
+  ],
+  "techniques": [
+    "collective planning",
+    "multimodal reasoning",
+    "distributed optimization",
+    "simulation",
+    "adaptive orchestration"
+  ],
+  "title": "Reality-to-Software Compiler"
+}

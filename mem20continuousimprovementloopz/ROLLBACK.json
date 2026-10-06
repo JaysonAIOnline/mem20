@@ -1,0 +1,7 @@
+{
+  "roadmap_id": 178,
+  "version": "1.0.0",
+  "rollback": "remove package data directory and restore previous artifact by SHA-256",
+  "state_format": "sqlite-wal",
+  "safe_to_remove": true
+}

@@ -1,0 +1,41 @@
+{
+  "breakthrough": "New devices join the fleet almost as easily as Bluetooth accessories",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 42,
+  "id": "RM-042",
+  "lane": "Provider, device, research, and remote-compute fleet control",
+  "operation_kind": "analyze",
+  "outcome": "Discover, enroll, configure, update, and recover trusted nodes with minimal manual setup",
+  "owner": "HSP2",
+  "owner_code": "hsp2",
+  "roadmap_index": 2,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "New devices join the fleet almost as easily as Bluetooth accessories",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "fleet globe",
+    "node cockpit",
+    "workload map",
+    "remote experiment terminal"
+  ],
+  "techniques": [
+    "distributed scheduling",
+    "federated search",
+    "capability discovery",
+    "energy models",
+    "fault prediction"
+  ],
+  "title": "Zero-Touch Node Swarm"
+}

@@ -1,0 +1,51 @@
+{
+  "breakthrough": "The ecosystem remains operational through failures that would stop ordinary platforms",
+  "domain_types": [
+    "capabilities",
+    "processes",
+    "tasks",
+    "resources",
+    "lifecycle state"
+  ],
+  "execution_modes": [
+    "local",
+    "hybrid",
+    "cloud"
+  ],
+  "global_id": 217,
+  "hard_safety": {
+    "risk_threshold": 0.75,
+    "sensitive_automatic_actions": "blocked",
+    "unsafe_automatic_actions": "blocked"
+  },
+  "id": "RM-217",
+  "lane": "Cross-runtime breakthrough systems",
+  "operation_kind": "forecast",
+  "outcome": "Coordinate prediction, diagnosis, repair, migration, and recovery across every runtime",
+  "owner": "Whole Platform",
+  "owner_code": "overall",
+  "roadmap_index": 7,
+  "schema_version": "2.0",
+  "section": "Whole-Platform Roadmaps",
+  "signature_mode": {
+    "behavior": "The ecosystem remains operational through failures that would stop ordinary platforms",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "surfaces": [
+    "unified command center",
+    "spatial interface",
+    "conversational desktop",
+    "developer SDK"
+  ],
+  "techniques": [
+    "collective planning",
+    "multimodal reasoning",
+    "distributed optimization",
+    "simulation",
+    "adaptive orchestration"
+  ],
+  "title": "Self-Healing Runtime Civilization"
+}

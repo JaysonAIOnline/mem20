@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20semanticobjectgraphz"
+version="1.0.0"
+description='Unify relational, document, vector, graph, and event views of the same objects'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20semanticobjectgraphz="mem20semanticobjectgraphz.core:cli"
+
+[tool.setuptools]
+packages=["mem20semanticobjectgraphz"]
+[tool.setuptools.package-data]
+mem20semanticobjectgraphz=["roadmap.json"]

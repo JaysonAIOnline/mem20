@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Distributed human-agent work becomes immediately understandable",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 39,
+  "id": "RM-039",
+  "lane": "Human-agent work execution and shared workspaces",
+  "operation_kind": "analyze",
+  "outcome": "Show who or what is active, blocked, waiting, learning, or overloaded",
+  "owner": "HSP",
+  "owner_code": "hsp",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Distributed human-agent work becomes immediately understandable",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "collaborative mission canvas",
+    "focus mode",
+    "presence map",
+    "work-cell console"
+  ],
+  "techniques": [
+    "planning graphs",
+    "skill matching",
+    "mixed-initiative control",
+    "simulation",
+    "workload optimization"
+  ],
+  "title": "Real-Time Team Presence"
+}

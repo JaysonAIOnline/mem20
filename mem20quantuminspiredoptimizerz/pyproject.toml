@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20quantuminspiredoptimizerz"
+version="1.0.0"
+description='Apply annealing and tensor-inspired heuristics to hard scheduling and search problems'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20quantuminspiredoptimizerz="mem20quantuminspiredoptimizerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20quantuminspiredoptimizerz"]
+[tool.setuptools.package-data]
+mem20quantuminspiredoptimizerz=["roadmap.json"]

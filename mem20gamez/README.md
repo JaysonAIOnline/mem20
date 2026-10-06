@@ -116,3 +116,14 @@ cd /opt/mem20/mem20gamez
 ```
 
 Current result: `29 passed`, and Ruff reports `All checks passed!`.
+
+## Managed members (package-review integration)
+
+Single-purpose game organs grouped here by reference; they live in their
+own top-level directories and are smoke-verified there:
+
+- `mem20ailevelarchitectz`
+- `mem20alternativedatabaseplaygroundz`
+- `mem20dynamicquestrewardcomposerz`
+- `mem20gameproductioncontrolcenterz`
+- `mem20operationsreplaysimulatorz`

@@ -1,0 +1,41 @@
+{
+  "breakthrough": "FreeStack capabilities can travel across operating systems with minimal rewrites",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 100,
+  "id": "RM-100",
+  "lane": "Technical foundation, resilience, and runtime substrate",
+  "operation_kind": "analyze",
+  "outcome": "Expose a small portable runtime substrate across Linux, Windows, Android, browser, and edge nodes",
+  "owner": "FSGF",
+  "owner_code": "fsgf",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "FreeStack capabilities can travel across operating systems with minimal rewrites",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "foundation console",
+    "live dependency topology",
+    "compatibility matrix",
+    "resource heatmap"
+  ],
+  "techniques": [
+    "resource control",
+    "anomaly detection",
+    "topology optimization",
+    "compatibility analysis",
+    "energy modeling"
+  ],
+  "title": "Cross-Platform Microkernel"
+}

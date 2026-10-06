@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20universalcompaniondevicesdkz"
+version="1.0.0"
+description='Expose devices and sensors through a stable cross-platform capability API'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20universalcompaniondevicesdkz="mem20universalcompaniondevicesdkz.core:cli"
+
+[tool.setuptools]
+packages=["mem20universalcompaniondevicesdkz"]
+[tool.setuptools.package-data]
+mem20universalcompaniondevicesdkz=["roadmap.json"]

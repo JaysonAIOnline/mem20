@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20dynamicphasereplannerz"
+version="1.0.0"
+description='Recompute the remaining work when results, resources, or priorities change'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20dynamicphasereplannerz="mem20dynamicphasereplannerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20dynamicphasereplannerz"]
+[tool.setuptools.package-data]
+mem20dynamicphasereplannerz=["roadmap.json"]

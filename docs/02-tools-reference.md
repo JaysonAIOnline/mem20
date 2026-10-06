@@ -684,29 +684,6 @@ Generate a Unity prototype from a concept
 
 ---
 
-### `imagination_dream`
-
-**Imagination Dream**
-
-Free-form creative exploration: memory -> cognitive -> visualize -> prototype loop
-
-*Schema: {
-                "type": "object",
-                "properties": {
-                    "prompt": {"type": "string", "description": "Starting prompt or theme"},
-                    "iterations": {"typ*
-
-**Example Call:**
-
-```json
-{
-  "name": "imagination_dream",
-  "arguments": {}
-}
-```
-
----
-
 ### `imagination_critique`
 
 **Imagination Critique**

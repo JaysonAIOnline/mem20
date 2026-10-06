@@ -1,0 +1,39 @@
+{
+  "disconnection": {
+    "bottlenecks": [
+      "degraded_network",
+      "cloud_unavailable"
+    ],
+    "job_state": "succeeded",
+    "mode": "local"
+  },
+  "malformed_input": {
+    "blocked": true,
+    "error": "task must be 1..4096 characters",
+    "scenario": "malformed_input"
+  },
+  "overload": {
+    "backpressure_enabled": true,
+    "max_queue": 2,
+    "scenario": "overload"
+  },
+  "provider_loss": {
+    "bottlenecks": [
+      "degraded_network",
+      "cloud_unavailable"
+    ],
+    "job_state": "succeeded",
+    "mode": "local"
+  },
+  "restart_recovery": {
+    "recovered": [
+      "sim_pending"
+    ],
+    "scenario": "restart_recovery"
+  },
+  "success": {
+    "generation": 2,
+    "job_state": "succeeded",
+    "selected": 1
+  }
+}

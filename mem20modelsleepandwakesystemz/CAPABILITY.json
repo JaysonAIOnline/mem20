@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Large model libraries feel instantly available without staying loaded",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 66,
+  "id": "RM-066",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "forecast",
+  "outcome": "Hibernate rarely used models and restore them predictively before demand arrives",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Large model libraries feel instantly available without staying loaded",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Model Sleep and Wake System"
+}

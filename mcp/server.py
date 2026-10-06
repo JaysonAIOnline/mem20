@@ -84,6 +84,7 @@ from tools.search_tools import SearchToolsMixin
 from tools.versioncontrol_tools import VersionControlToolsMixin
 from tools.webscraping_tools import WebScrapingToolsMixin
 from tools.braid_tools import BraidToolsMixin
+from tools.irc_tools import IRCToolsMixin
 from health import start_health_server
 
 class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
@@ -96,7 +97,7 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
                      FinanceToolsMixin, MarketingToolsMixin,
                      ProductivityToolsMixin, SearchToolsMixin,
                      VersionControlToolsMixin, WebScrapingToolsMixin,
-                     BraidToolsMixin):
+                     BraidToolsMixin, IRCToolsMixin):
     def __init__(self):
         self.tools = {}
         self._start_time = time.time()
@@ -143,6 +144,7 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
         self.register_versioncontrol_tools()
         self.register_webscraping_tools()
         self.register_braid_tools()
+        self.register_irc_tools()
         self.register_job_tools()
     async def _handle_list_tools(self, context: ServerRequestContext, params: Optional[mt.PaginatedRequestParams]) -> mt.ListToolsResult:
         """Handle tools/list request."""
@@ -158,7 +160,7 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
     # mem20_job_wait (job_* tools) until complete.
     # ------------------------------------------------------------------
     LONG_RUNNING_TOOLS = {
-        "imagination_concept", "imagination_dream", "imagination_critique",
+        "imagination_concept", "imagination_critique",
         "imagination_simulate", "imagination_counterfactual", "imagination_recombine",
         "imagination_model", "imagination_visualize",
         "cog_process", "cog_chain", "cog_reason", "cog_plan", "cog_reflect",
@@ -289,6 +291,17 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
     async def _execute_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
         """Execute a tool and return result as string."""
         
+        # IRC room tools (persistent connection owned by mem20ircz)
+        if tool_name == "irc_status":
+            return await self._irc_status(arguments)
+        elif tool_name == "irc_join":
+            return await self._irc_join(arguments)
+        elif tool_name == "irc_read":
+            return await self._irc_read(arguments)
+        elif tool_name == "irc_say":
+            return await self._irc_say(arguments)
+        elif tool_name == "irc_who":
+            return await self._irc_who(arguments)
         # Job registry tools
         if tool_name == "job_status":
             return await self._job_status(arguments)
@@ -494,8 +507,6 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
             return await self._imagination_visualize(arguments)
         elif tool_name == "imagination_prototype":
             return await self._imagination_prototype(arguments)
-        elif tool_name == "imagination_dream":
-            return await self._imagination_dream(arguments)
         elif tool_name == "imagination_critique":
             return await self._imagination_critique(arguments)
         elif tool_name == "imagination_simulate":
@@ -581,20 +592,27 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
     def _persist_simulated(self, args: Dict, out, sim_type: str):
         """Route any persisted simulation output into the SEPARATE simulated partition.
 
-        Grounded memory is never touched here (Step 7.4 hard separation)."""
+        Grounded memory is never touched here (Step 7.4 hard separation).
+
+        The full output is stored. Truncating here used to clip records at 1500
+        chars, which silently cut the tail off exactly those tools that ask the
+        model for more than 1500 tokens (simulate=1800, concept=1200+retrieved
+        memory), leaving a partial record that still looked like a stored fact.
+
+        Persistence failure raises. Swallowing it returned a clean success to
+        the caller while the imaginative output was lost with no error and no
+        log, so a caller could believe something was remembered that was not.
+        """
         if not MEMORY_SYSTEM_AVAILABLE or not out:
             return
-        try:
-            from memory import remember_simulated
-            remember_simulated(
-                topic=args.get("topic", "simulation"),
-                content=str(out)[:1500],
-                tags=["simulation", sim_type],
-                sim_type=sim_type,
-                scenario=str(args)[:300],
-            )
-        except Exception:
-            pass
+        from memory import remember_simulated
+        remember_simulated(
+            topic=args.get("topic", "simulation"),
+            content=str(out),
+            tags=["simulation", sim_type],
+            sim_type=sim_type,
+            scenario=str(args)[:300],
+        )
     async def _run_blender_script(self, script: str, timeout: int = 180) -> str:
         import tempfile
         import subprocess

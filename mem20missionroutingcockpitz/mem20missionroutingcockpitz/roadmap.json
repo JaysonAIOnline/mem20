@@ -1,0 +1,76 @@
+{
+  "global_id": 181,
+  "section": "Runtime Roadmaps",
+  "owner": "Ariel",
+  "owner_code": "ariel",
+  "roadmap_index": 1,
+  "title": "Mission Routing Cockpit",
+  "outcome": "See and control every live mission, dependency, agent, and route in one place",
+  "breakthrough": "Complex autonomous work becomes operable at a glance",
+  "lane": "Mission dispatch, execution visibility, and real-time operations",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Mission Routing Cockpit Core",
+      "subphases": [
+        {
+          "name": "1.1 Mission Routing Cockpit Domain Model and State Plane",
+          "work": [
+            "Define typed missions, controls, status streams, alerts, and actions required to see and control every live mission, dependency, agent, and route in one place, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for live missions, dispatch, routes, priorities, locations, events, and multi-agent traffic; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Mission Routing Cockpit Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: see and control every live mission, dependency, agent, and route in one place.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Mission Routing Cockpit Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Mission Routing Cockpit Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using matching, route optimization, event processing, queue theory, and crisis simulation.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Mission Routing Cockpit Interaction Surface",
+          "work": [
+            "Build the primary experience in the mission cockpit, real-time map, dispatch board, and operations replay room, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Mission Routing Cockpit into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Mission Routing Cockpit Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Mission Routing Cockpit Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: Complex autonomous work becomes operable at a glance. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ]
+}

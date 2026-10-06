@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Operations adapt instantly without devolving into brittle trigger chains",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 58,
+  "id": "RM-058",
+  "lane": "Autonomous routing, plans, and execution control",
+  "operation_kind": "search",
+  "outcome": "Continuously react to external events while preserving goal context and constraints",
+  "owner": "ARE",
+  "owner_code": "are",
+  "roadmap_index": 8,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Operations adapt instantly without devolving into brittle trigger chains",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "execution map",
+    "route debugger",
+    "scenario sandbox",
+    "autonomous operations console"
+  ],
+  "techniques": [
+    "causal planning",
+    "speculative execution",
+    "constraint optimization",
+    "digital twins",
+    "anomaly detection"
+  ],
+  "title": "Real-Time Event Autopilot"
+}

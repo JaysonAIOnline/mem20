@@ -1,0 +1,50 @@
+{
+  "breakthrough": "Rewards can fit the person instead of forcing one universal loop",
+  "domain_types": [
+    "entities",
+    "state snapshots",
+    "predictions",
+    "scenario branches"
+  ],
+  "execution_modes": [
+    "local",
+    "hybrid",
+    "cloud"
+  ],
+  "global_id": 204,
+  "hard_safety": {
+    "risk_threshold": 0.75,
+    "sensitive_automatic_actions": "blocked",
+    "unsafe_automatic_actions": "blocked"
+  },
+  "id": "RM-204",
+  "lane": "Rewards, motivation, progression, and value exchange",
+  "operation_kind": "progression",
+  "outcome": "Model different motivation profiles and predict response to progression systems",
+  "owner": "Sandy",
+  "owner_code": "sandy",
+  "roadmap_index": 4,
+  "schema_version": "2.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Rewards can fit the person instead of forcing one universal loop",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "surfaces": [
+    "reward forge",
+    "progression map",
+    "challenge studio",
+    "motivation simulator"
+  ],
+  "techniques": [
+    "behavior modeling",
+    "reinforcement signals",
+    "game theory",
+    "anomaly detection",
+    "adaptive difficulty"
+  ],
+  "title": "Player Motivation Twin"
+}

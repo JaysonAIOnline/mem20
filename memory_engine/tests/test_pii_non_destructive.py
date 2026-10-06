@@ -46,6 +46,26 @@ class TestNoFalsePositives:
         assert cleaned == text
         assert detected == []
 
+    def test_filesystem_path_not_flagged_as_aws_secret(self):
+        text = "changed files:\n  - mem20zeroinstallmicroappruntimez/HANDOFF.md\n  - SITEMAP.md\n"
+        assert detect_secrets(text) == []
+        cleaned, detected = _scrub_secrets(text)
+        assert cleaned == text
+        assert detected == []
+
+    def test_path_heavy_file_list_not_flagged(self):
+        names = [
+            "mem20adaptiveinterfacecomposerz/web/src/App.jsx",
+            "mem20controlz/mem20controlz/static/index.html",
+            "mem20zerotouchnodeswarmz/ROADMAP.md",
+        ]
+        text = "observed file-change record:\n" + "".join(f"  - {n}\n" for n in names)
+        assert detect_secrets(text) == []
+
+    def test_password_instruction_in_prose_not_flagged(self):
+        text = "while resetting the control-plane admin password: rotating MEM20_CONTROL_PASSWORD in /opt/mem20"
+        assert detect_secrets(text) == []
+
 
 class TestTruePositives:
     def test_openai_style_key(self):

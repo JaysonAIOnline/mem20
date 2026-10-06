@@ -976,46 +976,11 @@ async def aimagination_critique(concept, perspectives=None, refine=True) -> str:
                         {"role": "user", "content": user}], max_tokens=1500)
 
 
-def imagination_dream(prompt, iterations=5, output_mode="concepts", memory_topics=None) -> str:
-    memory_topics = memory_topics or []
-    seed = prompt
-    log = [f"DREAM starting from: {prompt}\n"]
-    for i in range(1, iterations + 1):
-        mem = _retrieve_memories_text(seed) if memory_topics else ""
-        user = f"ITERATION {i}. Seed: {seed}\n"
-        if mem:
-            user += f"Memory inspiration:\n{mem}\n"
-        user += "Produce the next creative concept elaboration (concepts mode)."
-        try:
-            out = chat([{"role": "system", "content": _img_system("dream loop")},
-                        {"role": "user", "content": user}], max_tokens=2000)
-        except LLMError as e:
-            log.append(f"[iteration {i}] LLM unavailable: {e}")
-            break
-        log.append(f"--- iteration {i} ---\n{out}\n")
-        seed = out[:300]
-    return "\n".join(log)
-
-
-async def aimagination_dream(prompt, iterations=5, output_mode="concepts", memory_topics=None) -> str:
-    memory_topics = memory_topics or []
-    seed = prompt
-    log = [f"DREAM starting from: {prompt}\n"]
-    for i in range(1, iterations + 1):
-        mem = _retrieve_memories_text(seed) if memory_topics else ""
-        user = f"ITERATION {i}. Seed: {seed}\n"
-        if mem:
-            user += f"Memory inspiration:\n{mem}\n"
-        user += "Produce the next creative concept elaboration (concepts mode)."
-        try:
-            out = await achat([{"role": "system", "content": _img_system("dream loop")},
-                               {"role": "user", "content": user}], max_tokens=2000)
-        except LLMError as e:
-            log.append(f"[iteration {i}] LLM unavailable: {e}")
-            break
-        log.append(f"--- iteration {i} ---\n{out}\n")
-        seed = out[:300]
-    return "\n".join(log)
+# --------------------------------------------------------------------------
+# Free-form iterative dreaming was removed here. The loop above re-seeded each
+# pass with out[:300], so early structure could not survive and every iteration
+# resampled rather than revised. It was also the dream engine's job, and keeping
+# a second, weaker one here meant two engines that disagreed.
 
 
 # --------------------------------------------------------------------------

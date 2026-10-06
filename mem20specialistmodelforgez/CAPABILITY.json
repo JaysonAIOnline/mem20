@@ -1,0 +1,40 @@
+{
+  "breakthrough": "The system converts repeated cloud work into cheap local expertise",
+  "domain_types": [
+    "recipes",
+    "source materials",
+    "transformations",
+    "builds",
+    "artifacts"
+  ],
+  "global_id": 63,
+  "id": "RM-063",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "compose",
+  "outcome": "Create small task-specific models and adapters from successful workflows",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 3,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The system converts repeated cloud work into cheap local expertise",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Specialist Model Forge"
+}

@@ -1,0 +1,41 @@
+{
+  "breakthrough": "The fleet optimizes both performance and energy use",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 47,
+  "id": "RM-047",
+  "lane": "Provider, device, research, and remote-compute fleet control",
+  "operation_kind": "simulate",
+  "outcome": "Schedule compute around battery, thermal limits, electricity price, and renewable availability",
+  "owner": "HSP2",
+  "owner_code": "hsp2",
+  "roadmap_index": 7,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The fleet optimizes both performance and energy use",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "fleet globe",
+    "node cockpit",
+    "workload map",
+    "remote experiment terminal"
+  ],
+  "techniques": [
+    "distributed scheduling",
+    "federated search",
+    "capability discovery",
+    "energy models",
+    "fault prediction"
+  ],
+  "title": "Energy-Aware Compute Migration"
+}

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20contextawarelearningcoachz"
+version="1.0.0"
+description='Build lessons around the user actual work, mistakes, and interests'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20contextawarelearningcoachz="mem20contextawarelearningcoachz.core:cli"
+
+[tool.setuptools]
+packages=["mem20contextawarelearningcoachz"]
+[tool.setuptools.package-data]
+mem20contextawarelearningcoachz=["roadmap.json"]

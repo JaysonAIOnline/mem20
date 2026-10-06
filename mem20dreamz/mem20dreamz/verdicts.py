@@ -294,6 +294,155 @@ MIN_LENGTH_RATIO = 0.6
 #: Below this size a shrink is meaningless, so the guard is skipped.
 CONDENSE_FLOOR_CHARS = 600
 
+# --- the hypnagogic prompt ---------------------------------------------------
+#
+# The deep iteration critiques with a panel, forecasts on three axes, invents,
+# generates candidates conditioned on all of that, has them scored, and then
+# runs a judged tournament. That is a long convergent grind, and the research
+# says the effect we are after lives at the opposite end: fifteen seconds of
+# N1, the hypnagogic edge, tripled insight rates, and the benefit *vanished*
+# when participants slipped into N2.
+#
+# So this prompt is the shallow one. It does not ask what is missing, does not
+# ask for critique, and does not ask the model to serve the brief. It asks for
+# a thing that is true to itself, which is what makes a dream believed while it
+# is happening.
+
+DIVERGENT_PROMPT = """You are asleep at the edge of sleep, where things are
+still arriving and nothing has settled yet.
+
+A cue, offered and then left alone:
+---
+{cue}
+---
+
+The last thing before you fell asleep:
+---
+{previous}
+---
+
+It is not on your mind, and you are not thinking about it. You may use the whole
+of what you know, or none of it. Follow whichever of the two is stronger.
+
+Write what comes. It must be a SYSTEM: something that could exist and be used,
+not a description, not an essay, not a plan for a system, not a proposal. Name
+it, say what it does, say what it is for, and say the one thing about it that
+would not have occurred to anyone who had not been thinking this way.
+
+Rules, and they are the only rules:
+* It must not be recognisable as a variation on the cue.
+* It must not be a tidier version of anything that already exists.
+* If it makes no sense, that is not a flaw in it. A dream does not check itself.
+* Do not explain yourself. Do not apologise. Do not offer alternatives.
+* If you are unsure, be more certain, not less.
+
+{chars}"""
+
+
+def _chars_for_pass(index: int) -> str:
+    """Deliberately small. A hypnagogic pass is brief by nature."""
+    return f"Write between 400 and 900 words. Aim for {400 + (index * 90) % 500}."
+
+
+
+#
+# FIDELITY_FLOOR, MIN_LENGTH_RATIO and the blind A/B tournament were removed
+# because together they made the engine incapable of producing anything it had
+# not already produced: a candidate had to resemble what came before, be no
+# shorter than it, and beat it head to head. That is a polisher.
+#
+# What replaces them measures the opposite. Dreaming works by binding recent
+# experience to *loosely associated* memory, and semantic distance between
+# concepts is what predicts creative quality (Lacaux et al. 2021; Horowitz et
+# al. 2023). So the question a candidate is now asked is not "does this still
+# serve the brief" but "how far did it travel", and the floor is a *minimum
+# distance*, not a minimum resemblance.
+
+# --- divergence, the inverse of fidelity -----------------------------------
+#
+# FIDELITY_FLOOR, MIN_LENGTH_RATIO and the blind A/B tournament were removed
+# because together they made the engine incapable of producing anything it had
+# not already produced: a candidate had to resemble what came before, be no
+# shorter than it, and beat it head to head. That is a polisher.
+#
+# What replaces them measures the opposite. Dreaming works by binding recent
+# experience to *loosely associated* memory, and semantic distance between
+# concepts is what predicts creative quality (Lacaux et al. 2021; Horowitz et
+# al. 2023). So the question a candidate is now asked is not "does this still
+# serve the brief" but "how far did it travel", and the floor is a *minimum
+# distance*, not a minimum resemblance.
+
+#: Words too common to say anything about distance.
+_STOPWORDS = frozenset(
+    {
+        "a", "an", "and", "are", "as", "at", "be", "been", "but", "by", "can", "for",
+        "from", "has", "have", "if", "in", "into", "is", "it", "its", "may", "not",
+        "of", "on", "or", "such", "that", "the", "their", "then", "there", "these",
+        "they", "this", "to", "was", "were", "which", "who", "will", "with", "would",
+        "you", "your", "also", "any", "all", "each", "more", "most", "other", "some",
+        "than", "them", "those", "use", "used", "using", "only", "own", "same", "too",
+        "very", "when", "where", "while", "without", "within", "about", "after",
+        "before", "between", "during", "over", "under", "again", "once", "here",
+        "both", "few", "nor", "out", "off", "above", "below", "itself",
+    }
+)
+
+_WORD = re.compile(r"[a-z][a-z0-9]+")
+
+
+def _tokens(text: str) -> set[str]:
+    return {w for w in _WORD.findall(text.lower()) if w not in _STOPWORDS and len(w) > 2}
+
+
+def divergence(candidate: str, reference: str) -> dict[str, Any]:
+    """How far a candidate travels from what it was seeded with.
+
+    Pure arithmetic, no model in the loop, so it cannot be talked into a good
+    score. Two components, because a candidate can fail either way:
+
+    * ``novelty`` - share of the candidate's words the reference never used.
+      A candidate that only rewords the brief scores near zero however fluent.
+    * ``distance`` - Jaccard distance over content words. Two texts that share
+      nothing score 1.0.
+
+    ``score`` is the mean, scaled 0-100 to sit beside the other axes.
+    """
+    cand = _tokens(candidate)
+    ref = _tokens(reference)
+    if not cand:
+        return {"score": 0.0, "novelty": 0.0, "distance": 0.0, "words": 0, "summary": "no content words"}
+    if not ref:
+        return {
+            "score": 100.0,
+            "novelty": 100.0,
+            "distance": 100.0,
+            "words": len(cand),
+            "summary": "no reference to diverge from",
+        }
+    fresh = len(cand - ref)
+    novelty = fresh / len(cand)
+    union = len(cand | ref)
+    distance = (len(cand - ref) / union) if union else 0.0
+    score = round(100.0 * (novelty + distance) / 2.0, 1)
+    return {
+        "score": score,
+        "novelty": round(100.0 * novelty, 1),
+        "distance": round(100.0 * distance, 1),
+        "words": len(cand),
+        "summary": f"{fresh} of {len(cand)} words never appear in the reference",
+    }
+
+
+#: A candidate that barely leaves the neighbourhood is not a dream. This is the
+#: inverse of the fidelity floor it replaces, and deliberately low: the point is
+#: to exclude paraphrase, not to demand strangeness on every pass.
+DIVERGENCE_FLOOR = 25.0
+
+#: At or above this a candidate is not a revision of the lineage at all. It has
+#: travelled so far that requiring continuity to the incumbent is meaningless,
+#: and the genesis path may supersede the lineage outright.
+GENESIS_DISTANCE = 80.0
+
 
 #: Omission is a VETO, not a target. Asking "how much unasked-for material does
 #: this supply" is unbounded and gameable - a longer artifact always finds more -

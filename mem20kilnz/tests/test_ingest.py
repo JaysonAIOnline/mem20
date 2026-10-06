@@ -13,7 +13,8 @@ from pathlib import Path
 from mem20kilnz.ingest import SUPPORTED_SUFFIXES, convert, probe
 from mem20kilnz.pipeline import BuildRequest, build
 
-DEMO = "engine/examples/demo.glb"
+DEMO = str(Path(__file__).resolve().parent.parent
+            / "engine" / "examples" / "demo.glb")
 
 
 def test_probe_measures_a_real_glb():

@@ -1,0 +1,40 @@
+{
+  "breakthrough": "New monetization models can be evaluated before expensive implementation",
+  "domain_types": [
+    "world models",
+    "scenarios",
+    "actors",
+    "variables",
+    "simulation runs"
+  ],
+  "global_id": 90,
+  "id": "RM-090",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "match",
+  "outcome": "Compare subscription, usage, marketplace, licensing, and service models under realistic scenarios",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "New monetization models can be evaluated before expensive implementation",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Business Model Simulator"
+}

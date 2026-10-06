@@ -1,0 +1,188 @@
+{
+  "name": "opencode-gui",
+  "description": "Build a modern GUI for interacting with opencode, as a CLIENT on opencode's own server + SDK \u2014 not a new agent runtime. Ground truth measured 2026-10-03: opencode 1.18.34, @opencode-ai/sdk 1.18.18, ~170 HTTP endpoints across 36 client groups, SSE event streams, and existing surfaces opencode serve / web / attach / acp. 20 steps in 5 lanes of 4, kanban columns Backlog->Ready->In Progress->Review->Done with WIP limit 1 and dependency gating. Every exit criterion is a command that exits 0; a criterion that cannot be automated is a documented manual gate in step 19, not a fake automated one. Full detail incl. per-step deliverables and requirement quotes traced to Jayson's own session history: /opt/mem20/roadmaps/opencode-gui.md",
+  "phases": [
+    {
+      "name": "Step 0: Ground the substrate - generate checked SDK/endpoint facts",
+      "status": "planned",
+      "notes": "",
+      "jobid": "fc95d8b2-0161-4a2f-9f76-96e78b3a2e77",
+      "depends_on": []
+    },
+    {
+      "name": "Step 1: Freeze the API contract - pinned versioned generated contract",
+      "status": "planned",
+      "notes": "",
+      "jobid": "552070f3-4406-4fe4-bcca-991f4642fa7a",
+      "depends_on": [
+        0
+      ]
+    },
+    {
+      "name": "Step 2: Decide transport and SDK surface - v1 vs v2, SSE vs poll, by measurement",
+      "status": "planned",
+      "notes": "",
+      "jobid": "a3edec82-7ddf-4c53-9214-07e00063c718",
+      "depends_on": [
+        1
+      ]
+    },
+    {
+      "name": "Step 3: Security and network posture - bind, auth, CORS, fail closed",
+      "status": "planned",
+      "notes": "",
+      "jobid": "8408678f-6587-4594-b2f9-43a6967b7010",
+      "depends_on": [
+        1
+      ]
+    },
+    {
+      "name": "Step 4: Repo and design system - tokens, components, nav shell",
+      "status": "planned",
+      "notes": "",
+      "jobid": "1946fd90-47d0-49e4-bf60-7d75b701066a",
+      "depends_on": [
+        2
+      ]
+    },
+    {
+      "name": "Step 5: Process broker - single owner of the opencode process, systemd",
+      "status": "planned",
+      "notes": "",
+      "jobid": "63f5999e-93df-4221-a4e5-c10afb30ef81",
+      "depends_on": [
+        3,
+        4
+      ]
+    },
+    {
+      "name": "Step 6: Typed client layer - generated, zero hand-written fetch",
+      "status": "planned",
+      "notes": "",
+      "jobid": "d039ba7f-6eb1-4ac5-bc96-633fae93c5cf",
+      "depends_on": [
+        1,
+        5
+      ]
+    },
+    {
+      "name": "Step 7: Event stream - SSE with reconnect, backoff, resync",
+      "status": "planned",
+      "notes": "",
+      "jobid": "ea2f2009-2d0b-4c6d-a5f5-80d95ff52ae7",
+      "depends_on": [
+        6
+      ]
+    },
+    {
+      "name": "Step 8: Sessions and project scope - list, create, fork, tree",
+      "status": "planned",
+      "notes": "",
+      "jobid": "1dd8ae4a-b7ab-4312-8ef3-43423f51f271",
+      "depends_on": [
+        7
+      ]
+    },
+    {
+      "name": "Step 9: Streaming message and part renderer - all part types, no viewport jump",
+      "status": "planned",
+      "notes": "",
+      "jobid": "27b8fff3-d23c-4204-bd21-dabf49571bf2",
+      "depends_on": [
+        8
+      ]
+    },
+    {
+      "name": "Step 10: Permissions and questions - first-class blocking prompts",
+      "status": "planned",
+      "notes": "",
+      "jobid": "cac001b8-528a-43f3-b6a7-667512dd827e",
+      "depends_on": [
+        9
+      ]
+    },
+    {
+      "name": "Step 11: Interrupt, revert, undo, context meter",
+      "status": "planned",
+      "notes": "",
+      "jobid": "e83fa0df-8545-468f-a316-0b8234cceb49",
+      "depends_on": [
+        9
+      ]
+    },
+    {
+      "name": "Step 12: Files, search, symbols - tree, viewer, find",
+      "status": "planned",
+      "notes": "",
+      "jobid": "401c9030-e5c4-4b14-b146-d255fa3c31c7",
+      "depends_on": [
+        8
+      ]
+    },
+    {
+      "name": "Step 13: Diff and VCS review - inspect, apply, verify against git",
+      "status": "planned",
+      "notes": "",
+      "jobid": "4fe06a27-b2dd-4d43-b7be-7328fcf1b426",
+      "depends_on": [
+        12
+      ]
+    },
+    {
+      "name": "Step 14: Embedded terminal - PTY with connect-token",
+      "status": "planned",
+      "notes": "",
+      "jobid": "cf25b4b6-7bb0-43a5-b7a7-f91b9e799e2b",
+      "depends_on": [
+        6
+      ]
+    },
+    {
+      "name": "Step 15: Models, providers, auth - OAuth end to end, auto-populating picker",
+      "status": "planned",
+      "notes": "",
+      "jobid": "68056bc4-31d6-4bbf-84c8-c87964a3cc03",
+      "depends_on": [
+        8
+      ]
+    },
+    {
+      "name": "Step 16: MCP, skills, agents, commands, LSP",
+      "status": "planned",
+      "notes": "",
+      "jobid": "d8c29618-80e9-431d-b416-185c3bb5933c",
+      "depends_on": [
+        8
+      ]
+    },
+    {
+      "name": "Step 17: Multi-workspace, worktrees, background sessions",
+      "status": "planned",
+      "notes": "",
+      "jobid": "37b35bb2-9cee-4f0d-9e03-8cef7b31aa04",
+      "depends_on": [
+        8,
+        16
+      ]
+    },
+    {
+      "name": "Step 18: Desktop packaging, systemd, accessibility, performance",
+      "status": "planned",
+      "notes": "",
+      "jobid": "df2889b8-ccd4-4e50-8ef6-68ce576ee816",
+      "depends_on": [
+        17
+      ]
+    },
+    {
+      "name": "Step 19: Test suite, dogfood QA, release gate with written known-gaps",
+      "status": "planned",
+      "notes": "",
+      "jobid": "178c4b31-864e-41c7-8100-1dcbf45b474d",
+      "depends_on": [
+        18
+      ]
+    }
+  ],
+  "created": "1789604765.3759632"
+}

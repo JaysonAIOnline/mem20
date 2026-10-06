@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Testing real hardware becomes a programmable service",
+  "domain_types": [
+    "experiments",
+    "hypotheses",
+    "datasets",
+    "runs",
+    "results"
+  ],
+  "global_id": 49,
+  "id": "RM-049",
+  "lane": "Provider, device, research, and remote-compute fleet control",
+  "operation_kind": "simulate",
+  "outcome": "Run reproducible experiments across device classes and collect live metrics",
+  "owner": "HSP2",
+  "owner_code": "hsp2",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Testing real hardware becomes a programmable service",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "fleet globe",
+    "node cockpit",
+    "workload map",
+    "remote experiment terminal"
+  ],
+  "techniques": [
+    "distributed scheduling",
+    "federated search",
+    "capability discovery",
+    "energy models",
+    "fault prediction"
+  ],
+  "title": "Remote Experiment Lab"
+}

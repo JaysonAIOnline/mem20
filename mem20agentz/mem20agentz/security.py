@@ -189,8 +189,26 @@ class Doctor:
         return (True, f"clean across {sum(1 for _ in root.rglob('*.py'))} files")
 
     def _c_selftest(self):
-        import mem20agentz.tests.test_mem20agentz  # noqa: F401
-        return (True, "mem20agentz.tests.test_mem20agentz imports")
+        import importlib.util
+        import mem20agentz as pkg
+        candidates = [
+            pathlib.Path(pkg.__file__).parent.parent
+            / "tests" / "test_mem20agentz.py",
+        ]
+        if self.package_root is not None:
+            candidates.insert(0, pathlib.Path(self.package_root)
+                              / "tests" / "test_mem20agentz.py")
+        for path in candidates:
+            if not path.is_file():
+                continue
+            spec = importlib.util.spec_from_file_location(
+                "mem20agentz_hermetic_selftest", path)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return (True, f"{path.name} imports from {path.parent}")
+        return (False, "hermetic test module not found")
 
     def _c_secrets(self):
         from .secrets import Secrets

@@ -1,0 +1,40 @@
+{
+  "breakthrough": "The platform automatically becomes faster and cheaper over time",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 7,
+  "id": "RM-007",
+  "lane": "Composable application kernel and capability exchange",
+  "operation_kind": "optimize",
+  "outcome": "Continuously tune workload placement, caches, queues, and process limits from observed demand",
+  "owner": "FreeStack Core",
+  "owner_code": "freestack",
+  "roadmap_index": 7,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The platform automatically becomes faster and cheaper over time",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "adaptive web desktop",
+    "command palette",
+    "SDK",
+    "event-stream inspector"
+  ],
+  "techniques": [
+    "constraint solvers",
+    "semantic matching",
+    "runtime telemetry",
+    "cost-aware scheduling"
+  ],
+  "title": "Self-Optimizing Kernel"
+}

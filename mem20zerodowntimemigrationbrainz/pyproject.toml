@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20zerodowntimemigrationbrainz"
+version="1.0.0"
+description='Plan, simulate, execute, verify, and reverse complex data migrations'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20zerodowntimemigrationbrainz="mem20zerodowntimemigrationbrainz.core:cli"
+
+[tool.setuptools]
+packages=["mem20zerodowntimemigrationbrainz"]
+[tool.setuptools.package-data]
+mem20zerodowntimemigrationbrainz=["roadmap.json"]

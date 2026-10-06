@@ -1,0 +1,41 @@
+{
+  "breakthrough": "FreeStack recovers like an experienced operations team",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 60,
+  "id": "RM-060",
+  "lane": "Autonomous routing, plans, and execution control",
+  "operation_kind": "route",
+  "outcome": "Coordinate diagnosis, rerouting, repair, and service restoration across runtimes",
+  "owner": "ARE",
+  "owner_code": "are",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "FreeStack recovers like an experienced operations team",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "execution map",
+    "route debugger",
+    "scenario sandbox",
+    "autonomous operations console"
+  ],
+  "techniques": [
+    "causal planning",
+    "speculative execution",
+    "constraint optimization",
+    "digital twins",
+    "anomaly detection"
+  ],
+  "title": "Autonomous Recovery Director"
+}

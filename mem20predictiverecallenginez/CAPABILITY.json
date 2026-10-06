@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Context appears at the moment of need with minimal prompting",
+  "domain_types": [
+    "jobs",
+    "state machines",
+    "policies",
+    "events",
+    "outputs"
+  ],
+  "global_id": 22,
+  "id": "RM-022",
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "operation_kind": "forecast",
+  "outcome": "Preload the most useful memories before the user has to ask for them",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "roadmap_index": 2,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Context appears at the moment of need with minimal prompting",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "memory timeline",
+    "recall lens",
+    "context diff",
+    "cross-device memory controls"
+  ],
+  "techniques": [
+    "graph retrieval",
+    "temporal embeddings",
+    "compression",
+    "prediction",
+    "counterfactual simulation"
+  ],
+  "title": "Predictive Recall Engine"
+}

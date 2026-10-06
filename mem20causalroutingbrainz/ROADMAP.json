@@ -1,0 +1,76 @@
+{
+  "breakthrough": "The router optimizes outcomes, not merely throughput",
+  "global_id": 54,
+  "lane": "Autonomous routing, plans, and execution control",
+  "outcome": "Choose routes based on predicted consequences rather than static priorities",
+  "owner": "ARE",
+  "owner_code": "are",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Causal Routing Brain Core",
+      "subphases": [
+        {
+          "name": "1.1 Causal Routing Brain Domain Model and State Plane",
+          "work": [
+            "Define typed signals, objectives, scores, options, and chosen actions required to choose routes based on predicted consequences rather than static priorities, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for intent compilation, execution graphs, routing, reversibility, recovery, and long-running autonomous operations; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Causal Routing Brain Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: choose routes based on predicted consequences rather than static priorities.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Causal Routing Brain Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Causal Routing Brain Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using causal planning, speculative execution, constraint optimization, digital twins, and anomaly detection.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Causal Routing Brain Interaction Surface",
+          "work": [
+            "Build the primary experience in the execution map, route debugger, scenario sandbox, and autonomous operations console, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Causal Routing Brain into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Causal Routing Brain Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Causal Routing Brain Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: The router optimizes outcomes, not merely throughput. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ],
+  "roadmap_index": 4,
+  "section": "Runtime Roadmaps",
+  "title": "Causal Routing Brain"
+}

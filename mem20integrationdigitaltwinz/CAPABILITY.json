@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Connectors can be fully tested without touching production systems",
+  "domain_types": [
+    "entities",
+    "state snapshots",
+    "predictions",
+    "scenario branches"
+  ],
+  "global_id": 76,
+  "id": "RM-076",
+  "lane": "Integration fabric, protocols, and node transport",
+  "operation_kind": "route",
+  "outcome": "Simulate external services, rate limits, failures, and future API changes",
+  "owner": "FSIF",
+  "owner_code": "fsif",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Connectors can be fully tested without touching production systems",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "visual dataflow canvas",
+    "connector lab",
+    "live packet map",
+    "integration debugger"
+  ],
+  "techniques": [
+    "schema inference",
+    "protocol learning",
+    "anomaly repair",
+    "stream processing",
+    "semantic transformation"
+  ],
+  "title": "Integration Digital Twin"
+}

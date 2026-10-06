@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20spatialexperiencedesignerz"
+version="1.0.0"
+description='Compose immersive rooms, exhibits, stores, and game spaces from reusable primitives'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20spatialexperiencedesignerz="mem20spatialexperiencedesignerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20spatialexperiencedesignerz"]
+[tool.setuptools.package-data]
+mem20spatialexperiencedesignerz=["roadmap.json"]

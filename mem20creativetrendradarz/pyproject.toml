@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20creativetrendradarz"
+version="1.0.0"
+description='Detect emerging visual, interaction, music, and cultural patterns without blindly copying them'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20creativetrendradarz="mem20creativetrendradarz.core:cli"
+
+[tool.setuptools]
+packages=["mem20creativetrendradarz"]
+[tool.setuptools.package-data]
+mem20creativetrendradarz=["roadmap.json"]

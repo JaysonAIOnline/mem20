@@ -1,0 +1,24 @@
+{
+  "roadmap": "RM-003 Adaptive Interface Composer",
+  "status": "non-human executable scope implemented and validated",
+  "coverage": {
+    "1.1 typed domain model and boundary validation": "implemented",
+    "1.1 owned persistent state with snapshots/event history": "implemented",
+    "1.1 CRUD local APIs and SDK": "implemented",
+    "1.2 resumable execution/state machine": "implemented",
+    "1.2 cancellation/idempotency/retries/timeouts/quotas/sandbox/recovery": "implemented",
+    "1.2 local simulator failure matrix": "implemented",
+    "2.1 constraint/semantic/telemetry/cost decision engine": "implemented",
+    "2.1 feedback without hard-safety mutation": "implemented",
+    "2.1 confidence/alternatives/bottlenecks/machine explanation": "implemented",
+    "2.2 adaptive web desktop/command palette/SDK/event inspector": "implemented",
+    "2.2 CLI and typed client": "implemented",
+    "2.2 real-time progress/intermediate artifacts": "implemented via event log + SSE",
+    "3.1 local/hybrid/cloud + discovery/peer loss": "implemented generically; production endpoints remain environment-bound",
+    "3.1 conflict-safe sync/workload placement/cache/backpressure/failover": "implemented",
+    "3.1 latency/throughput/memory/energy/network/cost benchmark": "implemented; energy reports null when host has no readable hardware counter",
+    "3.2 interface rebuilds around job": "implemented as opt-in executable runtime behavior",
+    "3.2 adversarial/load/privacy/misuse/degraded-network/recovery tests": "implemented",
+    "3.2 installable capability/demo/sample/metrics/rollback artifact": "implemented"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "breakthrough": "FreeStack gains a path to massive low-cost distributed computation",
+  "domain_types": [
+    "services",
+    "routes",
+    "resources",
+    "events",
+    "placement state"
+  ],
+  "global_id": 50,
+  "id": "RM-050",
+  "lane": "Provider, device, research, and remote-compute fleet control",
+  "operation_kind": "simulate",
+  "outcome": "Coordinate very large delay-tolerant workloads across many intermittently available nodes",
+  "owner": "HSP2",
+  "owner_code": "hsp2",
+  "roadmap_index": 10,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "FreeStack gains a path to massive low-cost distributed computation",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "fleet globe",
+    "node cockpit",
+    "workload map",
+    "remote experiment terminal"
+  ],
+  "techniques": [
+    "distributed scheduling",
+    "federated search",
+    "capability discovery",
+    "energy models",
+    "fault prediction"
+  ],
+  "title": "Planetary Batch Fabric"
+}

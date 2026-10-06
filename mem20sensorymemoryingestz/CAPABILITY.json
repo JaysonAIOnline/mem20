@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Personal memory extends beyond typed conversations",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 24,
+  "id": "RM-024",
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "operation_kind": "search",
+  "outcome": "Turn images, audio, screens, files, and device signals into searchable episodes",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "roadmap_index": 4,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Personal memory extends beyond typed conversations",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "memory timeline",
+    "recall lens",
+    "context diff",
+    "cross-device memory controls"
+  ],
+  "techniques": [
+    "graph retrieval",
+    "temporal embeddings",
+    "compression",
+    "prediction",
+    "counterfactual simulation"
+  ],
+  "title": "Sensory Memory Ingest"
+}

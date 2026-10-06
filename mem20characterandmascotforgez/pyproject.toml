@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20characterandmascotforgez"
+version="1.0.0"
+description='Design consistent characters with appearance, voice, motion, behavior, and memory'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20characterandmascotforgez="mem20characterandmascotforgez.core:cli"
+
+[tool.setuptools]
+packages=["mem20characterandmascotforgez"]
+[tool.setuptools.package-data]
+mem20characterandmascotforgez=["roadmap.json"]

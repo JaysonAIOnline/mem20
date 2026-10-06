@@ -1,0 +1,41 @@
+{
+  "breakthrough": "One stable internal API can face thousands of external services",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 75,
+  "id": "RM-075",
+  "lane": "Integration fabric, protocols, and node transport",
+  "operation_kind": "route",
+  "outcome": "Translate between incompatible schemas, pagination styles, auth flows, and interaction patterns",
+  "owner": "FSIF",
+  "owner_code": "fsif",
+  "roadmap_index": 5,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "One stable internal API can face thousands of external services",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "visual dataflow canvas",
+    "connector lab",
+    "live packet map",
+    "integration debugger"
+  ],
+  "techniques": [
+    "schema inference",
+    "protocol learning",
+    "anomaly repair",
+    "stream processing",
+    "semantic transformation"
+  ],
+  "title": "API Shape-Shifting Gateway"
+}

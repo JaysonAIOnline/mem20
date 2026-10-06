@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20syntheticdataforgez"
+version="1.0.0"
+description='Generate realistic non-production datasets that preserve useful distributions and edge cases'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20syntheticdataforgez="mem20syntheticdataforgez.core:cli"
+
+[tool.setuptools]
+packages=["mem20syntheticdataforgez"]
+[tool.setuptools.package-data]
+mem20syntheticdataforgez=["roadmap.json"]

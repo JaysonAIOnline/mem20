@@ -23,6 +23,52 @@ def _isolated_store(tmp_path, monkeypatch):
     yield
 
 
+@pytest.fixture(autouse=True)
+def _no_real_model_calls(monkeypatch):
+    """A test in this module must never reach a provider.
+
+    idle_turn() was switched from run_iteration() to nap_pass(), and because the
+    tests mocked only the old path the suite hung on live Cohere and Groq calls
+    for ten minutes. A test that can make a network call is a defect, so the
+    failure is moved to the front: any unmocked dreaming call raises here rather
+    than waiting on a provider.
+    """
+
+    def _refuse(*args, **kwargs):
+        raise AssertionError(
+            "a test reached the real dreaming path; mock engine.nap_pass or engine.run_iteration"
+        )
+
+    monkeypatch.setattr(engine, "nap_pass", _refuse)
+    monkeypatch.setattr(engine, "run_iteration", _refuse)
+    monkeypatch.setattr(engine, "nap", _refuse)
+
+
+def _stub_pass(pass_n, *, accepted=True, braid=True, **extra):
+    """A hypnagogic pass that mirrors nap_pass's real side effects, no model.
+
+    The stub has to record the iteration, append the braid cid or the
+    uncommitted reason, and save - otherwise a test asserting on the reloaded
+    lineage is asserting on a lineage that was never written.
+    """
+
+    def _pass(lineage, cue, n, breadth=None):
+        if not accepted:
+            return {"pass": n, "accepted": False, "reason": "stubbed stop", "errors": [], "candidates": []}
+        iteration = _stub_iteration(len(lineage.iterations) + 1)
+        lineage.record(iteration)
+        if braid:
+            lineage.braid_cids.append(f"br{iteration.n}")
+        else:
+            lineage.uncommitted.append({"at_pass": n, "reason": "braid down (stub)"})
+        lineage.save()
+        result = {"pass": n, "accepted": True, "braid": braid, "genesis": False, "errors": []}
+        result.update(extra)
+        return result
+
+    return _pass
+
+
 # --- fairness ---------------------------------------------------------------
 
 
@@ -179,14 +225,13 @@ def test_idle_turn_holds_the_lock_while_it_works(monkeypatch):
     ))
     seen_lock = {}
 
-    def _iteration(lineage, n):
+    def _pass(lineage, cue, n, breadth=None):
         seen_lock["held"] = idle.active_run()
-        return _stub_iteration(n)
+        iteration = _stub_iteration(len(lineage.iterations) + 1)
+        lineage.record(iteration)
+        return {"pass": n, "accepted": True, "braid": True, "genesis": False, "errors": []}
 
-    monkeypatch.setattr(idle.engine, "run_iteration", _iteration)
-    monkeypatch.setattr(
-        idle.ledger, "commit_iteration", lambda ln, it: {"committed": True, "cid": f"br{it.n}"}
-    )
+    monkeypatch.setattr(idle.engine, "nap_pass", _pass)
     monkeypatch.setattr(idle, "alert_if_warranted", lambda ln: {"alert": False})
 
     result = idle.idle_turn()
@@ -201,10 +246,7 @@ def test_idle_turn_releases_the_claim_when_it_finishes(monkeypatch):
     monkeypatch.setattr(idle.engine, "new_dream", lambda *a, **k: Lineage(
         dream_id="dream-idle-release", seed="s", kind="idle_idea", foundation="s", artifact="s"
     ))
-    monkeypatch.setattr(idle.engine, "run_iteration", lambda ln, n: _stub_iteration(n))
-    monkeypatch.setattr(
-        idle.ledger, "commit_iteration", lambda ln, it: {"committed": True, "cid": f"br{it.n}"}
-    )
+    monkeypatch.setattr(idle.engine, "nap_pass", _stub_pass(1))
     monkeypatch.setattr(idle, "alert_if_warranted", lambda ln: {"alert": False})
 
     idle.idle_turn()
@@ -324,15 +366,22 @@ def test_quiet_dream_does_not_attempt_an_alert(monkeypatch):
 # --- state and inventory ----------------------------------------------------
 
 
-def test_seed_pool_advances_and_wraps():
+def test_seed_advances_and_never_wraps():
+    """The pool used to wrap: seed N+12 repeated seed N.
+
+    That was twelve invented sentences on a 336-directory estate, and the
+    engine re-dreamed the same ideas forever. It must now advance and refuse to
+    repeat rather than wrap quietly.
+    """
     first = idle.next_seed()
     second = idle.next_seed()
     assert first != second
     with open(idle.STATE, encoding="utf-8") as handle:
-        assert json.load(handle)["seed_index"] == 2
-    total = len(idle.SEED_POOL)
-    idle._save_state({"seed_index": total})
-    assert idle.next_seed() == first, "the pool wraps rather than running dry"
+        state = json.load(handle)
+    assert state["seed_index"] == 2
+    assert first in state["seeds_issued"]
+    assert second in state["seeds_issued"]
+    assert not hasattr(idle, "SEED_POOL")
 
 
 def test_inventory_reports_bars_and_browsable_dreams():
@@ -350,7 +399,7 @@ def test_state_write_is_atomic():
     assert json.loads(Path(idle.STATE).read_text())["seed_index"] == 7
 
 
-# --- a turn is IDLE_ITERATIONS deep, not one shallow pass ---------------------
+# --- a turn is many brief passes, not one deep iteration -------------------
 
 
 def _stub_iteration(n: int):
@@ -369,25 +418,28 @@ def _stub_iteration(n: int):
     )
 
 
-def test_idle_turn_runs_the_full_iteration_count(monkeypatch):
-    """The constant was declared but never wired; this is the guard for that."""
-    assert idle.IDLE_ITERATIONS == 5, "idle dreams are 5 iterations deep"
+def test_idle_turn_runs_the_full_pass_count(monkeypatch):
+    """The constant was declared but never wired; this is the guard for that.
+
+    It used to assert five deep iterations. The turn is now wide and shallow:
+    eight brief passes, because the creative effect lives at the hypnagogic
+    edge and dies at depth.
+    """
+    assert idle.IDLE_PASSES == 8, "the turn is 8 brief passes, not 5 deep iterations"
+    assert idle.IDLE_BREADTH == 6, "six writers per pass, so generations differ"
     seen = []
     monkeypatch.setattr(idle.engine, "new_dream", lambda *a, **k: Lineage(
         dream_id="dream-idle-deep", seed="s", kind="idle_idea", foundation="s", artifact="s"
     ))
-    monkeypatch.setattr(
-        idle.engine, "run_iteration", lambda ln, n: (seen.append(n), _stub_iteration(n))[1]
-    )
-    monkeypatch.setattr(
-        idle.ledger, "commit_iteration", lambda ln, it: {"committed": True, "cid": f"br{it.n}"}
-    )
+    monkeypatch.setattr(idle.engine, "nap_pass", lambda ln, cue, n, breadth=None: (
+        seen.append(n), _stub_pass(n)(ln, cue, n, breadth)
+    )[1])
     monkeypatch.setattr(idle, "alert_if_warranted", lambda ln: {"alert": False})
 
     result = idle.idle_turn()
-    assert seen == list(range(1, idle.IDLE_ITERATIONS + 1)), seen
-    assert result["iterations_run"] == idle.IDLE_ITERATIONS
-    assert result["committed"] == idle.IDLE_ITERATIONS
+    assert seen == list(range(1, idle.IDLE_PASSES + 1)), seen
+    assert result["iterations_run"] == idle.IDLE_PASSES
+    assert result["committed"] == idle.IDLE_PASSES
     assert result["uncommitted"] == 0
     assert result["paused"] is False
 
@@ -399,13 +451,10 @@ def test_a_provider_outage_midway_pauses_and_keeps_real_work(monkeypatch):
     monkeypatch.setattr(idle.engine, "new_dream", lambda *a, **k: Lineage(
         dream_id="dream-idle-outage", seed="s", kind="idle_idea", foundation="s", artifact="s"
     ))
-    monkeypatch.setattr(idle.engine, "run_iteration", lambda ln, n: (
+    monkeypatch.setattr(idle.engine, "nap_pass", lambda ln, cue, n, breadth=None: (
         (_ for _ in ()).throw(LLMError("no panelist answered; name resolution"))
-        if n > 3 else _stub_iteration(n)
+        if n > 3 else _stub_pass(n)(ln, cue, n, breadth)
     ))
-    monkeypatch.setattr(
-        idle.ledger, "commit_iteration", lambda ln, it: {"committed": True, "cid": f"br{it.n}"}
-    )
     monkeypatch.setattr(idle, "alert_if_warranted", lambda ln: {"alert": False})
 
     result = idle.idle_turn()
@@ -427,20 +476,21 @@ def test_uncommitted_iteration_is_recorded_not_hidden(monkeypatch):
     monkeypatch.setattr(idle.engine, "new_dream", lambda *a, **k: Lineage(
         dream_id="dream-idle-nocommit", seed="s", kind="idle_idea", foundation="s", artifact="s"
     ))
-    monkeypatch.setattr(idle.engine, "run_iteration", lambda ln, n: _stub_iteration(n))
-    monkeypatch.setattr(
-        idle.ledger, "commit_iteration", lambda ln, it: {"committed": False, "reason": "braid down"}
-    )
+    # nap_pass commits to braid itself, so the outcome is driven by what it
+    # reports rather than by a separate commit mock.
+    monkeypatch.setattr(idle.engine, "nap_pass", _stub_pass(1, braid=False))
     monkeypatch.setattr(idle, "alert_if_warranted", lambda ln: {"alert": False})
 
     result = idle.idle_turn()
-    assert result["uncommitted"] == idle.IDLE_ITERATIONS
+    assert result["uncommitted"] == idle.IDLE_PASSES
     from mem20dreamz.lineage import Lineage as L
 
     reloaded = L.load("dream-idle-nocommit")
-    assert len(reloaded.uncommitted) == idle.IDLE_ITERATIONS
+    assert len(reloaded.uncommitted) == idle.IDLE_PASSES
     assert reloaded.braid_cids == []
 
 
-def test_inventory_reports_the_iteration_depth():
-    assert idle.inventory()["iterations_per_turn"] == idle.IDLE_ITERATIONS
+def test_inventory_reports_the_pass_depth():
+    inv = idle.inventory()
+    assert inv["passes_per_turn"] == idle.IDLE_PASSES
+    assert inv["writers_per_pass"] == idle.IDLE_BREADTH

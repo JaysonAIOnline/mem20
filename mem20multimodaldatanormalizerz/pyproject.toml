@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20multimodaldatanormalizerz"
+version="1.0.0"
+description='Turn text, images, audio, video, and sensor streams into linked structured objects'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20multimodaldatanormalizerz="mem20multimodaldatanormalizerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20multimodaldatanormalizerz"]
+[tool.setuptools.package-data]
+mem20multimodaldatanormalizerz=["roadmap.json"]

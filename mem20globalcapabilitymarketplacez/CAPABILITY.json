@@ -1,0 +1,51 @@
+{
+  "breakthrough": "FreeStack becomes known as the place where executable AI abilities are exchanged",
+  "domain_types": [
+    "listings",
+    "participants",
+    "offers",
+    "matches",
+    "transactions"
+  ],
+  "execution_modes": [
+    "local",
+    "hybrid",
+    "cloud"
+  ],
+  "global_id": 218,
+  "hard_safety": {
+    "risk_threshold": 0.75,
+    "sensitive_automatic_actions": "blocked",
+    "unsafe_automatic_actions": "blocked"
+  },
+  "id": "RM-218",
+  "lane": "Cross-runtime breakthrough systems",
+  "operation_kind": "match",
+  "outcome": "Distribute portable capabilities, models, connectors, workflows, and microapps with instant trials",
+  "owner": "Whole Platform",
+  "owner_code": "overall",
+  "roadmap_index": 8,
+  "schema_version": "2.0",
+  "section": "Whole-Platform Roadmaps",
+  "signature_mode": {
+    "behavior": "FreeStack becomes known as the place where executable AI abilities are exchanged",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "surfaces": [
+    "unified command center",
+    "spatial interface",
+    "conversational desktop",
+    "developer SDK"
+  ],
+  "techniques": [
+    "collective planning",
+    "multimodal reasoning",
+    "distributed optimization",
+    "simulation",
+    "adaptive orchestration"
+  ],
+  "title": "Global Capability Marketplace"
+}

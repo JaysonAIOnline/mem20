@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Every project simultaneously produces results and increases capability",
+  "domain_types": [
+    "capabilities",
+    "processes",
+    "tasks",
+    "resources",
+    "lifecycle state"
+  ],
+  "global_id": 36,
+  "id": "RM-036",
+  "lane": "Human-agent work execution and shared workspaces",
+  "operation_kind": "analyze",
+  "outcome": "Teach humans through guided execution while agents learn from corrections",
+  "owner": "HSP",
+  "owner_code": "hsp",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Every project simultaneously produces results and increases capability",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "collaborative mission canvas",
+    "focus mode",
+    "presence map",
+    "work-cell console"
+  ],
+  "techniques": [
+    "planning graphs",
+    "skill matching",
+    "mixed-initiative control",
+    "simulation",
+    "workload optimization"
+  ],
+  "title": "Apprenticeship Runtime"
+}

@@ -1,0 +1,76 @@
+{
+  "global_id": 186,
+  "section": "Runtime Roadmaps",
+  "owner": "Ariel",
+  "owner_code": "ariel",
+  "roadmap_index": 6,
+  "title": "Multi-Channel Command Stream",
+  "outcome": "Unify commands arriving from chat, voice, devices, webhooks, and spatial interfaces",
+  "breakthrough": "Every control surface speaks one operational language",
+  "lane": "Mission dispatch, execution visibility, and real-time operations",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Multi Channel Command Core",
+      "subphases": [
+        {
+          "name": "1.1 Multi Channel Command Domain Model and State Plane",
+          "work": [
+            "Define typed entities, capabilities, jobs, events, state transitions, and outputs required to unify commands arriving from chat, voice, devices, webhooks, and spatial interfaces, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for live missions, dispatch, routes, priorities, locations, events, and multi-agent traffic; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Multi Channel Command Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: unify commands arriving from chat, voice, devices, webhooks, and spatial interfaces.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Multi Channel Command Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Multi Channel Command Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using matching, route optimization, event processing, queue theory, and crisis simulation.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Multi Channel Command Interaction Surface",
+          "work": [
+            "Build the primary experience in the mission cockpit, real-time map, dispatch board, and operations replay room, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Multi Channel Command into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Multi Channel Command Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Multi Channel Command Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: Every control surface speaks one operational language. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20databaseautopilotz"
+version="1.0.0"
+description='Tune indexes, partitions, caching, compaction, and query plans from live workload behavior'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20databaseautopilotz="mem20databaseautopilotz.core:cli"
+
+[tool.setuptools]
+packages=["mem20databaseautopilotz"]
+[tool.setuptools.package-data]
+mem20databaseautopilotz=["roadmap.json"]

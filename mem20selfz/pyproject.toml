@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20selfz"
+version = "0.1.0"
+description = "mem20 self-healing, self-tuning, forecasting and optimization runtime — crew runtime grouping reviewed packages for joint integration."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "crew", "runtime", "integration"]
+dependencies = []
+
+[project.scripts]
+mem20selfz = "mem20selfz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20selfz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

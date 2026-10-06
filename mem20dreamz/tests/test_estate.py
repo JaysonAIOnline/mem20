@@ -165,6 +165,10 @@ def _kwargs():
         ("INVENTOR_PROMPT", v.INVENTOR_PROMPT, {"critiques": "c"}),
         ("FORECAST_PROMPT", v.FORECAST_PROMPT, {"axis": "ax"}),
         ("PAIRWISE_PROMPT", v.PAIRWISE_PROMPT, {"a": "A", "b": "B"}),
+        # The hypnagogic pass is a different shape: it gets the cue and the head
+        # of the last artifact, and deliberately NOT the digest or the estate,
+        # because a shallow pass with a full context is just a deep pass.
+        ("DIVERGENT_PROMPT", v.DIVERGENT_PROMPT, {"cue": "C", "previous": "P", "chars": "N"}),
     ],
 )
 def test_every_template_formats_with_the_kwargs_the_engine_passes(name, template, extra):
@@ -186,7 +190,7 @@ def test_inventor_prompt_actually_shows_the_estate():
 
 def test_no_template_still_contains_an_unsupplied_placeholder():
     """Catches a new placeholder added to any template, not just the inventor's."""
-    supplied = set(_kwargs()) | {"critiques", "axis", "a", "b"}
+    supplied = set(_kwargs()) | {"critiques", "axis", "a", "b", "cue", "previous", "chars"}
     for name in dir(v):
         value = getattr(v, name)
         if not (isinstance(value, str) and name.endswith("_PROMPT")):

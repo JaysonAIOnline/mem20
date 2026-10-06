@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20dailydecisioncopilotz"
+version="1.0.0"
+description='Prioritize actions from goals, obligations, energy, time, and current context'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20dailydecisioncopilotz="mem20dailydecisioncopilotz.core:cli"
+
+[tool.setuptools]
+packages=["mem20dailydecisioncopilotz"]
+[tool.setuptools.package-data]
+mem20dailydecisioncopilotz=["roadmap.json"]

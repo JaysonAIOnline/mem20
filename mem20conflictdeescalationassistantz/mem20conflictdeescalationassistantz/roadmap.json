@@ -1,0 +1,76 @@
+{
+  "global_id": 119,
+  "section": "Runtime Roadmaps",
+  "owner": "Sherry",
+  "owner_code": "sherry",
+  "roadmap_index": 9,
+  "title": "Conflict De-Escalation Assistant",
+  "outcome": "Offer neutral reframing, timing suggestions, and shared-fact checks during tense exchanges",
+  "breakthrough": "Communication tools actively improve outcomes instead of merely carrying messages",
+  "lane": "Human communication, presence, and relationship intelligence",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Conflict De Escalation Core",
+      "subphases": [
+        {
+          "name": "1.1 Conflict De Escalation Domain Model and State Plane",
+          "work": [
+            "Define typed entities, capabilities, jobs, events, state transitions, and outputs required to offer neutral reframing, timing suggestions, and shared-fact checks during tense exchanges, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for voice, messaging, meetings, multilingual communication, team presence, and relationship context; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Conflict De Escalation Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: offer neutral reframing, timing suggestions, and shared-fact checks during tense exchanges.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Conflict De Escalation Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Conflict De Escalation Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using speech understanding, sentiment signals, conversation state, translation, and social graph inference.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Conflict De Escalation Interaction Surface",
+          "work": [
+            "Build the primary experience in the live conversation room, relationship map, meeting console, and ambient communication panel, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Conflict De Escalation into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Conflict De Escalation Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Conflict De Escalation Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: Communication tools actively improve outcomes instead of merely carrying messages. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ]
+}

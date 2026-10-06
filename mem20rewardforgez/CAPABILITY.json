@@ -1,0 +1,51 @@
+{
+  "breakthrough": "Any product can gain a programmable ethical reward system",
+  "domain_types": [
+    "recipes",
+    "source materials",
+    "transformations",
+    "builds",
+    "artifacts"
+  ],
+  "execution_modes": [
+    "local",
+    "hybrid",
+    "cloud"
+  ],
+  "global_id": 201,
+  "hard_safety": {
+    "risk_threshold": 0.75,
+    "sensitive_automatic_actions": "blocked",
+    "unsafe_automatic_actions": "blocked"
+  },
+  "id": "RM-201",
+  "lane": "Rewards, motivation, progression, and value exchange",
+  "operation_kind": "reward",
+  "outcome": "Compose digital rewards from value, rarity, timing, eligibility, and delivery rules",
+  "owner": "Sandy",
+  "owner_code": "sandy",
+  "roadmap_index": 1,
+  "schema_version": "2.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Any product can gain a programmable ethical reward system",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "source_sha256": "b317aad6b2a46defc0aeb85958ede6775f27ec922f602b6d6de0b090c7e32aae",
+  "surfaces": [
+    "reward forge",
+    "progression map",
+    "challenge studio",
+    "motivation simulator"
+  ],
+  "techniques": [
+    "behavior modeling",
+    "reinforcement signals",
+    "game theory",
+    "anomaly detection",
+    "adaptive difficulty"
+  ],
+  "title": "Reward Forge 2.0"
+}

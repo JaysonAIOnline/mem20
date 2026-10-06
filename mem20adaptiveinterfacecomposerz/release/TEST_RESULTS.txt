@@ -1,0 +1,22 @@
+test_backpressure_quota (test_core.Core.test_backpressure_quota) ... ok
+test_cancel_persisted_queued_job (test_core.Core.test_cancel_persisted_queued_job) ... ok
+test_compose_semantic (test_core.Core.test_compose_semantic) ... ok
+test_events (test_core.Core.test_events) ... ok
+test_feedback_cannot_break_safety (test_core.Core.test_feedback_cannot_break_safety) ... ok
+test_high_risk_requires_confirmation (test_core.Core.test_high_risk_requires_confirmation) ... ok
+test_idempotency (test_core.Core.test_idempotency) ... ok
+test_local_scheduler_when_offline (test_core.Core.test_local_scheduler_when_offline) ... ok
+test_rebuild_generation (test_core.Core.test_rebuild_generation) ... ok
+test_restart_recovery (test_core.Core.test_restart_recovery) ... ok
+test_safety_block (test_core.Core.test_safety_block) ... ok
+test_hybrid_failover (test_resilience.R.test_hybrid_failover) ... ok
+test_load (test_resilience.R.test_load) ... ok
+test_malformed (test_resilience.R.test_malformed) ... ok
+test_api_and_remote_peer (test_sync_privacy_api.More.test_api_and_remote_peer) ... ok
+test_conflict_safe_sync (test_sync_privacy_api.More.test_conflict_safe_sync) ... ok
+test_privacy_redaction (test_sync_privacy_api.More.test_privacy_redaction) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 1.467s
+
+OK

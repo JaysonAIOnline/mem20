@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Models become composable evolving assets instead of opaque files",
+  "domain_types": [
+    "experiments",
+    "hypotheses",
+    "datasets",
+    "runs",
+    "results"
+  ],
+  "global_id": 61,
+  "id": "RM-061",
+  "lane": "Model fabric, activation, routing, and readiness",
+  "operation_kind": "simulate",
+  "outcome": "Describe models through capabilities, behavior traits, limits, adapters, and evaluation ancestry",
+  "owner": "AGS",
+  "owner_code": "ags",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Models become composable evolving assets instead of opaque files",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "model workbench",
+    "inference map",
+    "evaluator arena",
+    "model genome browser"
+  ],
+  "techniques": [
+    "mixture routing",
+    "distillation",
+    "ensemble learning",
+    "synthetic evaluation",
+    "hardware-aware compilation"
+  ],
+  "title": "Model Genome Lab"
+}

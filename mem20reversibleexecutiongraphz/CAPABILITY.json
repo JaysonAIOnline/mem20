@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Autonomous systems can recover from mistakes without restarting everything",
+  "domain_types": [
+    "nodes",
+    "edges",
+    "relationships",
+    "graph queries"
+  ],
+  "global_id": 52,
+  "id": "RM-052",
+  "lane": "Autonomous routing, plans, and execution control",
+  "operation_kind": "graph",
+  "outcome": "Make every multi-step action capable of compensation, pause, branch, and rollback",
+  "owner": "ARE",
+  "owner_code": "are",
+  "roadmap_index": 2,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Autonomous systems can recover from mistakes without restarting everything",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "execution map",
+    "route debugger",
+    "scenario sandbox",
+    "autonomous operations console"
+  ],
+  "techniques": [
+    "causal planning",
+    "speculative execution",
+    "constraint optimization",
+    "digital twins",
+    "anomaly detection"
+  ],
+  "title": "Reversible Execution Graph"
+}

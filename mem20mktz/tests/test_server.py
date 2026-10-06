@@ -3,7 +3,7 @@ and returns the organ's real payload. Journaled trades are real braid nodes."""
 from __future__ import annotations
 
 import pytest
-from conftest import requires_ucg
+from .conftest import requires_ucg
 from fastapi.testclient import TestClient
 
 from mem20mktz.server import create_app

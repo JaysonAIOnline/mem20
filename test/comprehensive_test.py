@@ -23,7 +23,7 @@ import time
 
 from cognitive_engine import (
     aprocess_thought, arun_chain, areason, aplan, areflect, aworking_memory,
-    aimagination_concept, aimagination_dream, aimagination_critique,
+    aimagination_concept, aimagination_critique,
     aimagination_simulate, aimagination_counterfactual, aimagination_recombine,
     aimagination_model,
     atheory_of_mind_simulate, atheory_of_mind_perspective,
@@ -81,7 +81,7 @@ def main():
     run_test("aimagination_model", aimagination_model("game economy", "causal", "Will inflation occur?", []))
     run_test("aimagination_critique", aimagination_critique("Crypto as daily currency", ["feasibility"], True))
     run_test("aimagination_simulate", aimagination_simulate("AI takes coding jobs", [], 3, 2, ""))
-    run_test("aimagination_dream", aimagination_dream("City of the future", 2, "concepts", []))
+    
 
     print("\n--- Theory of Mind ---")
     run_test("theory_of_mind_simulate", atheory_of_mind_simulate(

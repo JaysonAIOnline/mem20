@@ -1,0 +1,40 @@
+{
+  "breakthrough": "New products can be assembled from reusable business primitives",
+  "domain_types": [
+    "services",
+    "routes",
+    "resources",
+    "events",
+    "placement state"
+  ],
+  "global_id": 84,
+  "id": "RM-084",
+  "lane": "Business operations and commercial behavior fabric",
+  "operation_kind": "simulate",
+  "outcome": "Compose sellable offers from capabilities, service levels, pricing, and delivery capacity",
+  "owner": "FSBF",
+  "owner_code": "fsbf",
+  "roadmap_index": 4,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "New products can be assembled from reusable business primitives",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "business twin",
+    "unit-economics dashboard",
+    "offer composer",
+    "deal cockpit"
+  ],
+  "techniques": [
+    "forecasting",
+    "optimization",
+    "simulation",
+    "recommendation",
+    "anomaly detection"
+  ],
+  "title": "Offer Assembly Fabric"
+}

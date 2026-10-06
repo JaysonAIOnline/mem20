@@ -1,0 +1,39 @@
+{
+  "breakthrough": "Product decisions can be rehearsed against realistic customer populations",
+  "domain_types": [
+    "entities",
+    "state snapshots",
+    "predictions",
+    "scenario branches"
+  ],
+  "global_id": 14,
+  "id": "RM-014",
+  "lane": "Autonomous company, product, and revenue runtime",
+  "operation_kind": "simulate",
+  "outcome": "Model customer goals, objections, behavior, and product usage before shipping changes",
+  "owner": "JamTek",
+  "owner_code": "jamtek",
+  "roadmap_index": 4,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Product decisions can be rehearsed against realistic customer populations",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "venture cockpit",
+    "experiment board",
+    "revenue map",
+    "live customer twin"
+  ],
+  "techniques": [
+    "causal inference",
+    "forecasting",
+    "bandit optimization",
+    "agent swarms",
+    "business simulation"
+  ],
+  "title": "Customer Digital Twin Lab"
+}

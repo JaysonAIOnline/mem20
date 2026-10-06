@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20neuromorphiceventlabz"
+version="1.0.0"
+description='Prototype sparse event-driven processing for sensors, agents, and low-power devices'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20neuromorphiceventlabz="mem20neuromorphiceventlabz.core:cli"
+
+[tool.setuptools]
+packages=["mem20neuromorphiceventlabz"]
+[tool.setuptools.package-data]
+mem20neuromorphiceventlabz=["roadmap.json"]

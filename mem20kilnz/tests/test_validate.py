@@ -11,7 +11,8 @@ from pathlib import Path
 
 from mem20kilnz import validate as V
 
-DEMO = "engine/examples/demo.glb"
+DEMO = str(Path(__file__).resolve().parent.parent
+            / "engine" / "examples" / "demo.glb")
 
 
 def test_demo_file_is_structurally_valid():

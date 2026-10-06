@@ -52,6 +52,12 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("ledger", help="braid ledger status")
     sub.add_parser("list", help="list lineages")
     sub.add_parser("idle", help="one idle dream turn (yields to any active run)")
+
+    p_nap = sub.add_parser("nap", help="run hypnagogic passes on a cue (the shallow shape)")
+    p_nap.add_argument("--cue", default="", help="a cue; drawn from the estate if omitted")
+    p_nap.add_argument("--passes", type=int, default=6)
+    p_nap.add_argument("--breadth", type=int, default=6, help="writers per pass")
+    p_nap.add_argument("--dream-id", default="", help="continue an existing lineage")
     sub.add_parser("idle-stats", help="what idle dreaming has produced, browsable later")
     p_promote = sub.add_parser("promote", help="export a portable roadmap pack")
     p_promote.add_argument("--dream-id", required=True)
@@ -146,6 +152,20 @@ def main(argv: list[str] | None = None) -> int:
         payload["artifact_preview"] = payload["artifact"][:2000]
         payload.pop("artifact", None)
         print(json.dumps(payload, indent=2)[:6000])
+        return 0
+
+    if args.cmd == "nap":
+        from . import seeds as seeds_mod
+
+        cue = args.cue or seeds_mod.next_seed(idle_mod._load_state())
+        target = None
+        if args.dream_id:
+            target = Lineage.load(args.dream_id)
+            if target is None:
+                print(json.dumps({"error": f"no such lineage: {args.dream_id}"}), file=sys.stderr)
+                return 1
+        result = engine.nap(cue, passes=args.passes, breadth=args.breadth, lineage=target)
+        print(json.dumps(result, indent=2, sort_keys=True))
         return 0
 
     if args.cmd == "run":

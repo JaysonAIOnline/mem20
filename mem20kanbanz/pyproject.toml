@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20kanbanz"
+version = "0.1.0"
+description = "The one true mem20 kanban: typed client, read-only inspector and non-destructive migrator for the mem20-kanban door."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["mem20", "kanban", "door", "migration", "agents", "board"]
+dependencies = []
+
+[project.scripts]
+mem20kanbanz = "mem20kanbanz.cli:main"
+mem20-sarge = "mem20kanbanz.sarge:main"
+
+[tool.setuptools]
+packages = ["mem20kanbanz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

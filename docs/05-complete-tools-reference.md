@@ -878,34 +878,6 @@ These tools enable counterfactual reasoning, creative exploration, and simulatio
 
 ---
 
-### `imagination_dream`
-
-**What it does:** Free-form creative exploration — memory → cognitive → visualize → prototype loop.
-
-**Input schema:**
-- `prompt` (string, required) — Starting prompt or theme
-- `iterations` (integer, optional, default 3) — Number of dream cycles
-- `output_mode` (string, optional, enum `["concepts"`, `"blender"`, `"unity"`, `"all"]`, default `"all"`)
-- `memory_topics` (array of strings, optional) — Topics to draw from
-
-**Output:** Creative dream output — concepts, visualizations, or prototypes.
-
-**Example call:**
-```json
-{
-  "name": "imagination_dream",
-  "arguments": {
-    "prompt": "the future of AI memory",
-    "iterations": 5,
-    "output_mode": "all"
-  }
-}
-```
-
-**When to use it:** For free-form creative exploration and ideation.
-
----
-
 ### `imagination_visualize`
 
 **What it does:** Creates a 3D scene in Blender representing a concept.
@@ -4681,7 +4653,7 @@ claude mcp add mem20 -- python3 /path/to/mem20/mcp/mcp_server.py
 |--------|-------|-------|
 | Core Memory | 20 | memory_store, memory_recall, memory_probe, memory_reason, memory_status, memory_contradict, memory_related, memory_feedback, memory_simulate_store, memory_promote, memory_list_simulated, memory_quarantine_simulated, memory_audit_contamination, memory_epistemic_veto, memory_pin_block, memory_unpin_block, memory_list_pinned_blocks, memory_get_pinned_block, memory_auto_consolidate, memory_cluster, memory_timeline, memory_triggers, memory_mood_tag, memory_stats, memory_graph_traverse, memory_export, memory_import, memory_context_window, memory_deduplicate |
 | Cognitive | 6 | cog_process, cog_chain, cog_reason, cog_plan, cog_reflect, cog_working_memory |
-| Imagination | 9 | imagination_concept, imagination_visualize, imagination_prototype, imagination_dream, imagination_critique, imagination_simulate, imagination_counterfactual, imagination_recombine, imagination_model |
+| Imagination | 8 | imagination_concept, imagination_visualize, imagination_prototype, imagination_critique, imagination_simulate, imagination_counterfactual, imagination_recombine, imagination_model |
 | World Model | 8 | world_model_add_variable, world_model_add_rule, world_model_simulate, world_model_predict, world_model_get_state, world_model_reset, world_model_record_prediction, world_model_resolve_prediction |
 | Self-Model | 3 | self_model_create, self_model_get, self_model_reflect |
 | Affective | 6 | affective_set_value, affective_set_emotion, affective_add_goal, affective_update_preference, affective_evaluate, affective_get_state |

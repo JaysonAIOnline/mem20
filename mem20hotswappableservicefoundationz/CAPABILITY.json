@@ -1,0 +1,41 @@
+{
+  "breakthrough": "The platform upgrades continuously with near-zero disruption",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 91,
+  "id": "RM-091",
+  "lane": "Technical foundation, resilience, and runtime substrate",
+  "operation_kind": "analyze",
+  "outcome": "Replace running service implementations without stopping unrelated capabilities",
+  "owner": "FSGF",
+  "owner_code": "fsgf",
+  "roadmap_index": 1,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "The platform upgrades continuously with near-zero disruption",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "foundation console",
+    "live dependency topology",
+    "compatibility matrix",
+    "resource heatmap"
+  ],
+  "techniques": [
+    "resource control",
+    "anomaly detection",
+    "topology optimization",
+    "compatibility analysis",
+    "energy modeling"
+  ],
+  "title": "Hot-Swappable Service Foundation"
+}

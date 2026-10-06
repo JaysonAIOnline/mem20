@@ -1,0 +1,40 @@
+{
+  "breakthrough": "Users can explore what might have happened before acting again",
+  "domain_types": [
+    "world models",
+    "scenarios",
+    "actors",
+    "variables",
+    "simulation runs"
+  ],
+  "global_id": 29,
+  "id": "RM-029",
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "operation_kind": "search",
+  "outcome": "Create alternate histories from stored decisions and observed outcomes",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "roadmap_index": 9,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Users can explore what might have happened before acting again",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "memory timeline",
+    "recall lens",
+    "context diff",
+    "cross-device memory controls"
+  ],
+  "techniques": [
+    "graph retrieval",
+    "temporal embeddings",
+    "compression",
+    "prediction",
+    "counterfactual simulation"
+  ],
+  "title": "Counterfactual Memory Simulator"
+}

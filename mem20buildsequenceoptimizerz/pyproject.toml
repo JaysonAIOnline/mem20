@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20buildsequenceoptimizerz"
+version="1.0.0"
+description='Find faster and safer implementation orders under real resource constraints'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20buildsequenceoptimizerz="mem20buildsequenceoptimizerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20buildsequenceoptimizerz"]
+[tool.setuptools.package-data]
+mem20buildsequenceoptimizerz=["roadmap.json"]

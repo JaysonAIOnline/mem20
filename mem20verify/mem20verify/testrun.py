@@ -107,7 +107,14 @@ def run_package(
         result.returncode = 127
         return result
 
-    cmd = [interpreter, "-m", "pytest", "-q", "-p", "no:warnings"]
+    # --override-ini addopts= neutralises the package's own addopts. Several
+    # packages set addopts="-q"; stacked with our -q that becomes a double
+    # --quiet, which suppresses pytest's "N passed" summary entirely. The suite
+    # still ran, but parse_counts() had no summary line to read and scored the
+    # package as 0 passed. Overriding addopts keeps exactly one -q so the
+    # summary is always emitted and the counts are real.
+    cmd = [interpreter, "-m", "pytest", "-q", "-p", "no:warnings",
+           "--override-ini", "addopts="]
     if test_pattern:
         cmd += ["-k", test_pattern]
     cmd += extra_args or []

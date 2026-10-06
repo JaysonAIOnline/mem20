@@ -129,3 +129,17 @@ different directory (the journal tests use this to stay hermetic).
 - Journaled commands require the braid ledger to be reachable through
   `/opt/mem20/braid_bridge.py`; if it is down, `fs-mkt journal *` and
   `fs-mkt trade execute` (journal mode) fail honestly with `BraidUnavailable`.
+
+## Managed members (package-review integration)
+
+Single-purpose marketplace organs grouped here by reference; they live in
+their own top-level directories and are smoke-verified there:
+
+- `mem20adaptiveinferencemarketplacez`
+- `mem20adaptivepricingbrainz`
+- `mem20capabilitymarketplacez`
+- `mem20connectormarketplacez`
+- `mem20globalcapabilitymarketplacez`
+- `mem20hardwaremarketplacez`
+- `mem20offerassemblyfabricz`
+- `mem20resourceexchangemarketz`

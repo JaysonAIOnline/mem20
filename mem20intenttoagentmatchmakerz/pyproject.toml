@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20intenttoagentmatchmakerz"
+version="1.0.0"
+description='Match user requests to capable agents and tool combinations'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20intenttoagentmatchmakerz="mem20intenttoagentmatchmakerz.core:cli"
+
+[tool.setuptools]
+packages=["mem20intenttoagentmatchmakerz"]
+[tool.setuptools.package-data]
+mem20intenttoagentmatchmakerz=["roadmap.json"]

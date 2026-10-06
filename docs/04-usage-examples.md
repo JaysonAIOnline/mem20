@@ -285,18 +285,6 @@
 }
 ```
 
-### Creative Dream
-
-```json
-{
-  "name": "imagination_dream",
-  "arguments": {
-    "topic": "the future of AI memory",
-    "length": "medium"
-  }
-}
-```
-
 ### Critique a Concept
 
 ```json

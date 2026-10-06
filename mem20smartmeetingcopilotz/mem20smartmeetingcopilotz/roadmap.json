@@ -1,0 +1,76 @@
+{
+  "global_id": 115,
+  "section": "Runtime Roadmaps",
+  "owner": "Sherry",
+  "owner_code": "sherry",
+  "roadmap_index": 5,
+  "title": "Smart Meeting Co-Pilot",
+  "outcome": "Turn live meetings into decisions, assigned actions, follow-ups, and callable workflows",
+  "breakthrough": "Meetings directly change the operating system rather than producing forgotten notes",
+  "lane": "Human communication, presence, and relationship intelligence",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Smart Meeting Co Core",
+      "subphases": [
+        {
+          "name": "1.1 Smart Meeting Co Domain Model and State Plane",
+          "work": [
+            "Define typed entities, capabilities, jobs, events, state transitions, and outputs required to turn live meetings into decisions, assigned actions, follow-ups, and callable workflows, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for voice, messaging, meetings, multilingual communication, team presence, and relationship context; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Smart Meeting Co Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: turn live meetings into decisions, assigned actions, follow-ups, and callable workflows.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Smart Meeting Co Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Smart Meeting Co Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using speech understanding, sentiment signals, conversation state, translation, and social graph inference.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Smart Meeting Co Interaction Surface",
+          "work": [
+            "Build the primary experience in the live conversation room, relationship map, meeting console, and ambient communication panel, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Smart Meeting Co into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Smart Meeting Co Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Smart Meeting Co Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: Meetings directly change the operating system rather than producing forgotten notes. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ]
+}

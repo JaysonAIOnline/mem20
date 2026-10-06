@@ -12,8 +12,17 @@ invoked with ``sh -c``, or ``ssh host 'somecommand'`` all get the default
 system PATH, which has never included the venv. That is a real gap, and it is
 silent - the tool exists, it is installed, and it is simply not found.
 
-This links the mem20-owned scripts into ``/root/.local/bin``, which *is* on the
-default PATH, so the same command works in every context.
+This links the mem20-owned scripts into ``/usr/local/bin``, which *is* on the
+default system PATH, so the same command works in every context.
+
+A note on why the target is ``/usr/local/bin`` and not ``~/.local/bin``: this
+used to target ``/root/.local/bin``, on the assumption that a user-level bin
+directory is on the default PATH. It is not. ``/root/.local/bin`` is only added
+by root's shell rc files, so an interactive prompt found the tools and nothing
+else did -- which is the exact gap this tool exists to close. ``/usr/local/bin``
+is in systemd's compiled-in default PATH (``/usr/local/sbin:/usr/local/bin:
+/usr/sbin:/usr/bin:/sbin:/bin``) and in cron and ``sh -c``, so it is the
+directory that actually fixes the problem.
 
 What it deliberately does not do
 --------------------------------
@@ -47,7 +56,16 @@ SITE_PACKAGES = Path(
         "MEM20_SITE_PACKAGES", "/root/.venv/lib/python3.14/site-packages"
     )
 )
-DEFAULT_TARGET = Path(os.environ.get("MEM20_PATH_DIR", "/root/.local/bin"))
+DEFAULT_TARGET = Path(os.environ.get("MEM20_PATH_DIR", "/usr/local/bin"))
+
+#: The PATH systemd hands a unit, a cron job or a bare ``sh -c``. This is the
+#: thing :func:`verify` measures against, so it is named rather than inlined: an
+#: earlier version inlined a list that included ``/root/.local/bin``, which made
+#: verify pass for links that systemd could never see.
+SYSTEMD_DEFAULT_PATH = (
+    "/usr/local/sbin:/usr/local/bin"
+    ":/usr/sbin:/usr/bin:/sbin:/bin"
+)
 
 #: Distributions mem20 owns. Matched on the normalised distribution name, which
 #: is metadata rather than a directory name, so an underscore/hyphen difference
@@ -141,10 +159,9 @@ def verify(
     site_packages: Path = SITE_PACKAGES, target_dir: Path = DEFAULT_TARGET
 ) -> list[str]:
     """Return the names that should resolve but do not, seen from a bare PATH."""
-    default_path = "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     missing: list[str] = []
     for name in sorted(discover_scripts(site_packages)):
-        if not shutil.which(name, path=default_path):
+        if not shutil.which(name, path=SYSTEMD_DEFAULT_PATH):
             missing.append(name)
     return missing
 

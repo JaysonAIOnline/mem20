@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20asynccollaborationcapsulesz"
+version="1.0.0"
+description='Package context, media, decisions, and executable actions into compact asynchronous handoffs'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20asynccollaborationcapsulesz="mem20asynccollaborationcapsulesz.core:cli"
+
+[tool.setuptools]
+packages=["mem20asynccollaborationcapsulesz"]
+[tool.setuptools.package-data]
+mem20asynccollaborationcapsulesz=["roadmap.json"]

@@ -1,0 +1,41 @@
+{
+  "breakthrough": "Users can replay decisions and branch from earlier context states",
+  "domain_types": [
+    "entities",
+    "capabilities",
+    "jobs",
+    "events",
+    "state transitions",
+    "outputs"
+  ],
+  "global_id": 23,
+  "id": "RM-023",
+  "lane": "Memory, context, connectors, and long-horizon intelligence",
+  "operation_kind": "search",
+  "outcome": "Reconstruct what the system knew, believed, and was doing at any prior moment",
+  "owner": "MEM20",
+  "owner_code": "mem20",
+  "roadmap_index": 3,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "Users can replay decisions and branch from earlier context states",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "memory timeline",
+    "recall lens",
+    "context diff",
+    "cross-device memory controls"
+  ],
+  "techniques": [
+    "graph retrieval",
+    "temporal embeddings",
+    "compression",
+    "prediction",
+    "counterfactual simulation"
+  ],
+  "title": "Memory Time Machine"
+}

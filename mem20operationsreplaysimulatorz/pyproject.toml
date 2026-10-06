@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20operationsreplaysimulatorz"
+version="1.0.0"
+description='Replay past operational state and test alternate routing choices'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20operationsreplaysimulatorz="mem20operationsreplaysimulatorz.core:cli"
+
+[tool.setuptools]
+packages=["mem20operationsreplaysimulatorz"]
+[tool.setuptools.package-data]
+mem20operationsreplaysimulatorz=["roadmap.json"]

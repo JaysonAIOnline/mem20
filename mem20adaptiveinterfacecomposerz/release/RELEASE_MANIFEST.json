@@ -1,0 +1,16 @@
+{
+  "roadmap_id": "RM-003",
+  "title": "Adaptive Interface Composer",
+  "version": "0.3.0",
+  "artifact_type": "independently installable Python capability + source handoff",
+  "wheel": "freestack_interface_composer-0.3.0-py3-none-any.whl",
+  "tests": 17,
+  "test_status": "pass",
+  "production_deployment_claimed": false,
+  "environment_bound": [
+    "production edge/cloud addresses and infrastructure authentication",
+    "production capability catalog/signing/trust policy",
+    "organization-specific human approval policy",
+    "deployment into a live FreeStack host"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "breakthrough": "Every project simultaneously produces results and increases capability",
+  "global_id": 36,
+  "lane": "Human-agent work execution and shared workspaces",
+  "outcome": "Teach humans through guided execution while agents learn from corrections",
+  "owner": "HSP",
+  "owner_code": "hsp",
+  "phases": [
+    {
+      "name": "Phase 1 - Build the Apprenticeship Runtime Core",
+      "subphases": [
+        {
+          "name": "1.1 Apprenticeship Runtime Domain Model and State Plane",
+          "work": [
+            "Define typed capabilities, processes, tasks, resources, and lifecycle state required to teach humans through guided execution while agents learn from corrections, with explicit versions and validation at every boundary.",
+            "Implement an owned persistent state layer optimized for goals, missions, human attention, agent teamwork, skill development, and measurable outcomes; include snapshots or event history when state changes over time.",
+            "Expose create, query, update, subscribe, and delete operations through local APIs plus an SDK that never requires private cross-runtime imports."
+          ]
+        },
+        {
+          "name": "1.2 Apprenticeship Runtime Execution Runtime",
+          "work": [
+            "Build resumable workers and state machines that perform the core operation: teach humans through guided execution while agents learn from corrections.",
+            "Add cancellation, idempotency, bounded retries, timeouts, quotas, sandbox limits, and deterministic recovery from partial failure.",
+            "Create a local simulator that can replay success, malformed inputs, disconnection, overload, provider loss, and restart recovery."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 - Make Apprenticeship Runtime Adaptive and Usable",
+      "subphases": [
+        {
+          "name": "2.1 Apprenticeship Runtime Decision and Learning Engine",
+          "work": [
+            "Implement scoring, planning, prediction, search, or optimization using planning graphs, skill matching, mixed-initiative control, simulation, and workload optimization.",
+            "Create feedback signals from task outcomes and user corrections; update tunable behavior without silently changing hard safety limits.",
+            "Return confidence, alternatives, bottlenecks, and a concise machine-readable explanation for every important automated choice."
+          ]
+        },
+        {
+          "name": "2.2 Apprenticeship Runtime Interaction Surface",
+          "work": [
+            "Build the primary experience in the collaborative mission canvas, focus mode, presence map, and work-cell console, including live state, controls, errors, and recovery actions.",
+            "Add a CLI and typed client library so humans, agents, games, and third-party applications can operate the capability directly.",
+            "Stream progress and intermediate artifacts in real time so long operations remain inspectable, interruptible, and steerable."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 - Scale Apprenticeship Runtime into a Breakthrough Product",
+      "subphases": [
+        {
+          "name": "3.1 Apprenticeship Runtime Offline, Edge, and Cloud Mesh",
+          "work": [
+            "Implement local-only, hybrid, and cloud execution with explicit capability discovery and graceful behavior when optional peers disappear.",
+            "Add conflict-safe synchronization, workload placement, caching, backpressure, and failover across devices or nodes where the feature benefits from distribution.",
+            "Benchmark latency, throughput, memory, energy, network transfer, and cost; make the scheduler choose the best execution mode from measured constraints."
+          ]
+        },
+        {
+          "name": "3.2 Apprenticeship Runtime Signature Breakthrough",
+          "work": [
+            "Implement the differentiating behavior: Every project simultaneously produces results and increases capability. Ship it as an opt-in executable mode, not a mockup.",
+            "Run adversarial, load, privacy, misuse, degraded-network, and recovery tests against the novel behavior; block unsafe automatic actions.",
+            "Package the feature as an independently installable capability with a live demo, sample integration, metrics endpoint, and rollback-safe release artifact."
+          ]
+        }
+      ]
+    }
+  ],
+  "roadmap_index": 6,
+  "section": "Runtime Roadmaps",
+  "title": "Apprenticeship Runtime"
+}

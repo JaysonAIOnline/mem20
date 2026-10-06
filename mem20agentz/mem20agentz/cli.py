@@ -677,7 +677,10 @@ def _cmd_skills(b, args) -> None:
     from .skills import SkillsStore
     store = SkillsStore(b)
     if args.skill_cmd == "catalog":
-        _out({"skills": [{"name": s.name, "description": s.description}
+        # source/path are included so a reader can tell a mem20 procedural
+        # skill from one read off disk, and go and look at the real file.
+        _out({"skills": [{"name": s.name, "description": s.description,
+                          "source": s.source, "path": s.path}
                          for s in store.catalog(args.query)]})
     elif args.skill_cmd == "bundles":
         _out({"bundles": store.bundles()})

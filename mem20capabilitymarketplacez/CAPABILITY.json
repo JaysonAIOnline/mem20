@@ -1,0 +1,39 @@
+{
+  "breakthrough": "FreeStack becomes an app economy for executable AI abilities",
+  "domain_types": [
+    "listings",
+    "participants",
+    "offers",
+    "matches",
+    "transactions"
+  ],
+  "global_id": 6,
+  "id": "RM-006",
+  "lane": "Composable application kernel and capability exchange",
+  "operation_kind": "match",
+  "outcome": "Discover, trial, install, rate, and combine reusable capabilities from local and remote sources",
+  "owner": "FreeStack Core",
+  "owner_code": "freestack",
+  "roadmap_index": 6,
+  "schema_version": "1.0",
+  "section": "Runtime Roadmaps",
+  "signature_mode": {
+    "behavior": "FreeStack becomes an app economy for executable AI abilities",
+    "enabled_by_default": false,
+    "opt_in": true
+  },
+  "source": "FreeStack_Off_Record_Futuristic_Roadmap_Lab_246_Maps.json",
+  "surfaces": [
+    "adaptive web desktop",
+    "command palette",
+    "SDK",
+    "event-stream inspector"
+  ],
+  "techniques": [
+    "constraint solvers",
+    "semantic matching",
+    "runtime telemetry",
+    "cost-aware scheduling"
+  ],
+  "title": "Capability Marketplace"
+}

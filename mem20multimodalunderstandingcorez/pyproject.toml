@@ -1,0 +1,17 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="mem20multimodalunderstandingcorez"
+version="1.0.0"
+description='Reason across speech, screens, images, video, files, and spatial context'
+requires-python=">=3.11"
+
+[project.scripts]
+mem20multimodalunderstandingcorez="mem20multimodalunderstandingcorez.core:cli"
+
+[tool.setuptools]
+packages=["mem20multimodalunderstandingcorez"]
+[tool.setuptools.package-data]
+mem20multimodalunderstandingcorez=["roadmap.json"]
