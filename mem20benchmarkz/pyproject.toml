@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20benchmarkz"
+version = "0.1.0"
+description = "mem20 retrieval benchmarks — quality, latency, and trustworthiness metrics, with an explicit statement of what the numbers are and are not comparable to."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["mem20", "benchmark", "retrieval", "memory", "trustworthiness"]
+dependencies = ["mem20api>=0.1.0"]
+
+[project.optional-dependencies]
+retrieval = [
+    "sentence-transformers>=2.2",
+    "faiss-cpu>=1.7",
+    "rank-bm25>=0.2.2",
+    "numpy>=1.24",
+]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+mem20benchmarkz = "mem20benchmarkz.cli:main"
+
+[tool.setuptools]
+packages = ["mem20benchmarkz"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

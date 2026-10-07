@@ -30,6 +30,22 @@ except ImportError:
     MEMORY_SYSTEM_AVAILABLE = False
 
 
+def _engine():
+    """Return the loaded memory engine module.
+
+    The engine is imported once at module scope from MEM20_STORE_PATH. Handlers
+    used to re-run `sys.path.insert` and `from memory import ...` inside every
+    call, which both repeated the import machinery per query and silently picked
+    up whichever `memory` module happened to be first on sys.path.
+    """
+    if not MEMORY_SYSTEM_AVAILABLE:
+        raise RuntimeError(
+            "memory engine not importable from "
+            f"{os.environ.get('MEM20_STORE_PATH', os.path.expanduser('~/.mem20/store'))}")
+    import memory as _m
+    return _m
+
+
 _NAMESPACE_META_TOPIC = "namespace_meta"
 _NAMESPACE_META_PREFIX = "NSMETA2 "
 _NAMESPACE_CONTENT_TOPIC = "namespace_"
@@ -414,17 +430,37 @@ class MemoryToolsMixin:
         self.tools["memory_recall_graph"] = mt.Tool(
             name="memory_recall_graph",
             title="Graph Memory Recall",
-            description="Knowledge graph traversal with multi-hop entity resolution",
+            description=(
+                "Multi-hop entity traversal over the persisted knowledge graph. "
+                "Entities are extracted at write time from topics, tags, and "
+                "proper nouns; returns related entities with hop distance plus "
+                "the facts that support them. Falls back to partial and "
+                "substring entity matching. Reports honestly when the graph "
+                "index has not been built."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "entity": {"type": "string", "description": "Starting entity"},
+                    "entity": {"type": "string", "description": "Starting entity (exact, case-insensitive, or substring)"},
                     "hops": {"type": "integer", "description": "Number of graph hops", "default": 2},
-                    "min_trust": {"type": "number", "description": "Minimum trust score", "default": 0.3},
                     "max_results": {"type": "integer", "default": 20},
+                    "min_facts": {"type": "integer", "description": "Require the starting entity to have at least this many supporting facts", "default": 1},
+                    "topic": {"type": "string", "description": "Only return entities seen under this topic", "default": ""},
                 },
                 "required": ["entity"],
             },
+        )
+        self.tools["memory_index_health"] = mt.Tool(
+            name="memory_index_health",
+            title="Retrieval Index Health",
+            description=(
+                "Report whether the vector, BM25, and graph indexes still agree "
+                "with the ledger, with exact counts. An index entry whose record "
+                "no longer exists is a stale pointer: search finds it and then "
+                "cannot resolve its content. This reports the drift instead of "
+                "silently returning fewer results."
+            ),
+            inputSchema={"type": "object", "properties": {}},
         )
         self.tools["memory_entity_extract"] = mt.Tool(
             name="memory_entity_extract",
@@ -958,92 +994,80 @@ class MemoryToolsMixin:
             return output
         except Exception as e:
             return f"Error in hybrid recall: {str(e)}"
+
     async def _memory_recall_graph(self, args: Dict) -> str:
-        """Knowledge graph traversal with multi-hop entity resolution."""
+        """Multi-hop entity traversal over the persisted graph index."""
         entity = args.get("entity", "")
-        hops = args.get("hops", 2)
-        min_trust = args.get("min_trust", 0.3)
-        max_results = args.get("max_results", 20)
+        hops = int(args.get("hops", 2))
+        max_results = int(args.get("max_results", 20))
+        min_facts = int(args.get("min_facts", 1))
+        topic = args.get("topic", "") or None
 
         if not entity:
             return "Error: entity is required"
 
         try:
-            sys.path.insert(0, os.environ.get("MEM20_STORE_PATH", os.path.expanduser("~/.mem20/store")))
-            from memory import _load_ledger, SUPERSEDED
-            from collections import defaultdict, deque
-            
-            recs = _load_ledger()
-            facts = [r for r in recs 
-                    if r.get("action") == "remember" 
-                    and SUPERSEDED not in r.get("content", "")]
-            
-            # Build entity graph from co-occurrence
-            entity_graph = defaultdict(set)
-            entity_facts = defaultdict(list)
-            
-            for f in facts:
-                content = f.get("content", "").lower()
-                topic = f.get("topic", "").lower()
-                # Extract potential entities (simple heuristic: capitalized words, topics)
-                words = content.split()
-                entities_in_fact = set()
-                for w in words:
-                    clean = w.strip('.,!?;:"()[]{}')
-                    if clean and (clean[0].isupper() or clean in topic):
-                        entities_in_fact.add(clean)
-                entities_in_fact.add(topic)
-                
-                for e1 in entities_in_fact:
-                    entity_facts[e1].append(f)
-                    for e2 in entities_in_fact:
-                        if e1 != e2:
-                            entity_graph[e1].add(e2)
-            
-            if entity.lower() not in [e.lower() for e in entity_graph]:
-                return f"Entity '{entity}' not found in knowledge graph"
-            
-            # Find actual case-matched entity name
-            actual_entity = next(e for e in entity_graph if e.lower() == entity.lower())
-            
-            # Multi-hop traversal
-            visited = set([actual_entity])
-            current_level = {actual_entity}
-            all_related = {}
-            
-            for hop in range(1, hops + 1):
-                next_level = set()
-                for e in current_level:
-                    for neighbor in entity_graph.get(e, []):
-                        if neighbor not in visited:
-                            visited.add(neighbor)
-                            next_level.add(neighbor)
-                            if neighbor not in all_related:
-                                all_related[neighbor] = hop
-                current_level = next_level
-                if not current_level:
-                    break
-            
-            if not all_related:
-                return f"No related entities found for: {entity} (hops={hops})"
-            
-            # Sort by hop distance and fact count
-            sorted_related = sorted(all_related.items(), key=lambda x: (x[1], -len(entity_facts.get(x[0], []))))
-            
-            output = f"**Graph Recall: '{entity}'** (hops={hops}, max={max_results})\n\n"
-            output += f"Starting entity: {actual_entity} ({len(entity_facts.get(actual_entity, []))} facts)\n\n"
-            output += f"Related entities:\n"
-            for rel_entity, hop_dist in sorted_related[:max_results]:
-                fact_count = len(entity_facts.get(rel_entity, []))
-                output += f"  Hop {hop_dist}: {rel_entity} ({fact_count} facts)\n"
-                # Show sample fact
-                sample_facts = entity_facts.get(rel_entity, [])
-                if sample_facts:
-                    sample = sample_facts[0].get('content', '')[:200]
-                    output += f"    Sample: {sample}...\n"
-            return output
+            m = _engine()
+            r = m.recall_graph(entity, hops=hops, max_results=max_results,
+                               min_facts=min_facts, topic=topic)
+
+            if not r.get("found"):
+                err = r.get("error", "not found")
+                if r.get("known_entities"):
+                    err += f" ({r['known_entities']} entities in graph)"
+                return f"Graph recall miss for '{entity}': {err}"
+
+            out = (f"**Graph Recall: {r['start']}** (hops={hops}, "
+                   f"{r['entity_count']} entities, {r['fact_count']} facts)\n")
+            out += (f"_Graph holds {r['graph_entities']} entities / "
+                    f"{r['graph_edges']} edges_\n\n")
+
+            out += "Entities:\n"
+            for e in r["entities"]:
+                mark = " <- start" if e["is_start"] else ""
+                out += (f"  hop {e['hop']}: {e['entity']}{mark} "
+                        f"({e['fact_count']} facts, topics={e['topics']})\n")
+
+            if r["facts"]:
+                out += "\nFacts:\n"
+                for f in r["facts"]:
+                    out += (f"  [{f['topic']}] {f['content'][:200]}\n")
+            return out
         except Exception as e:
-            return f"Error in graph recall: {str(e)}"
+            return f"Error in graph recall: {type(e).__name__}: {str(e)}"
+
+    async def _memory_index_health(self, args: Dict) -> str:
+        """Report index/ledger agreement with exact counts."""
+        try:
+            h = _engine().index_health()
+            lines = [f"**Retrieval index health** — store `{h['store']}`",
+                     f"Ledger records: **{h['ledger_records']}**", ""]
+            for key, idx in h["indexes"].items():
+                if not idx.get("present"):
+                    lines.append(f"- `{key}`: **ABSENT** — run rebuild to create it")
+                    continue
+                status = "ok" if idx.get("healthy") else "**DRIFTED**"
+                detail = []
+                if "indexed" in idx:
+                    detail.append(f"{idx['resolvable']}/{idx['indexed']} resolvable")
+                if idx.get("missing_from_ledger"):
+                    detail.append(f"{idx['missing_from_ledger']} stale pointers")
+                if "entities" in idx:
+                    detail.append(f"{idx['entities']} entities, "
+                                  f"{idx.get('edges', 0)} edges")
+                if idx.get("meta_matches_index") is False:
+                    detail.append("metadata/FAISS count mismatch")
+                lines.append(f"- `{key}`: {status} — {', '.join(detail) or 'ok'}")
+
+            lines.append("")
+            lines.append("**Overall: " + ("healthy" if h["healthy"] else "NEEDS REBUILD") + "**")
+            if not h["healthy"]:
+                lines.append("\nStale pointers mean search matches records that no "
+                             "longer exist. Run `rebuild_vectors`, `rebuild_bm25`, "
+                             "and `rebuild_graph` to reindex from the ledger.")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"Error reading index health: {type(e).__name__}: {str(e)}"
     async def _memory_entity_extract(self, args: Dict) -> str:
         """Extract entities and relationships from text using spaCy/LLM."""
         text = args.get("text", "")

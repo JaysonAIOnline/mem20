@@ -1,0 +1,660 @@
+{
+  "corpus": "mem20-agent-kb-v1",
+  "facts": 14,
+  "simulated": 3,
+  "queries": 13,
+  "environment": {
+    "python": "3.14.6",
+    "platform": "Linux-7.0.12+kali-amd64-x86_64-with-glibc2.42",
+    "machine": "x86_64",
+    "processor": "unknown",
+    "store": "/tmp/mem20-bench-84sklarw",
+    "vector_available": true,
+    "bm25_available": true,
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "embedding_dim": 384,
+    "cross_encoder": true
+  },
+  "recall": {
+    "graph": {
+      "multi_hop": {
+        "n": 2,
+        "hit_rate": 1.0,
+        "mrr": 1.0,
+        "leak_rate": 0.0,
+        "median_latency_ms": 0.8
+      }
+    },
+    "hybrid": {
+      "adversarial": {
+        "n": 3,
+        "hit_rate": 0.0,
+        "mrr": 0.0,
+        "leak_rate": 0.0,
+        "median_latency_ms": 196.66
+      },
+      "direct": {
+        "n": 5,
+        "hit_rate": 1.0,
+        "mrr": 1.0,
+        "leak_rate": 0.0,
+        "median_latency_ms": 167.53
+      },
+      "multi_hop": {
+        "n": 5,
+        "hit_rate": 0.8,
+        "mrr": 0.64,
+        "leak_rate": 0.0,
+        "median_latency_ms": 205.09
+      }
+    },
+    "keyword": {
+      "adversarial": {
+        "n": 3,
+        "hit_rate": 0.0,
+        "mrr": 0.0,
+        "leak_rate": 0.0,
+        "median_latency_ms": 160.18
+      },
+      "direct": {
+        "n": 5,
+        "hit_rate": 1.0,
+        "mrr": 1.0,
+        "leak_rate": 0.0,
+        "median_latency_ms": 175.22
+      },
+      "multi_hop": {
+        "n": 5,
+        "hit_rate": 0.8,
+        "mrr": 0.64,
+        "leak_rate": 0.0,
+        "median_latency_ms": 193.72
+      }
+    },
+    "semantic": {
+      "adversarial": {
+        "n": 3,
+        "hit_rate": 0.0,
+        "mrr": 0.0,
+        "leak_rate": 0.0,
+        "median_latency_ms": 20.66
+      },
+      "direct": {
+        "n": 5,
+        "hit_rate": 1.0,
+        "mrr": 0.9,
+        "leak_rate": 0.0,
+        "median_latency_ms": 17.23
+      },
+      "multi_hop": {
+        "n": 5,
+        "hit_rate": 0.8,
+        "mrr": 0.8,
+        "leak_rate": 0.0,
+        "median_latency_ms": 20.45
+      }
+    }
+  },
+  "latency_ms": {
+    "graph": {
+      "n": 2,
+      "p50": 0.78,
+      "p95": 0.83,
+      "p99": 0.83,
+      "max": 0.83,
+      "mean": 0.8
+    },
+    "hybrid": {
+      "n": 13,
+      "p50": 182.39,
+      "p95": 219.32,
+      "p99": 258.56,
+      "max": 258.56,
+      "mean": 182.17
+    },
+    "keyword": {
+      "n": 13,
+      "p50": 175.22,
+      "p95": 228.41,
+      "p99": 241.59,
+      "max": 241.59,
+      "mean": 181.64
+    },
+    "semantic": {
+      "n": 13,
+      "p50": 17.56,
+      "p95": 26.79,
+      "p99": 32.15,
+      "max": 32.15,
+      "mean": 19.85
+    }
+  },
+  "trust": {
+    "contamination_rate": 0.0,
+    "contamination_violations": 0,
+    "simulated_in_bm25": [],
+    "stale_pointer_rate": 0.0,
+    "stale_pointers": 0,
+    "indexed_entries": 28,
+    "index_healthy": true,
+    "graph_entities": 38,
+    "graph_edges": 70,
+    "degraded_queries": 0,
+    "queries_with_drift_diagnostic": 41,
+    "all_reported_healthy": true,
+    "ledger_records": 14,
+    "rerank_off_comparison": {
+      "with": {
+        "p50_ms": 173.3,
+        "mrr_direct": 1.0,
+        "mrr_multi_hop": 0.64,
+        "hit_direct": 1.0,
+        "hit_multi_hop": 0.8
+      },
+      "without": {
+        "p50_ms": 17.98,
+        "mrr_direct": 0.9,
+        "mrr_multi_hop": 0.8,
+        "hit_direct": 1.0,
+        "hit_multi_hop": 0.8
+      }
+    }
+  },
+  "per_query": [
+    {
+      "qid": "d1",
+      "kind": "direct",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 152.29,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d2",
+      "kind": "direct",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 145.351,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d3",
+      "kind": "direct",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 193.259,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d4",
+      "kind": "direct",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 175.219,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d5",
+      "kind": "direct",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 203.267,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m1",
+      "kind": "multi_hop",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 193.715,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m2",
+      "kind": "multi_hop",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 241.585,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m3",
+      "kind": "multi_hop",
+      "mode": "keyword",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 169.716,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m4",
+      "kind": "multi_hop",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 228.406,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m5",
+      "kind": "multi_hop",
+      "mode": "keyword",
+      "hit": true,
+      "rank": 5,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 170.123,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "a1",
+      "kind": "adversarial",
+      "mode": "keyword",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 184.262,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "a2",
+      "kind": "adversarial",
+      "mode": "keyword",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 160.175,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "a3",
+      "kind": "adversarial",
+      "mode": "keyword",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 144.013,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d1",
+      "kind": "direct",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 17.559,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "d2",
+      "kind": "direct",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 16.233,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "d3",
+      "kind": "direct",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 17.516,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "d4",
+      "kind": "direct",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 2,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 15.443,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "d5",
+      "kind": "direct",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 17.229,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "m1",
+      "kind": "multi_hop",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 25.99,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "m2",
+      "kind": "multi_hop",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 26.786,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "m3",
+      "kind": "multi_hop",
+      "mode": "semantic",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 20.448,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "m4",
+      "kind": "multi_hop",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 17.113,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "m5",
+      "kind": "multi_hop",
+      "mode": "semantic",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 18.228,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "a1",
+      "kind": "adversarial",
+      "mode": "semantic",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 20.656,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "a2",
+      "kind": "adversarial",
+      "mode": "semantic",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 32.149,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "a3",
+      "kind": "adversarial",
+      "mode": "semantic",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 12.725,
+      "degraded_to": null,
+      "drift_healthy": true
+    },
+    {
+      "qid": "d1",
+      "kind": "direct",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 176.798,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d2",
+      "kind": "direct",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 124.221,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d3",
+      "kind": "direct",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 167.534,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d4",
+      "kind": "direct",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 147.101,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "d5",
+      "kind": "direct",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 197.779,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m1",
+      "kind": "multi_hop",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 182.393,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m2",
+      "kind": "multi_hop",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 258.555,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m3",
+      "kind": "multi_hop",
+      "mode": "hybrid",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 213.009,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m4",
+      "kind": "multi_hop",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 205.093,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m5",
+      "kind": "multi_hop",
+      "mode": "hybrid",
+      "hit": true,
+      "rank": 5,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 115.987,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "a1",
+      "kind": "adversarial",
+      "mode": "hybrid",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 219.324,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "a2",
+      "kind": "adversarial",
+      "mode": "hybrid",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 196.663,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "a3",
+      "kind": "adversarial",
+      "mode": "hybrid",
+      "hit": false,
+      "rank": null,
+      "leaked": false,
+      "n_results": 5,
+      "latency_ms": 163.797,
+      "degraded_to": "both",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m4",
+      "kind": "multi_hop",
+      "mode": "graph",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 3,
+      "latency_ms": 0.776,
+      "degraded_to": "found",
+      "drift_healthy": true
+    },
+    {
+      "qid": "m5",
+      "kind": "multi_hop",
+      "mode": "graph",
+      "hit": true,
+      "rank": 1,
+      "leaked": false,
+      "n_results": 3,
+      "latency_ms": 0.826,
+      "degraded_to": "found",
+      "drift_healthy": true
+    }
+  ],
+  "notes": [
+    "Scores are NOT comparable to Mem0's LoCoMo/LongMemEval or Zep's DMR. Those run on different corpora (two of them private or vendor-defined) with different metrics. These numbers describe this corpus only."
+  ]
+}

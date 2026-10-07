@@ -325,6 +325,8 @@ class Mem20MCPServer(MemoryToolsMixin, CognitiveToolsMixin, RoadmapToolsMixin,
             return await self._memory_recall_hybrid(arguments)
         elif tool_name == "memory_recall_graph":
             return await self._memory_recall_graph(arguments)
+        elif tool_name == "memory_index_health":
+            return await self._memory_index_health(arguments)
         elif tool_name == "memory_entity_extract":
             return await self._memory_entity_extract(arguments)
         elif tool_name == "memory_auto_consolidate":

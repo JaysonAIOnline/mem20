@@ -77,8 +77,19 @@ except ImportError:
     CROSS_ENCODER_AVAILABLE = False
 
 # Cross-encoder configuration
-USE_CROSS_ENCODER = CROSS_ENCODER_AVAILABLE
-CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+#
+# Reranking is on by default when the dependency is installed, and it is not
+# cheap: measured on this host, hybrid retrieval with reranking runs at ~158ms
+# p50 against ~15ms for the vector half alone, because every candidate pair goes
+# through a second transformer pass. That is a large, silent tax on latency
+# paid for a quality gain that is not always wanted.
+#
+# MEM20_RERANK=0 turns it off without uninstalling anything, so an operator can
+# trade quality for latency and measure the difference rather than guess.
+USE_CROSS_ENCODER = CROSS_ENCODER_AVAILABLE and \
+    os.environ.get("MEM20_RERANK", "1").strip().lower() not in ("0", "false", "no", "off")
+CROSS_ENCODER_MODEL = os.environ.get(
+    "MEM20_RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 _CROSS_ENCODER = None
 
 def _get_cross_encoder():
@@ -1295,6 +1306,19 @@ def _graph_extract_entities(rec: dict) -> list[str]:
     for word in content.split():
         bare = word.strip(" \t.,;:!?\"'()[]{}")
         if not bare:
+            continue
+        # A filename is an entity whatever its case: "roadmap.md" is a real
+        # named artifact even when lowercase, and excluding it because it does
+        # not start with a capital is how the graph lost every path reference.
+        is_file = bool(_GRAPH_FILENAMEISH.search(bare))
+        if is_file:
+            # A filename starts its own entity: it is a named artifact, never
+            # part of a neighbouring phrase. Flush first so "Read roadmap.md"
+            # does not become one entity, and split so "a.md b.md" does not
+            # become another.
+            flush()
+            add(bare)
+            run = []
             continue
         if bare[0].isupper() and bare.lower() not in _GRAPH_STOPWORDS:
             run.append(bare)

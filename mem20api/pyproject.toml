@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mem20api"
+version = "0.1.0"
+description = "Stable Python API over the mem20 memory engine: bind a store, read and write through one object, and get index-health and contamination diagnostics with every retrieval result."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["mem20", "memory", "retrieval", "api", "grounded", "simulated"]
+dependencies = []
+
+[project.optional-dependencies]
+# The engine degrades without these: vector retrieval and BM25 are optional, and
+# health() will say so rather than pretending they ran.
+retrieval = [
+    "sentence-transformers>=2.2",
+    "faiss-cpu>=1.7",
+    "rank-bm25>=0.2.2",
+    "numpy>=1.24",
+]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+mem20-api-health = "mem20api.cli:main"
+
+[tool.setuptools]
+packages = ["mem20api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
