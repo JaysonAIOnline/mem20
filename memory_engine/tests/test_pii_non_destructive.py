@@ -9,10 +9,12 @@ from __future__ import annotations
 import os
 import sys
 import tempfile
+from contextlib import contextmanager
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from memory import _detect_only, _scrub_secrets, detect_secrets, redact_secrets
+import memory  # noqa: E402
+from memory import _detect_only, _scrub_secrets, detect_secrets, redact_secrets  # noqa: E402
 
 GIT_SHA1 = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 BRAID_CID = "br25166abf9a68c78abb8545dacb65dbcedbcb1f69ec0b02be4c1e4a4f48fec32c"
@@ -163,15 +165,41 @@ class TestRedactionIsOutputOnly:
 
 
 class TestStorePathIsNonDestructive:
-    def test_remember_stores_original_text(self):
-        import memory
+    @contextmanager
+    def _isolate_store(self, tmp):
+        """Point EVERY store-derived path at `tmp`, and restore after.
 
+        Rebinding only LEDGER and ENTRIES is not enough. `remember()` writes the
+        ledger row to memory.LEDGER but then indexes through memory.VECTOR_INDEX,
+        memory.VECTOR_META, memory.BM25_INDEX, memory.BM25_CORPUS, and
+        memory.GRAPH_INDEX. With those left alone the test writes its ledger into
+        tmp and its index rows into the LIVE store -- creating an orphaned index
+        entry per run and permanently drifting the production indexes against the
+        real ledger.
+
+        That is not hypothetical: two such orphans (`pii-regression`,
+        `pii-meta`) were found in the live store's vector metadata with no
+        matching ledger record, having been created by this test.
+        """
+        keys = ("LEDGER", "ENTRIES", "INDEX", "BACKUP_DIR", "VECTOR_INDEX",
+                "VECTOR_META", "BM25_INDEX", "BM25_CORPUS", "GRAPH_INDEX",
+                "SIMULATED_LEDGER", "PINNED_FILE", "WORLD_MODEL_FILE",
+                "PREDICTIONS_LEDGER", "AFFECTIVE_FILE", "PROCEDURAL_FILE")
+        saved = {k: getattr(memory, k) for k in keys}
+        for k in keys:
+            if k in ("ENTRIES", "BACKUP_DIR"):
+                setattr(memory, k, os.path.join(tmp, k.lower()))
+            else:
+                setattr(memory, k, os.path.join(tmp, k.lower()))
+        try:
+            yield
+        finally:
+            for k, v in saved.items():
+                setattr(memory, k, v)
+
+    def test_remember_stores_original_text(self):
         with tempfile.TemporaryDirectory() as tmp:
-            original_entries = memory.ENTRIES
-            original_ledger = memory.LEDGER
-            memory.ENTRIES = os.path.join(tmp, "entries")
-            memory.LEDGER = os.path.join(tmp, "ledger.jsonl")
-            try:
+            with self._isolate_store(tmp):
                 text = f"commit {GIT_SHA1} node {BRAID_CID} uuid 550e8400-e29b-41d4-a716-446655440000"
                 rec = memory.remember(topic="pii-regression", content=text)
                 assert rec["id"]
@@ -179,19 +207,15 @@ class TestStorePathIsNonDestructive:
                 joined = " ".join(r.get("content", "") for r in results)
                 assert GIT_SHA1 in joined, "git SHA must survive storage verbatim"
                 assert BRAID_CID in joined, "braid CID must survive storage verbatim"
-            finally:
-                memory.ENTRIES = original_entries
-                memory.LEDGER = original_ledger
+
+                # The index must have followed the ledger into tmp, not stayed
+                # behind pointing at whatever store was live.
+                assert memory.VECTOR_INDEX.startswith(tmp)
+                assert memory.GRAPH_INDEX.startswith(tmp)
 
     def test_remember_records_detection_metadata(self):
-        import memory
-
         with tempfile.TemporaryDirectory() as tmp:
-            original_entries = memory.ENTRIES
-            original_ledger = memory.LEDGER
-            memory.ENTRIES = os.path.join(tmp, "entries")
-            memory.LEDGER = os.path.join(tmp, "ledger.jsonl")
-            try:
+            with self._isolate_store(tmp):
                 memory.remember(topic="pii-meta", content="password = hunter2000")
                 import json
 
@@ -200,6 +224,3 @@ class TestStorePathIsNonDestructive:
                 meta = [r for r in rows if r.get("topic") == "pii-meta"]
                 assert meta, "ledger row missing"
                 assert meta[0]["secrets_detected"], "detection metadata should be recorded"
-            finally:
-                memory.ENTRIES = original_entries
-                memory.LEDGER = original_ledger
