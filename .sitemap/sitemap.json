@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T04:17:51-0600",
+  "generated_at": "2026-10-07T05:13:30-0600",
   "root": "/opt/mem20",
   "root_files": [
     ".gitignore",
@@ -60,7 +60,7 @@
     "/opt/mem20",
     "/sb"
   ],
-  "scan_seconds": 2.15,
+  "scan_seconds": 2.28,
   "schema": "mem20-sitemap-v1",
   "subsystems": [
     {
@@ -1769,6 +1769,37 @@
       "subdirs": [
         "mem20antiexploitationrewardshieldz"
       ],
+      "test_files": 0,
+      "version": null
+    },
+    {
+      "bytes": 11889,
+      "category": "organ",
+      "code_lines": 237,
+      "dependencies": [],
+      "description": "",
+      "dir": "mem20api",
+      "docs": [],
+      "entry_points": {},
+      "file_count": 1,
+      "keywords": [],
+      "languages": {
+        "python": 1
+      },
+      "license": null,
+      "line_count": 237,
+      "lines_by_language": {
+        "python": 237
+      },
+      "modules": [
+        "mem20api"
+      ],
+      "name": "mem20api",
+      "packaged": false,
+      "readme_summary": "",
+      "readme_text": "",
+      "requires_python": null,
+      "subdirs": [],
       "test_files": 0,
       "version": null
     },
@@ -9402,7 +9433,7 @@
       "version": null
     },
     {
-      "bytes": 89174,
+      "bytes": 89704,
       "category": "organ",
       "code_lines": 1893,
       "dependencies": [],
@@ -9430,22 +9461,13 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 2014,
+      "line_count": 2021,
       "lines_by_language": {
         "markdown": 102,
         "python": 1893,
-        "toml": 19
+        "toml": 26
       },
       "modules": [
-        "__init__",
-        "__main__",
-        "audit",
-        "cli",
-        "clicheck",
-        "cloudflare",
-        "fleet",
-        "memchecks",
-        "runtime",
         "test_audit",
         "test_cli",
         "test_clicheck",
@@ -9459,7 +9481,7 @@
       "readme_text": "# mem20ops\n\nreusable operational workflows for the mem20 estate, packaged as one cli.\n\n> **naming:** `mem20ops` is a deliberate, recorded exception to the estate's\n> `mem20<name>z` convention (jayson, 2026-09-24), listed in `/root/agents.md`\n> under the known-exceptions list. \"ops\" names a role over the fleet rather than\n> an organ, so the `z` suffix would misname it. do not rename.\n\nevery command here encodes a procedure that was performed by hand at least once\nduring the fleet build, so the next run is a command instead of a shell session.\nall commands support `--json` and return stable exit codes.\n\n## install\n\n```\ncd /opt/mem20/mem20ops\n/root/.venv/bin/pip install -e .\n```\n\ninstalling puts two commands on path:\n\n- `fs-ops` \u2014 the operational workflows below\n- `fs` \u2014 the fleet-wide subsystem dispatcher\n\nboth are discoverable to `toolchest` (run `python -m toolchest refresh` to\nre-inventory).\n\n## the `fs` dispatcher\n\none command reaches every subsystem cli:\n\n```\nfs                          list every subsystem and the binary behind it\nfs list --json              machine-readable inventory\nfs cv infer ...             runs the cv subsystem\nfs corez serve ...          runs the corez subsystem\nfs ops dns-audit ...        runs the fleet operations cli\n```\n\nsubsystem names resolve loosely: `fs corez`, `fs mem20corez` and `fs-cv` all\nreach the same cli, and the child's exit code is propagated so `fs` composes in\nscripts. an unknown subsystem prints the known list and exits non-zero; an\nunknown option is a usage error (exit 2).\n\n## exit codes\n\n| code | meaning                |\n|------|------------------------|\n| 0    | success                |\n| 1    | operation failed       |\n| 2    | usage error (argparse) |\n| 3    | findings present       |\n| 4    | missing credentials    |\n\naudit-style commands return 3 when they find something worth attention (for\nexample a wildcard record shadowing unlisted hosts), so they compose in ci.\n\n## commands\n\n### `fs-ops cli-coverage [--timeout seconds]`\naudits every fleet cli against the agreed contract: is the binary actually\ninstalled (not merely declared), does `--help` exit 0 within a hard timeout, does\nit advertise `--json`, and is its naming `fs-*` or a recorded exception. reports\nper-binary gaps and exits 3 when any gap exists. read-only and bounded.\n\n### `fs-ops dns-audit zone [--pattern regex]`\ninventories a cloudflare zone: per-type counts, full record list, records\ngrouped by origin, email-routing record count, and wildcard detection. exits 3\nwhen a wildcard is present, because a wildcard silently answers every\nunlisted subdomain. `--pattern` narrows the printed rows to a regex.\n\n### `fs-ops pages-inspect [--project name] [--account id] [--no-fetch]`\nlists pages projects, or inspects one: subdomain, custom domains, deployment\nhistory, and (unless `--no-fetch`) the live page's status, title, and headings.\n\n### `fs-ops pages-delete project --confirm`\ndeletes a pages project and reports before/after state. refuses to run without\n`--confirm`. always reports the remaining project list so an accidental delete is\nvisible immediately.\n\n### `fs-ops stale-code path [path ...] [--match substr]`\nfinds running processes that started **before** a source file was last modified.\nthis is the check that tells you whether a fix is actually live: an on-disk edit\ndoes not reach a process that loaded the module earlier. uses `ps -ww` so long\npaths are never truncated.\n\n### `fs-ops service-status unit`\nsystemd unit state, main pid, and the pid's own start time \u2014 the other half of\nthe stale-code question (did the unit actually restart?).\n\n### `fs-ops verify [--repo dir] [--lint path ...] [--no-tests] [--no-lint]`\nruns the test suite and lint with hard timeouts, parses real pass/fail counts,\nand exits non-zero on failure. every subprocess call is bounded; a hung test\nreports exit 124 rather than blocking forever.\n\n### `fs-ops identity-check`\nreports the store path, pinned blocks, life/voice blocks, and every memory\nnamespace with its owner and acl. parses both the legacy\n`namespace: ..., owner: ..., acl: {...}` metadata format and the structured\n`nsmeta2` json format.\n\n### `fs-ops acl-probe namespace --actor name [--actor name]`\nreports per-actor readability of a namespace. note that the raw ledger has no\nacl layer, so this probes storage, not enforcement \u2014 the enforced path is the\nmcp `memory_shared_recall` tool.\n\n### `fs-ops lint-delta path [--revision rev]`\ncompares ruff findings for a file against a git revision, per rule code, and\nprints which findings are new versus resolved. uses `ruff --stdin-filename` so\nthe baseline is analysed under the same project config as the working file;\ncopying a file to `/tmp` first silently applies different rules and produces a\nmeaningless comparison. in this repo much of the tree is staged-but-uncommitted,\nso compare against the index with `--revision :` where appropriate.\n\n## safety properties\n\n- read-only by default. `pages-delete` is the only mutating command and it\n  requires `--confirm`.\n- credentials come from `/opt/mem20/secrets/.env` (or the environment). token\n  values are never printed, logged, or included in any output.\n- all probes run against isolated temporary stores by default, so inspecting\n  never mutates the real ledger.\n- every subprocess call has a timeout.\n\n## tests\n\n```\n/root/.venv/bin/python -m pytest /opt/mem20/mem20ops -q\n```\n\nnetwork paths are tested through a fake client implementing the `cloudflareapi`\nprotocol, so the suite is hermetic and does not touch cloudflare.\n",
       "requires_python": ">=3.11",
       "subdirs": [
-        "mem20ops",
+        "src",
         "tests"
       ],
       "test_files": 6,
@@ -11832,7 +11854,7 @@
       "version": null
     },
     {
-      "bytes": 21515,
+      "bytes": 21898,
       "category": "organ",
       "code_lines": 505,
       "dependencies": [],
@@ -11856,17 +11878,13 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 530,
+      "line_count": 535,
       "lines_by_language": {
         "markdown": 7,
         "python": 505,
-        "toml": 18
+        "toml": 23
       },
       "modules": [
-        "__init__",
-        "__main__",
-        "cli",
-        "sweep",
         "test_sweep"
       ],
       "name": "mem20secretz",
@@ -11875,7 +11893,7 @@
       "readme_text": "# managed members (package-review integration)\n\nsingle-purpose security organs grouped here by reference; they live in\ntheir own top-level directories and are smoke-verified there:\n\n- `mem20antiexploitationrewardshieldz`\n- `mem20privacypreservingdatacapsulesz`\n- `mem20secretslessworkloadidentityz`\n- `mem20securecomputecapsulesz`\n",
       "requires_python": ">=3.11",
       "subdirs": [
-        "mem20secretz",
+        "src",
         "tests"
       ],
       "test_files": 1,
@@ -13234,9 +13252,9 @@
       "version": "0.1.0"
     },
     {
-      "bytes": 92948,
+      "bytes": 97262,
       "category": "organ",
-      "code_lines": 1629,
+      "code_lines": 1703,
       "dependencies": [],
       "description": "Bi-temporal memory: separates when a claim was true from when the system knew it",
       "dir": "mem20temporaldatabasefabricz",
@@ -13255,11 +13273,11 @@
         "toml": 1
       },
       "license": null,
-      "line_count": 1842,
+      "line_count": 1916,
       "lines_by_language": {
         "json": 83,
         "markdown": 107,
-        "python": 1629,
+        "python": 1703,
         "toml": 23
       },
       "modules": [
@@ -14393,9 +14411,9 @@
       "version": "0.2.0"
     },
     {
-      "bytes": 187656,
+      "bytes": 189046,
       "category": "service",
-      "code_lines": 3850,
+      "code_lines": 3878,
       "dependencies": [],
       "description": "",
       "dir": "memory_engine",
@@ -14409,11 +14427,11 @@
         "python": 6
       },
       "license": null,
-      "line_count": 3861,
+      "line_count": 3889,
       "lines_by_language": {
         "jsonl": 2,
         "markdown": 9,
-        "python": 3850
+        "python": 3878
       },
       "modules": [
         "__init__",
@@ -14575,7 +14593,7 @@
       "version": null
     },
     {
-      "bytes": 15384609,
+      "bytes": 15475547,
       "category": "service",
       "code_lines": 0,
       "dependencies": [],
@@ -14583,16 +14601,16 @@
       "dir": "store",
       "docs": [],
       "entry_points": {},
-      "file_count": 419,
+      "file_count": 420,
       "keywords": [],
       "languages": {
-        "json": 406,
+        "json": 407,
         "markdown": 13
       },
       "license": null,
-      "line_count": 159320,
+      "line_count": 159935,
       "lines_by_language": {
-        "json": 158420,
+        "json": 159035,
         "markdown": 900
       },
       "modules": [],
@@ -14649,23 +14667,23 @@
       "version": null
     },
     {
-      "bytes": 59434,
+      "bytes": 68187,
       "category": "other",
-      "code_lines": 1319,
+      "code_lines": 1507,
       "dependencies": [],
       "description": "",
       "dir": "tests",
       "docs": [],
       "entry_points": {},
-      "file_count": 11,
+      "file_count": 12,
       "keywords": [],
       "languages": {
-        "python": 11
+        "python": 12
       },
       "license": null,
-      "line_count": 1319,
+      "line_count": 1507,
       "lines_by_language": {
-        "python": 1319
+        "python": 1507
       },
       "modules": [
         "conftest",
@@ -14673,6 +14691,7 @@
         "test_llm_fallback",
         "test_mcp_dispatch",
         "test_mem20path",
+        "test_memory_api",
         "test_namespace_acl",
         "test_phase7_safety",
         "test_phase8_1_engine",
@@ -14686,11 +14705,11 @@
       "readme_text": "",
       "requires_python": null,
       "subdirs": [],
-      "test_files": 10,
+      "test_files": 11,
       "version": null
     },
     {
-      "bytes": 1079569,
+      "bytes": 1079876,
       "category": "service",
       "code_lines": 1134,
       "dependencies": [],
@@ -14717,9 +14736,9 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 35518,
+      "line_count": 35561,
       "lines_by_language": {
-        "json": 34299,
+        "json": 34342,
         "markdown": 66,
         "python": 1134,
         "toml": 19
@@ -14870,12 +14889,12 @@
   ],
   "totals": {
     "categories": {
-      "organ": 300,
+      "organ": 301,
       "other": 9,
       "service": 17
     },
-    "code_lines": 470251,
-    "files": 9056,
+    "code_lines": 470778,
+    "files": 9059,
     "languages": {
       "c": 1,
       "cpp": 39,
@@ -14883,12 +14902,12 @@
       "css": 11,
       "html": 20,
       "javascript": 62,
-      "json": 4850,
+      "json": 4851,
       "jsonl": 13,
       "make": 3,
       "markdown": 1319,
       "other": 19,
-      "python": 1797,
+      "python": 1799,
       "rust": 74,
       "shell": 14,
       "svg": 3,
@@ -14897,7 +14916,7 @@
       "xml": 2,
       "yaml": 92
     },
-    "lines": 1389893,
-    "subsystems": 326
+    "lines": 1391090,
+    "subsystems": 327
   }
 }

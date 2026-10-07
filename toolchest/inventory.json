@@ -1,7 +1,7 @@
 {
   "format": "mem20-toolchest-inventory",
   "format_version": 1,
-  "generated_at": "2026-10-07T10:17:49.024133+00:00",
+  "generated_at": "2026-10-07T11:13:27.724619+00:00",
   "toolchest_version": "0.1.0",
   "host": "jnet1",
   "sources": [
@@ -12,8 +12,8 @@
   "counts": {
     "mcp": 258,
     "cli": 318,
-    "subsystem": 301,
-    "total": 877
+    "subsystem": 303,
+    "total": 879
   },
   "categories": {
     "agent-platform": {
@@ -81,7 +81,7 @@
       ]
     },
     "other": {
-      "count": 280,
+      "count": 282,
       "subcategories": [
         "native-subsystem",
         "unpackaged"
@@ -9969,7 +9969,7 @@
       "name": "bean-query",
       "category": "cli",
       "subcategory": "data-db",
-      "description": "bean-query: Usage: bean-query [OPTIONS] FILENAME [QUERY]...    An interactive interpreter for the Beancount Query Language.    Load Beancount ledger FILENAME and run Beancount Query Language QUERY on it,   if specified, or drop into",
+      "description": "bean-query \u00b7 runs with /root/.venv/bin/python",
       "source": "/root/.venv/bin/bean-query",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -9992,12 +9992,7 @@
         "executable": true,
         "size": 168,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/bean-query",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "Usage: bean-query [OPTIONS] FILENAME [QUERY]...    An interactive interpreter for the Beancount Query Language.    Load Beancount ledger FILENAME and run Beancount Query Language QUERY on it,   if specified, or drop into"
-        }
+        "resolved_target": "/root/.venv/bin/bean-query"
       }
     },
     {
@@ -10144,7 +10139,7 @@
       "name": "check-model",
       "category": "cli",
       "subcategory": "ml-ai",
-      "description": "check-model: usage: check-model [-h] model_pb  positional arguments:   model_pb  options:   -h, --help  show this help message and exit",
+      "description": "check-model \u00b7 runs with /root/.venv/bin/python",
       "source": "/root/.venv/bin/check-model",
       "runtime_status": "ok",
       "runtime_detail": "script in /root/.venv/bin",
@@ -10167,12 +10162,7 @@
         "executable": true,
         "size": 183,
         "symlink": false,
-        "resolved_target": "/root/.venv/bin/check-model",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "usage: check-model [-h] model_pb  positional arguments:   model_pb  options:   -h, --help  show this help message and exit"
-        }
+        "resolved_target": "/root/.venv/bin/check-model"
       }
     },
     {
@@ -17369,7 +17359,7 @@
       "name": "bluemix",
       "category": "cli",
       "subcategory": "cloud",
-      "description": "bluemix: NAME:   /usr/local/bin/bluemix - A command line tool to interact with IBM Cloud   Find more information at: https://ibm.biz/cli-docs  USAGE:   [environment variables] /usr/local/bin/bluemix [global options] command [argu",
+      "description": "bluemix \u00b7 -> /usr/local/ibmcloud/bin/ibmcloud",
       "source": "/usr/local/bin/bluemix",
       "runtime_status": "ok",
       "runtime_detail": "symlink in /usr/local/bin",
@@ -17392,12 +17382,7 @@
         "executable": true,
         "size": 35868834,
         "symlink": true,
-        "resolved_target": "/usr/local/ibmcloud/bin/ibmcloud",
-        "help": {
-          "sampled": true,
-          "ok": true,
-          "summary": "NAME:   /usr/local/bin/bluemix - A command line tool to interact with IBM Cloud   Find more information at: https://ibm.biz/cli-docs  USAGE:   [environment variables] /usr/local/bin/bluemix [global options] command [argu"
-        }
+        "resolved_target": "/usr/local/ibmcloud/bin/ibmcloud"
       }
     },
     {
@@ -20784,6 +20769,35 @@
       }
     },
     {
+      "id": "subsystem:mem20api",
+      "kind": "subsystem",
+      "name": "mem20api",
+      "category": "other",
+      "subcategory": "unpackaged",
+      "description": "no pyproject.toml; top-level items: __pycache__, mem20api.py",
+      "source": "/opt/mem20/mem20api",
+      "runtime_status": "unpackaged",
+      "runtime_detail": "pyproject.toml not present under /opt/mem20",
+      "checks": [
+        {
+          "check": "pyproject exists",
+          "ok": false,
+          "detail": "not a PEP-621 package"
+        },
+        {
+          "check": "dir exists",
+          "ok": true,
+          "detail": "/opt/mem20/mem20api"
+        }
+      ],
+      "meta": {
+        "pyproject": null,
+        "entry_points": [],
+        "installed": null,
+        "importable": []
+      }
+    },
+    {
       "id": "subsystem:mem20apishapeshiftinggatewayz",
       "kind": "subsystem",
       "name": "mem20apishapeshiftinggatewayz",
@@ -21857,6 +21871,35 @@
           }
         ],
         "categories_from": "auto-discovered (not in AGENTS.md table)"
+      }
+    },
+    {
+      "id": "subsystem:mem20benchmarkz",
+      "kind": "subsystem",
+      "name": "mem20benchmarkz",
+      "category": "other",
+      "subcategory": "unpackaged",
+      "description": "no pyproject.toml; top-level items: mem20benchmarkz, tests",
+      "source": "/opt/mem20/mem20benchmarkz",
+      "runtime_status": "unpackaged",
+      "runtime_detail": "pyproject.toml not present under /opt/mem20",
+      "checks": [
+        {
+          "check": "pyproject exists",
+          "ok": false,
+          "detail": "not a PEP-621 package"
+        },
+        {
+          "check": "dir exists",
+          "ok": true,
+          "detail": "/opt/mem20/mem20benchmarkz"
+        }
+      ],
+      "meta": {
+        "pyproject": null,
+        "entry_points": [],
+        "installed": null,
+        "importable": []
       }
     },
     {

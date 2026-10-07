@@ -15,8 +15,13 @@ dependencies = []
 [project.scripts]
 mem20secretz = "mem20secretz.cli:main"
 
-[tool.setuptools]
-packages = ["mem20secretz"]
+# src/ layout, like mem20sitemapz and mem20temporaldatabasefabricz. With the
+# package beside pyproject.toml, the project directory shadows the installed
+# package whenever cwd is /opt/mem20: the top-level import resolves to an implicit
+# namespace package (__file__ is None) and pkgutil.iter_modules then reports one
+# useless submodule named "mem20secretz" instead of cli/sweep.
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
