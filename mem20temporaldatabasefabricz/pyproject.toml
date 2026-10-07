@@ -4,14 +4,25 @@ build-backend="setuptools.build_meta"
 
 [project]
 name="mem20temporaldatabasefabricz"
-version="1.0.0"
-description='Store how entities and relationships change over time as a first-class capability'
+version="1.1.0"
+description="Bi-temporal memory: separates when a claim was true from when the system knew it"
 requires-python=">=3.11"
+dependencies=[]
+
+[project.optional-dependencies]
+http=["fastapi>=0.110","uvicorn>=0.29"]
 
 [project.scripts]
-mem20temporaldatabasefabricz="mem20temporaldatabasefabricz.core:cli"
+mem20temporaldatabasefabricz="mem20temporaldatabasefabricz.temporal.cli:main"
 
-[tool.setuptools]
-packages=["mem20temporaldatabasefabricz"]
-[tool.setuptools.package-data]
-mem20temporaldatabasefabricz=["roadmap.json"]
+# src/ layout, like mem20sitemapz. With the package sitting beside pyproject.toml,
+# the project directory shadows the installed package whenever the interpreter's cwd
+# is /opt/mem20: Python sees the outer directory (no __init__.py) first and treats it
+# as an implicit namespace package, so `import mem20temporaldatabasefabricz`
+# resolves with __file__ = None. mem20ops and mem20secretz still have that layout and
+# are still broken from that cwd; they were not touched here.
+[tool.setuptools.packages.find]
+where=["src"]
+
+[tool.pytest.ini_options]
+testpaths=["tests"]

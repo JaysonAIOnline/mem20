@@ -1,8 +1,8 @@
 {
   "global_id": 163,
   "section": "Runtime Roadmaps",
-  "owner": "Kimberly",
-  "owner_code": "kimberly",
+  "owner": "mem20",
+  "owner_code": "mem20",
   "roadmap_index": 3,
   "title": "Temporal Database Fabric",
   "outcome": "Store how entities and relationships change over time as a first-class capability",

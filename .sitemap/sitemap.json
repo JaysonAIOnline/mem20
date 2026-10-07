@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T20:58:26-0600",
+  "generated_at": "2026-10-07T04:17:51-0600",
   "root": "/opt/mem20",
   "root_files": [
     ".gitignore",
@@ -60,7 +60,7 @@
     "/opt/mem20",
     "/sb"
   ],
-  "scan_seconds": 1.65,
+  "scan_seconds": 2.15,
   "schema": "mem20-sitemap-v1",
   "subsystems": [
     {
@@ -477,9 +477,9 @@
       "version": null
     },
     {
-      "bytes": 628784,
+      "bytes": 630333,
       "category": "service",
-      "code_lines": 12984,
+      "code_lines": 13011,
       "dependencies": [],
       "description": "",
       "dir": "mcp",
@@ -492,10 +492,10 @@
         "python": 37
       },
       "license": null,
-      "line_count": 13112,
+      "line_count": 13139,
       "lines_by_language": {
         "json": 128,
-        "python": 12984
+        "python": 13011
       },
       "modules": [
         "__init__",
@@ -714,9 +714,9 @@
       "version": null
     },
     {
-      "bytes": 71893,
+      "bytes": 72834,
       "category": "organ",
-      "code_lines": 1548,
+      "code_lines": 1564,
       "dependencies": [],
       "description": "Generate verified onboarding packs for newly-hired mem20 agents: hire guide, orientation, governance, self-model setup, and pinned-block delivery.",
       "dir": "mem20AIonbordz",
@@ -741,10 +741,10 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 1645,
+      "line_count": 1661,
       "lines_by_language": {
         "markdown": 78,
-        "python": 1548,
+        "python": 1564,
         "toml": 19
       },
       "modules": [
@@ -4062,7 +4062,7 @@
       "version": "1.0.0"
     },
     {
-      "bytes": 343550,
+      "bytes": 346174,
       "category": "organ",
       "code_lines": 3597,
       "dependencies": [],
@@ -4084,10 +4084,10 @@
         "yaml": 1
       },
       "license": null,
-      "line_count": 5326,
+      "line_count": 5349,
       "lines_by_language": {
-        "jsonl": 1525,
-        "markdown": 89,
+        "jsonl": 1549,
+        "markdown": 88,
         "python": 3597,
         "toml": 20,
         "yaml": 95
@@ -13234,49 +13234,48 @@
       "version": "0.1.0"
     },
     {
-      "bytes": 69130,
+      "bytes": 92948,
       "category": "organ",
-      "code_lines": 642,
+      "code_lines": 1629,
       "dependencies": [],
-      "description": "Store how entities and relationships change over time as a first-class capability",
+      "description": "Bi-temporal memory: separates when a claim was true from when the system knew it",
       "dir": "mem20temporaldatabasefabricz",
       "docs": [
         "mem20temporaldatabasefabricz/README.md"
       ],
       "entry_points": {
-        "mem20temporaldatabasefabricz": "mem20temporaldatabasefabricz.core:cli"
+        "mem20temporaldatabasefabricz": "mem20temporaldatabasefabricz.temporal.cli:main"
       },
-      "file_count": 9,
+      "file_count": 13,
       "keywords": [],
       "languages": {
-        "json": 4,
+        "json": 2,
         "markdown": 1,
-        "python": 3,
+        "python": 9,
         "toml": 1
       },
       "license": null,
-      "line_count": 837,
+      "line_count": 1842,
       "lines_by_language": {
-        "json": 163,
-        "markdown": 18,
-        "python": 642,
-        "toml": 14
+        "json": 83,
+        "markdown": 107,
+        "python": 1629,
+        "toml": 23
       },
       "modules": [
-        "__init__",
-        "core",
-        "run"
+        "test_temporal"
       ],
       "name": "mem20temporaldatabasefabricz",
       "packaged": true,
-      "readme_summary": "RM-163 \u2014 Temporal Database Fabric",
-      "readme_text": "# rm-163 \u2014 temporal database fabric\n\n**owner:** kimberly  \n**lane:** schema, data shape, database, and information transformation\n\n## outcome\nstore how entities and relationships change over time as a first-class capability\n\n## breakthrough\napplications can ask what was true, when, and why state changed\n\nthis package implements the locally executable/non-human portion of this off record lab roadmap on a shared, zero-dependency runtime substrate. it includes typed/versioned roadmap validation, sqlite wal state + event history, resumable/idempotent jobs, cancellation/timeouts/quotas, deterministic recovery, adaptive mode decisions with confidence/alternatives/bottlenecks/explanations, feedback tuning, cli + typed client + http api + browser command surface + event stream, local/hybrid/cloud peer execution, conflict-safe lww synchronization, caching, backpressure/failover, metrics, simulator scenarios, benchmark tooling, safety gating, and a rollback manifest.\n\nthe domain engine for this package is keyed specifically to rm-163 and produces deterministic executable results for the roadmap's core operation using only local standard-library code. external hardware, proprietary models, production credentials, live third-party services, and deployment authorization are intentionally not fabricated; those remain environment-bound integration points.\n\n## run\n```bash\npython run.py inspect\npython run.py run '{\"text\":\"demo\",\"cache\":false}'\npython run.py simulate\npython run.py benchmark --runs 5\npython run.py serve --port 8765\n```\n\nopen `http://127.0.0.1:8765/` for the live command surface.\n",
+      "readme_summary": "mem20temporaldatabasefabricz",
+      "readme_text": "# mem20temporaldatabasefabricz\n\nbi-temporal memory for mem20. it keeps two things apart that most memory stores\nconflate:\n\n- **valid time** \u2014 when a claim was true in the world\n- **known time** \u2014 when *this system* held the belief\n\nthe difference matters the moment a fact is learned late, corrected, or\nretracted. a store with only a valid axis cannot answer \"what did we believe at\nnoon?\" without answering it with today's facts, and cannot distinguish \"we\nbelieved this\" from \"we never knew this\".\n\n## the problem it fixes\n\nmem20's `recall_at()` was documented as a bi-temporal query. it was not. it\nfiltered on a single axis, and it stripped every superseded record *before*\napplying the time filter. so asking \"what was true at 12:00?\" about a fact\nlearned at 10:00 and corrected at 14:00 returned **nothing** \u2014 the pre-correction\ntruth was unreachable through every query path.\n\nreproduced, fixed, and locked down by tests in\n`memory_engine/tests/test_recall_at_bitemporal.py`.\n\n## guarantees\n\n- **corrections never delete.** they close the old version's *known* interval and\n  append a new version. both remain queryable forever.\n- **a correction never edits valid time.** the world did not change; only our\n  belief about it did.\n- **at most one belief per (subject, attribute) is open at a time.** a second\n  assertion is refused; use `correct` or `retract`.\n- **half-open intervals `[start, end)`.** the instant a correction lands belongs\n  to the correction, not the fact it replaced.\n- **intervals are immutable once written.** only an interval's open end may be\n  closed.\n- **total, deterministic ordering.** equal queries give byte-identical answers.\n- **idempotent ingest.** replaying the same ledger adds nothing.\n- **tamper-evident.** every write appends to a hash-chained event log; `verify`\n  re-derives the chain and exits non-zero on any alteration.\n- **content is never duplicated.** a version stores a `value_ref` (a memory\n  record id) and a content hash \u2014 never a second copy of the text.\n\n## the four slices\n\nomit an axis to mean *now*; supply one to mean *then*.\n\n| query | slice | reads as |\n|---|---|---|\n| `get s` | `valid_now_known_now` | current view |\n| `get s --valid-at t` | `valid_then_known_now` | what was true at t, judged against everything known today \u2014 the **as-of join** |\n| `get s --known-at t` | `valid_now_known_then` | what we believed at t that is still true \u2014 \"were we right?\" |\n| `get s --valid-at t --known-at t` | `valid_then_known_then` | the historical view |\n\nthe slice names the **question**, not the answer. an empty result is an answer,\nnot a different question.\n\n## cli\n\n```bash\nmem20temporaldatabasefabricz selftest          # prove the core claims, throwaway store\nmem20temporaldatabasefabricz put svc.port value 8080 --valid-from t0 --known-at t1\nmem20temporaldatabasefabricz correct svc.port value 9090 --known-at t6\nmem20temporaldatabasefabricz get svc.port --valid-at t3            # as-of join\nmem20temporaldatabasefabricz get svc.port --valid-at t3 --known-at t3   # historical\nmem20temporaldatabasefabricz slices svc.port t3    # all four at once\nmem20temporaldatabasefabricz history svc.port      # every version, nothing deleted\nmem20temporaldatabasefabricz explain svc.port --valid-at t3\nmem20temporaldatabasefabricz export --out state.json\nmem20temporaldatabasefabricz verify                # non-zero if the chain broke\nmem20temporaldatabasefabricz ingest --ledger ~/.mem20/store/ledger.jsonl\n```\n\n`--db` selects the sqlite file (default `~/.mem20/temporal/temporal.db`, override\nwith `mem20_temporal_db`). output is json. subjects match **exactly** \u2014 use the\nreal topic string; there is no substring matching, because a temporal store\nshould be precise about which fact it is answering for.\n\n## http surface\n\n```bash\nmem20temporaldatabasefabricz serve --port 8791\n```\n\nread and query. endpoints under `/temporal/*` answer bi-temporal questions;\n`/recall/*` proxy the **existing** memory retrieval read-only. this service adds\ntemporal questions, it does not take over recall.\n\n## how it composes with existing retrieval\n\nnothing existing was replaced. the ledger stays the single authority for\ncontent, and intervals are *derived* from the append-only ledger that already\nexists \u2014 so `remember()` and `supersede()` needed no changes and cannot be\nbypassed.\n\n```python\nfrom mem20temporaldatabasefabricz.temporal import build_engine, temporal_filter\n\nengine = build_engine(store, memory._load_ledger())\ncandidates = [r[\"id\"] for r in memory.recall_hybrid(\"deploy target\", k=50)]\ncurrent = temporal_filter(engine, candidates, known_at=\"2026-10-01t00:00:00+00:00\")\n```\n\n`recall`, `recall_hybrid`, `recall_semantic`, `recall_graph` and the bm25/vector\nindexes all remain live and unchanged. the temporal layer restricts and reorders\ntheir output; it never stands in for them.\n\n## known limitation: conflated valid time on existing data\n\n`memory_engine.remember()` sets `valid_from = now` when a caller supplies no\nexplicit event time. every existing mem20 record therefore has\n`valid_from == known_from`, so the **valid** axis cannot yet distinguish a\nlate-arriving fact from a fresh one. this is visible in real data: ingesting the\nlive ledger yields 374 versions where both axes agree on all of them.\n\nthe engine reports this rather than inferring an event time it was never given.\nthe fix is at the call site \u2014 pass `valid_from=` to `remember()` \u2014 not something\nthis package can repair after the fact. new records written with an explicit\n`valid_from` are placed correctly on both axes immediately.\n\n## what was removed\n\nthe previous version of this package was generated scaffolding: 676 lines whose\n\"temporal\" behaviour was a hardcoded dispatch on integer ids 101\u2013230 returning\ncanned dictionaries, with 98 dispatch branches and zero tests. its readme\nclaimed conflict-safe synchronisation, backpressure, failover and a browser\ncommand surface. none of that was implemented, and the claims are gone along\nwith the code. `selftest` and the test suite are what this package can actually\ndo.\n\n## tests\n\n```bash\ncd /opt/mem20/mem20temporaldatabasefabricz\npython -m pytest tests -q\n```\n\n46 tests. deterministic: an injected clock, no sleeps, no wall-clock waits.",
       "requires_python": ">=3.11",
       "subdirs": [
-        "mem20temporaldatabasefabricz"
+        "src",
+        "tests"
       ],
-      "test_files": 0,
-      "version": "1.0.0"
+      "test_files": 1,
+      "version": "1.1.0"
     },
     {
       "bytes": 4609,
@@ -14394,32 +14393,35 @@
       "version": "0.2.0"
     },
     {
-      "bytes": 142588,
+      "bytes": 187656,
       "category": "service",
-      "code_lines": 2980,
+      "code_lines": 3850,
       "dependencies": [],
       "description": "",
       "dir": "memory_engine",
       "docs": [],
       "entry_points": {},
-      "file_count": 5,
+      "file_count": 8,
       "keywords": [],
       "languages": {
         "jsonl": 1,
         "markdown": 1,
-        "python": 3
+        "python": 6
       },
       "license": null,
-      "line_count": 2991,
+      "line_count": 3861,
       "lines_by_language": {
         "jsonl": 2,
         "markdown": 9,
-        "python": 2980
+        "python": 3850
       },
       "modules": [
         "__init__",
         "memory",
-        "test_pii_non_destructive"
+        "test_event_time_provenance",
+        "test_grounded_firewall",
+        "test_pii_non_destructive",
+        "test_recall_at_bitemporal"
       ],
       "name": "memory_engine",
       "packaged": false,
@@ -14429,7 +14431,7 @@
       "subdirs": [
         "tests"
       ],
-      "test_files": 1,
+      "test_files": 4,
       "version": null
     },
     {
@@ -14538,7 +14540,7 @@
       "version": null
     },
     {
-      "bytes": 466182,
+      "bytes": 466160,
       "category": "service",
       "code_lines": 0,
       "dependencies": [],
@@ -14573,7 +14575,7 @@
       "version": null
     },
     {
-      "bytes": 12220066,
+      "bytes": 15384609,
       "category": "service",
       "code_lines": 0,
       "dependencies": [],
@@ -14581,16 +14583,16 @@
       "dir": "store",
       "docs": [],
       "entry_points": {},
-      "file_count": 340,
+      "file_count": 419,
       "keywords": [],
       "languages": {
-        "json": 327,
+        "json": 406,
         "markdown": 13
       },
       "license": null,
-      "line_count": 134096,
+      "line_count": 159320,
       "lines_by_language": {
-        "json": 133196,
+        "json": 158420,
         "markdown": 900
       },
       "modules": [],
@@ -14647,23 +14649,23 @@
       "version": null
     },
     {
-      "bytes": 49576,
+      "bytes": 59434,
       "category": "other",
-      "code_lines": 1102,
+      "code_lines": 1319,
       "dependencies": [],
       "description": "",
       "dir": "tests",
       "docs": [],
       "entry_points": {},
-      "file_count": 10,
+      "file_count": 11,
       "keywords": [],
       "languages": {
-        "python": 10
+        "python": 11
       },
       "license": null,
-      "line_count": 1102,
+      "line_count": 1319,
       "lines_by_language": {
-        "python": 1102
+        "python": 1319
       },
       "modules": [
         "conftest",
@@ -14674,6 +14676,7 @@
         "test_namespace_acl",
         "test_phase7_safety",
         "test_phase8_1_engine",
+        "test_retrieval_graph",
         "test_self_model_identity",
         "test_world_model"
       ],
@@ -14683,11 +14686,11 @@
       "readme_text": "",
       "requires_python": null,
       "subdirs": [],
-      "test_files": 9,
+      "test_files": 10,
       "version": null
     },
     {
-      "bytes": 1073816,
+      "bytes": 1079569,
       "category": "service",
       "code_lines": 1134,
       "dependencies": [],
@@ -14714,9 +14717,9 @@
         "toml": 1
       },
       "license": "MIT",
-      "line_count": 35414,
+      "line_count": 35518,
       "lines_by_language": {
-        "json": 34195,
+        "json": 34299,
         "markdown": 66,
         "python": 1134,
         "toml": 19
@@ -14871,8 +14874,8 @@
       "other": 9,
       "service": 17
     },
-    "code_lines": 468134,
-    "files": 8969,
+    "code_lines": 470251,
+    "files": 9056,
     "languages": {
       "c": 1,
       "cpp": 39,
@@ -14880,12 +14883,12 @@
       "css": 11,
       "html": 20,
       "javascript": 62,
-      "json": 4773,
+      "json": 4850,
       "jsonl": 13,
       "make": 3,
       "markdown": 1319,
       "other": 19,
-      "python": 1787,
+      "python": 1797,
       "rust": 74,
       "shell": 14,
       "svg": 3,
@@ -14894,7 +14897,7 @@
       "xml": 2,
       "yaml": 92
     },
-    "lines": 1362407,
+    "lines": 1389893,
     "subsystems": 326
   }
 }
